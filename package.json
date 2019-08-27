@@ -4,14 +4,16 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/bin/index.js",
+    "start-node": "node src/bin/index.js",
+    "start": "npm run build && node ./src/build/bin/index.js",
     "dev": "nodemon ./src/bin/index.js",
     "debbug": "node --inspect-brk ./src/bin",
     "run-babel": "babel-node ./src/bin/index.js",
     "run": "nodemon --exec babel-node ./src/bin/index.js",
-    "clean": "rm -rf build && mkdir build",
-    "build-server": "babel -d ./build ./src/** -s",
-    "build": "yarn run clean && yarn run build-server"
+    "clean": "rm -rf src/build && mkdir src/build",
+    "build-server": "babel -d ./src/build -s",
+    "build": "npm run clean && npm run build-server",
+    "start-build": "node ./build/bin/index.js"
   },
   "keywords": [],
   "author": "",
