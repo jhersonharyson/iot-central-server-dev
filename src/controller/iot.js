@@ -1,8 +1,8 @@
-const axios = require("axios");
+import axios from "axios";
+import Iot, { find } from "../models/iot";
 const constants = global.constants;
-const Iot = require("../models/iot");
 
-exports.post = async (req, res) => {
+export async function post(req, res) {
   try {
     const { lat, lon, speed, sensor } = req.body;
     const data = new Date();
@@ -60,14 +60,14 @@ exports.post = async (req, res) => {
     console.log({ error: e });
     res.send({ error: e });
   }
-};
+}
 
-exports.get = async (req, res, next) => {
-  const data = await Iot.find({}).sort([["data", "descending"]]);
+export async function get(req, res, next) {
+  const data = await find({}).sort([["data", "descending"]]);
   res.send(data);
-};
+}
 
-exports.test = (req, res, next) => {
+export function test(req, res, next) {
   console.log("ok");
   res.send({ ok: "ok" });
-};
+}
