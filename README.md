@@ -58,7 +58,18 @@ Start server with builded files:
 $ npm start-build 
 ```
 
+#### Security Routes
 
-
+All routes with "/auth/" or routes exactly like "/api/v1/ws/" dont need security JWT token
+```javascript
+export default (req, res, next) => {
+  // all routes */auth/* dont have jwt security
+  if (req.url.split("/").indexOf("auth") >= 0 || req.url === "/api/v1/ws/") {
+    return next();
+  }
+  // {....}
+  }
+```
+it can be change the code above inside `src/bin/middleware/index.js`   
 
 
