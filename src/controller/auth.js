@@ -6,8 +6,15 @@ import {
   PASSWORD_ISINVALID,
   USER_NOTFOUND
 } from "../exceptions/userException";
-import User, { find, findOne } from "../models/user";
-import { jwtBuilder } from "../security/jwtBuilder";
+import { MAC_ISINVALID, MAC_ISNOTFOUND } from "../exceptions/deviceException";
+
+import User, { find as findUser, findOne as findOneUser } from "../models/user";
+import Device, {
+  find as findDevice,
+  findOne as findOneDevice
+} from "../models/device";
+
+import { jwtBuilder, jwtVerify } from "../security/jwtBuilder";
 
 // give a jwt token
 export function signin(req, res) {
@@ -19,7 +26,7 @@ export function signin(req, res) {
     return res.status(400).jwt(PASSWORD_ISINVALID);
   try {
     //find all user that have the same name
-    findOne({ email }, (err, user) => {
+    findOneUser({ email }, (err, user) => {
       if (err) throw err;
       if (!user) return res.send(USER_NOTFOUND);
 
@@ -72,6 +79,28 @@ export async function signup(req, res) {
 
 // give a jwt token
 export async function users(req, res) {
-  const users = await find({});
+  const users = await findUser({});
   res.send({ users });
+}
+
+export async function iot(req, res) {
+  try {
+    if (req.params.mac && req.params.mac.length == 17) {
+      const mac = req.params.mac;
+      const device = await Device.findOne({ mac });
+
+      if (!device) throw new Error(MAC_ISNOTFOUND.error);
+
+      const token = jwtBuilder(req.params.mac);
+      const resp = {
+        token
+      };
+      return res.status(200).send(resp);
+    }
+    throw new Error(MAC_ISINVALID.error);
+  } catch (e) {
+    console.log(e);
+
+    return res.status(301).json({ error: e.message });
+  }
 }
