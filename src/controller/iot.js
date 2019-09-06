@@ -8,8 +8,8 @@ export async function post(req, res) {
   try {
 
     const { token, sensorData } = req.body;
-    const sensorId = jwtVerify(token);
 
+    const sensorId = req.userId;
     if(sensorId){
       const iot = new Iot({
         sensorId,

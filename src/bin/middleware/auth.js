@@ -4,12 +4,12 @@ import { BASE_URL } from "../../config/constants";
 
 export default (req, res, next) => {
   // all routes */auth/* dont have jwt security
-  if (req.url.split("/").indexOf("auth") >= 0 || req.url.match(BASE_URL)) {
+  if (req.url.split("/").indexOf("auth") >= 0 || req.url === BASE_URL) {
     return next();
   }
 
   // get jwt token from reader or body
-  const authHeader = req.headers.authorization || req.body.authorization;
+  const authHeader = req.headers.authorization || req.body.authorization || req.body.token;
 
   if (!authHeader) return res.status(401).send(AUTH_ERROR);
 
@@ -27,6 +27,7 @@ export default (req, res, next) => {
     const id = jwtVerify(token);
     //set userId in request
     req.userId = id;
+    req.body.token = token;
     // call the next router
     return next();
   } catch (e) {
