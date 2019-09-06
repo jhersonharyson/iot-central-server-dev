@@ -91,7 +91,7 @@ export async function iot(req, res) {
 
       if (!device) throw new Error(MAC_ISNOTFOUND.error);
 
-      const token = jwtBuilder(req.params.mac);
+      const token = jwtBuilder({id: req.params.mac});
       const resp = {
         token
       };

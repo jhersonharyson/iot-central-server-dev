@@ -19,7 +19,8 @@ export function jwtBuilder(
 
 export function jwtVerify(token = "") {
   return verify(token, SECRET, (err, decoded) => {
-    if (err) throw new Error("Token Inválid.");
+    if (err) return false;//throw new Error("Token Inválid.");
+    console.log(decoded.data.id);
     return decoded.data.id;
   });
 }
