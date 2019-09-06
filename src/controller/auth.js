@@ -88,7 +88,7 @@ export async function iot(req, res) {
       const mac = req.params.mac;
       const device = await Device.findOne({ mac });
 
-      if (!device) throw new Error(MAC_ISNOTFOUND.error);
+      if (!device) resp.send("error");
 
       const token = jwtBuilder({ id: req.params.mac });
       const resp = {
@@ -96,7 +96,7 @@ export async function iot(req, res) {
       };
       return res.status(200).send(resp);
     }
-    throw new Error(MAC_ISINVALID.error);
+    return res.send("error");
   } catch (e) {
     console.log(e);
 
