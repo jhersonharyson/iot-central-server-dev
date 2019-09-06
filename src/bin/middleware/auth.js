@@ -8,8 +8,11 @@ export default (req, res, next) => {
     return next();
   }
 
-  // get jwt token from reader or body
-  const authHeader = req.headers.authorization || req.body.authorization || req.body.token;
+
+  // get jwt token from header or body
+  const authHeader =
+    req.headers.authorization || req.body.authorization || req.body.token;
+
 
   if (!authHeader) return res.status(401).send(AUTH_ERROR);
 
@@ -25,6 +28,8 @@ export default (req, res, next) => {
   try {
     // verify id jwt token is válid
     const id = jwtVerify(token);
+    if (!id) throw new Error();
+
     //set userId in request
     req.userId = id;
     // call the next router

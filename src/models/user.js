@@ -5,9 +5,15 @@ import { SALT_WORK_FACTOR } from "../security/constants";
 
 const Schema = _Schema;
 const users = new Schema({
-  email: { type: String, required: true, lowercase: true },
+  email: { type: String, required: true, lowercase: true, unique: true },
   name: { type: String, required: true },
   password: { type: String, required: true },
+  profile: {
+    type: String,
+    enum: ["JOUNIN", "CHUNIN", "GENIN"],
+    default: "GENIN",
+    required: true
+  },
   createAt: {
     type: String,
     default: Date.now()

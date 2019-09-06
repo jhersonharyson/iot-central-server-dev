@@ -1,16 +1,16 @@
-import axios from "axios";
-import Iot, { find } from "../models/iot";
-import { jwtVerify , jwtBuilder } from "../security/jwtBuilder";
 import { MAC_ISINVALID } from "../exceptions/deviceException";
+import Iot, { find } from "../models/iot";
+import { jwtBuilder } from "../security/jwtBuilder";
 const constants = global.constants;
 
 export async function post(req, res) {
   try {
-
     const { token, sensorData } = req.body;
+
 
     const sensorId = req.userId;
     if(sensorId){
+
       const iot = new Iot({
         sensorId,
         sensorData
@@ -18,10 +18,10 @@ export async function post(req, res) {
 
       //await iot.save();
       console.log(iot);
-      res.send({status: "ok", "token": jwtBuilder({id: sensorId})});
+      res.send({ status: "ok", token: jwtBuilder({ id: sensorId }) });
       console.log("saved!");
     } else {
-      res.status(401).send(MAC_ISINVALID)
+      res.status(401).send(MAC_ISINVALID);
     }
   } catch (e) {
     console.log({ error: e });
