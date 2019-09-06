@@ -6,9 +6,11 @@ const constants = global.constants;
 export async function post(req, res) {
   try {
     const { token, sensorData } = req.body;
-    const sensorId = req.userId;
 
-    if (sensorId) {
+
+    const sensorId = req.userId;
+    if(sensorId){
+
       const iot = new Iot({
         sensorId,
         sensorData
