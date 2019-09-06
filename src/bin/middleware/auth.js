@@ -27,7 +27,6 @@ export default (req, res, next) => {
     const id = jwtVerify(token);
     //set userId in request
     req.userId = id;
-    req.body.token = token;
     // call the next router
     return next();
   } catch (e) {
