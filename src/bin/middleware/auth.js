@@ -8,9 +8,11 @@ export default (req, res, next) => {
     return next();
   }
 
+
   // get jwt token from header or body
   const authHeader =
     req.headers.authorization || req.body.authorization || req.body.token;
+
 
   if (!authHeader) return res.status(401).send(AUTH_ERROR);
 
