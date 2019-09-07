@@ -1,4 +1,6 @@
 "use strict";
+import "core-js/stable";
+import "regenerator-runtime/runtime";
 import express from "express";
 import { urlencoded, json } from "body-parser";
 import { connect } from "mongoose";
