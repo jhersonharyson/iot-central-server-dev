@@ -7,6 +7,7 @@ import { connect } from "mongoose";
 import morgan from "morgan";
 
 import auth from "./middleware/auth";
+import cors from "./middleware/cors";
 
 import constants from "./../config/constants";
 
@@ -19,7 +20,7 @@ const port = process.env.PORT || 3000;
 // mongoDB connection
 connect(
   mongoUrlConnection,
-  { useNewUrlParser: true }
+  { useNewUrlParser: true, useCreateIndex: true }
 );
 
 // request and response middleware
@@ -30,11 +31,7 @@ app.use(json());
 app.use(morgan("dev"));
 
 // CORS middleware
-app.all("/*", function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "X-Requested-With");
-  next();
-});
+cors(app);
 
 // Authorization middleware
 app.use(auth);
