@@ -3,8 +3,8 @@ import { basename } from "path";
 
 const CONTROLLER_PATH = "../controller/" + basename(__filename);
 
-router.get("/auth/devices/:mac", require(CONTROLLER_PATH).devicesLogin);
-router.post("/auth/devices/:mac", require(CONTROLLER_PATH).devicesCreate);
+router.get("/auth/devices/:mac", require(CONTROLLER_PATH).loginDevice);
+router.post("/auth/devices/", require(CONTROLLER_PATH).createDevice);
 router.post("/auth/signin", require(CONTROLLER_PATH).signin);
 router.post("/auth/signup", require(CONTROLLER_PATH).signup);
 router.get("/auth/users", require(CONTROLLER_PATH).users);

@@ -6,7 +6,14 @@ import {
   PASSWORD_ISINVALID,
   USER_NOTFOUND
 } from "../exceptions/userException";
-import { MAC_ISINVALID, MAC_ISNOTFOUND } from "../exceptions/deviceException";
+import { 
+  MAC_ISINVALID, 
+  MAC_ISNOTFOUND,
+  NAMED_ISINVALID,
+  DESCRIPTION_ISEMPTY,
+  POSITION_ISINVALID,
+  LOCATION_ISINVALID
+} from "../exceptions/deviceException";
 
 import User from "../models/user";
 import Device from "../models/device";
@@ -80,7 +87,7 @@ export async function users(req, res) {
   res.send({ users });
 }
 
-export async function devicesLogin(req, res) {
+export async function loginDevice(req, res) {
   try {
     console.log("+++++++++++++++++++++++++++++++++++++");
 
@@ -106,31 +113,38 @@ export async function devicesLogin(req, res) {
   }
 }
 
-export async function devicesCreate(req, res) {
+export async function createDevice(req, res) {
   const { mac, name, description, location, position } = req.body;
-  if (!mac || mac == "" || mac.length < 17 || name.length > 17)
-    return res.status(400).jwt(MAC_ISINVALID);
+  
+  if (!mac || mac == "" || mac.length !== 17)
+    return res.status(400).send(MAC_ISINVALID);
 
   if (!name || name == "" || name.length < 3 || name.length > 80)
-    return res.status(400).jwt(NAME_ISINVALID);
+    return res.status(400).send(NAMED_ISINVALID);
+
+  if (!description)
+    return res.status(400).send(DESCRIPTION_ISEMPTY);
 
   if (!location || location == "") 
-    return res.status(400).jwt({"error":"location incorrect"});
+    return res.status(400).send(LOCATION_ISINVALID);
 
   if (!position || position == {}) 
-    return res.status(400).jwt({"error":"position incorrect"});
+    return res.status(400).send(POSITION_ISINVALID);
 
   try {
-    const device = await new Device({
-      deviceId,
+    const device = new Device({
+      mac,
       name,
       description,
       location,
       position
-    }).save();
+    });
+    
+    await device.save();
 
     return res.status(201).json(device);
   } catch (e) {
+    //console.log(e);
     return res.status(400).send(UNEXPECTED_ERROR);
   }
 }
