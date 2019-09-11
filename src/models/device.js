@@ -7,6 +7,7 @@ const devices = new Schema({
   description: String,
   sensorData: [{ type: Schema.Types.ObjectId, ref: "sensor" }],
   location: { type: Schema.Types.ObjectId, ref: "location" },
+  position: { x: { type: Number }, y: { type: Number } },
   createAt: {
     type: String,
     default: Date.now()

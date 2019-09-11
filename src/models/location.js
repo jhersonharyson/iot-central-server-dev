@@ -5,12 +5,11 @@ const locations = new Schema({
   name: String,
   description: String,
   img_url: String,
-  position: { x: { type: Number }, y: { type: Number } },
+  device: [{ type: Schema.Types.ObjectId, ref: "device" }],
   createAt: {
     type: String,
     default: Date.now()
-  },
-  device: [{ type: Schema.Types.ObjectId, ref: "device" }]
+  }
 });
 
 export default model("location", locations);
