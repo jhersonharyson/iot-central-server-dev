@@ -9,8 +9,13 @@ export async function post(req, res) {
     const { token, sensorData } = req.body;
 
     //console.log(sensorData);
-
+    
     const deviceId = req.userId;
+    const device = await Device.findOne({ deviceId });
+
+    const location = device.location;
+    const position = device.position;
+
     if(deviceId){
       sensorData.map(function(arr){
         let type = arr.type;
@@ -18,7 +23,9 @@ export async function post(req, res) {
         const sensor = new Sensor({
           deviceId,
           type,
-          value
+          value,
+          location,
+          position
         });
         //await iot.save();
         console.log(sensor);

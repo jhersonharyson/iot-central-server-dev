@@ -117,7 +117,7 @@ export async function devicesCreate(req, res) {
   if (!location || location == "") 
     return res.status(400).jwt({"error":"location incorrect"});
 
-  if (!position || position == "") 
+  if (!position || position == {}) 
     return res.status(400).jwt({"error":"position incorrect"});
 
   try {
