@@ -80,13 +80,15 @@ export async function users(req, res) {
   res.send({ users });
 }
 
-export async function iot(req, res) {
+export async function devicesLogin(req, res) {
   try {
     console.log("+++++++++++++++++++++++++++++++++++++");
 
     if (req.params.mac && req.params.mac.length == 17) {
       const mac = req.params.mac;
       const device = await Device.findOne({ mac });
+
+       //console.log(device);
 
       if (!device) throw new Error(MAC_ISNOTFOUND.error);
 
@@ -101,5 +103,34 @@ export async function iot(req, res) {
     console.log(e);
 
     return res.status(301).json({ e });
+  }
+}
+
+export async function devicesCreate(req, res) {
+  const { mac, name, description, location, position } = req.body;
+  if (!mac || mac == "" || mac.length < 17 || name.length > 17)
+    return res.status(400).jwt(MAC_ISINVALID);
+
+  if (!name || name == "" || name.length < 3 || name.length > 80)
+    return res.status(400).jwt(NAME_ISINVALID);
+
+  if (!location || location == "") 
+    return res.status(400).jwt({"error":"location incorrect"});
+
+  if (!position || position == "") 
+    return res.status(400).jwt({"error":"position incorrect"});
+
+  try {
+    const device = await new Device({
+      deviceId,
+      name,
+      description,
+      location,
+      position
+    }).save();
+
+    return res.status(201).json(device);
+  } catch (e) {
+    return res.status(400).send(UNEXPECTED_ERROR);
   }
 }

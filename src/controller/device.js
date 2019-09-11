@@ -1,5 +1,6 @@
 import { MAC_ISINVALID } from "../exceptions/deviceException";
-import Iot, { find } from "../models/iot";
+import Device from "../models/device";
+import Sensor from "../models/sensor";
 import { jwtBuilder } from "../security/jwtBuilder";
 const constants = global.constants;
 
@@ -7,18 +8,22 @@ export async function post(req, res) {
   try {
     const { token, sensorData } = req.body;
 
+    //console.log(sensorData);
 
-    const sensorId = req.userId;
-    if(sensorId){
-
-      const iot = new Iot({
-        sensorId,
-        sensorData
+    const deviceId = req.userId;
+    if(deviceId){
+      sensorData.map(function(arr){
+        let type = arr.type;
+        let value = arr.value;
+        const sensor = new Sensor({
+          deviceId,
+          type,
+          value
+        });
+        //await iot.save();
+        console.log(sensor);
       });
-
-      //await iot.save();
-      console.log(iot);
-      res.send({ status: "ok", token: jwtBuilder({ id: sensorId }) });
+      res.send({ status: "ok", token: jwtBuilder({ id: deviceId }) });
       console.log("saved!");
     } else {
       res.status(401).send(MAC_ISINVALID);
