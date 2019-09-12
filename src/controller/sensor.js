@@ -1,58 +1,59 @@
-import { 
-  MAC_ISINVALID, 
-  MAC_EXIST, 
-  MAC_ISNOTFOUND,
-  NAMED_ISINVALID,
-  DESCRIPTION_ISEMPTY,
-  LOCATION_ISINVALID,
-  POSITION_ISINVALID
-} from "../exceptions/deviceException";
+import { MAC_ISINVALID, MAC_ISNOTFOUND } from "../exceptions/deviceException";
 import Device from "../models/device";
 import Location from "../models/location";
 import Sensor from "../models/sensor";
 import { jwtBuilder } from "../security/jwtBuilder";
 const constants = global.constants;
 
-export async function postDevice(req, res) {
-  const { mac, name, description, location, position } = req.body;
-
-  if(await Device.findOne({ mac: mac})) return res.send(MAC_EXIST);
-
+export async function postSensor(req, res) {
   
-  if (!mac || mac == "" || mac.length !== 17)
-    return res.status(400).send(MAC_ISINVALID);
-
-  if (!name || name == "" || name.length < 3 || name.length > 80)
-    return res.status(400).send(NAMED_ISINVALID);
-
-  if (!description)
-    return res.status(400).send(DESCRIPTION_ISEMPTY);
-
-  if (!location || location == "") 
-    return res.status(400).send(LOCATION_ISINVALID);
-
-  if (!position || position == {}) 
-    return res.status(400).send(POSITION_ISINVALID);
-
   try {
-    const device = await new Device({
-      mac,
-      name,
-      description,
-      location,
-      position
-    }).save();
+    const { token, sensorData } = req.body;
+    const mac = req.userId;
+    const device = await isExist(req.userId);
+    //console.log(device);
+    if(!device){ return res.send(MAC_ISNOTFOUND) }
+    
 
-    return res.status(201).json(device);
+    const deviceId = device._id;
+    const location = device.location;
+    const position = device.position;
+
+    if(mac){
+
+      try{
+
+        sensorData.map(function(arr){
+          let type = arr.type;
+          let value = arr.value;
+          const sensor = new Sensor({
+            deviceId,
+            type,
+            value,
+            location,
+            position
+          });
+          sensor.save();
+          //console.log(sensor._id);
+          Device.updateOne({_id: deviceId}, {$push : {sensorData: sensor._id}}, function (error, success) {})
+        });
+       }catch(e){
+        console.log(e);
+        return res.status(400).send({ error: e });
+       }
+      res.send({ status: "ok", token: jwtBuilder({ id: deviceId }) });
+      console.log("saved!");
+    } else {
+      return res.status(401).send(MAC_ISINVALID);
+    }
   } catch (e) {
-    //console.log(e);
-    return res.status(400).send(UNEXPECTED_ERROR);
+    res.send({ error: e });
   }
 }
 
-export async function getDevice(req, res, next) {
+export async function getSensor(req, res, next) {
   const mac = req.params.mac;
-  res.send(await Device.find((mac) ? {mac: mac} : {}).populate({
+  res.send(await Device.findOne((mac) ? {mac: mac} : {}).populate({
     path: 'sensorData',
     model: 'sensor',
     select: 'type value createAt -_id',
@@ -63,7 +64,7 @@ export async function getDevice(req, res, next) {
   }))//.sort([["data", "descending"]]););
 }
 
-export async function deleteDevice(req, res, next){
+export async function deleteSensor(req, res, next){
   if(! await isExist(req.params.mac)){ return res.send(MAC_ISNOTFOUND) }
   
   await Device.updateOne({mac: req.params.mac}, 
@@ -74,7 +75,7 @@ export async function deleteDevice(req, res, next){
 }
 
 
-export async function updateDevice(req, res, next){
+export async function updateSensor(req, res, next){
   if(! await isExist(req.params.mac)){ return res.send(MAC_ISNOTFOUND) }
 
   await Device.updateOne({mac: req.params.mac}, 
