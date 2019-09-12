@@ -4,7 +4,8 @@ import {
   EMAIL_ISINVALID,
   NAME_ISINVALID,
   PASSWORD_ISINVALID,
-  USER_NOTFOUND
+  USER_NOTFOUND,
+  ACCOUNT_ISINVALID
 } from "../exceptions/userException";
 import { MAC_ISINVALID, MAC_ISNOTFOUND } from "../exceptions/deviceException";
 
@@ -13,11 +14,39 @@ import Device from "../models/device";
 
 import { jwtBuilder, jwtVerify } from "../security/jwtBuilder";
 
+// verify if token is valid
+export function verify(req, res) {
+  // get jwt token from header or body
+  const authHeader =
+    req.headers.authentication || req.body.authentication || req.body.token;
+
+  if (!authHeader) return res.status(401).json(AUTH_ERROR);
+
+  const parts = authHeader.split(" ");
+
+  // verify if the authentication have two partes 'Bearer' and 'token'
+  if (!parts.length === 2) return res.status(401).json(AUTH_ERROR);
+
+  const [scheme, token] = parts;
+
+  if (!/^Bearer$/i.test(scheme)) return res.status(401).json(AUTH_ERROR);
+
+  try {
+    // verify id jwt token is válid
+    const id = jwtVerify(token);
+    if (!id) throw new Error();
+    return res.status(200).json({ authenticated: true });
+  } catch (e) {
+    return res.status(401).json(AUTH_ERROR);
+  }
+}
+
 // give a jwt token
 export function signin(req, res) {
-  const { email, password } = req.body;
+  const { email, password, cpf } = req.body;
 
-  if (!email || email == "") return res.status(400).jwt(EMAIL_ISINVALID);
+  if ((!email || email == "") && (!cpf || cpf == ""))
+    return res.status(400).jwt(ACCOUNT_ISINVALID);
 
   if (!password || password == "")
     return res.status(400).jwt(PASSWORD_ISINVALID);

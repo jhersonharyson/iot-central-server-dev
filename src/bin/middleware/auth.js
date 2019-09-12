@@ -8,17 +8,15 @@ export default (req, res, next) => {
     return next();
   }
 
-
   // get jwt token from header or body
   const authHeader =
-    req.headers.authorization || req.body.authorization || req.body.token;
-
+    req.headers.authentication || req.body.authentication || req.body.token;
 
   if (!authHeader) return res.status(401).send(AUTH_ERROR);
 
   const parts = authHeader.split(" ");
 
-  // verify if the authorization have two partes 'Bearer' and 'token'
+  // verify if the authentication have two partes 'Bearer' and 'token'
   if (!parts.length === 2) return res.status(401).send(AUTH_ERROR);
 
   const [scheme, token] = parts;

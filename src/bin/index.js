@@ -5,9 +5,10 @@ import express from "express";
 import { urlencoded, json } from "body-parser";
 import { connect } from "mongoose";
 import morgan from "morgan";
+import cors from "cors";
 
 import auth from "./middleware/auth";
-import cors from "./middleware/cors";
+// import cors from "./middleware/cors";
 
 import constants from "./../config/constants";
 
@@ -15,7 +16,7 @@ global.constants = constants;
 const { mongoDB: mongoUrlConnection } = constants;
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
 // mongoDB connection
 connect(
@@ -31,7 +32,8 @@ app.use(json());
 app.use(morgan("dev"));
 
 // CORS middleware
-cors(app);
+// cors(app);
+app.use(cors());
 
 // Authorization middleware
 app.use(auth);
