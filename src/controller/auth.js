@@ -8,6 +8,7 @@ import {
 } from "../exceptions/userException";
 import { 
   MAC_ISINVALID, 
+  MAC_EXIST, 
   MAC_ISNOTFOUND,
   NAMED_ISINVALID,
   DESCRIPTION_ISEMPTY,
@@ -91,12 +92,15 @@ export async function loginDevice(req, res) {
   try {
     if (req.params.mac && req.params.mac.length == 17) {
       const mac = req.params.mac;
-      const device = await Device.findOne({ mac: mac });
+      const device = await Device.findOne({ mac: mac, status: {$ne: -1} });
 
        //console.log(device);
 
       if (!device) return res.status(301).send(MAC_ISNOTFOUND);
 
+      await Device.updateOne({mac: mac}, 
+        {$set : { status: 1 }
+      });
       const token = jwtBuilder({ id: req.params.mac });
       const resp = {
         token
@@ -112,6 +116,9 @@ export async function loginDevice(req, res) {
 
 export async function createDevice(req, res) {
   const { mac, name, description, location, position } = req.body;
+
+  if(await Device.findOne({ mac: mac})) return res.send(MAC_EXIST);
+
   
   if (!mac || mac == "" || mac.length !== 17)
     return res.status(400).send(MAC_ISINVALID);

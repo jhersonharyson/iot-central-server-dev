@@ -8,6 +8,10 @@ const devices = new Schema({
   sensorData: [{ type: Schema.Types.ObjectId, ref: "sensor" }],
   location: { type: Schema.Types.ObjectId, ref: "location" },
   position: { x: { type: Number }, y: { type: Number } },
+  status: {
+    type: Number,
+    default: 0 //[-1] - disabled/deleted, [0] - no connected, [1] - connected
+  },
   createAt: {
     type: String,
     default: Date.now()
