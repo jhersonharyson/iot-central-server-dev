@@ -59,7 +59,7 @@ export async function getDevice(req, res, next) {
     path: 'sensorData',
     model: 'sensor',
     select: 'type value createAt -_id',
-    options: { limit: 1, sort: {createAt: -1}}
+    options: { limit: 10, sort: {createAt: -1}}
   }).populate({ 
     path: 'location', 
     select: 'name description -_id' 
@@ -67,12 +67,13 @@ export async function getDevice(req, res, next) {
 }
 
 export async function deleteDevice(req, res, next){
-  const dataTemp = await Device.find({mac: req.params.mac});
+  const tg = await Device.findOne({mac: req.params.mac});
+  console.log(tg._id);
   await Device.deleteOne({mac: req.params.mac}, function(err){
     if(err)
       res.send(err);
     else
-      Sensor.remove({deviceId: dataTemp._id}, function(err){
+      Sensor.deleteMany({deviceId: tg._id}, function(err){
         if(err)
           res.send(err);
         else
@@ -96,9 +97,18 @@ export async function updateDevice(req, res, next){
 }
 
 export async function test(req, res, next) {
-  //console.log(await Device.find({}));
-  //console.log(await Sensor.find({}));
-  //console.log(await Location.find({}));
-  res.send(await Sensor.find({}));
+  const r = req.params.delete;
+  if(r){
+    if(r === 'sensor'){
+      await Sensor.deleteMany({});
+    } else if(r === 'device'){
+      await Device.deleteMany({});
+    } else if(r === 'location'){
+      await Location.deleteMany({});
+    }
+  }
   //await Sensor.deleteMany({});
+  //res.send(await Device.find({}));
+  res.send(await Sensor.find({}));
+  //res.send(await Location.find({}));
 }

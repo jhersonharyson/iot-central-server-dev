@@ -89,15 +89,13 @@ export async function users(req, res) {
 
 export async function loginDevice(req, res) {
   try {
-    console.log("+++++++++++++++++++++++++++++++++++++");
-
     if (req.params.mac && req.params.mac.length == 17) {
       const mac = req.params.mac;
-      const device = await Device.findOne({ mac });
+      const device = await Device.findOne({ mac: mac });
 
        //console.log(device);
 
-      if (!device) throw new Error(MAC_ISNOTFOUND.error);
+      if (!device) return res.status(301).send(MAC_ISNOTFOUND);
 
       const token = jwtBuilder({ id: req.params.mac });
       const resp = {
@@ -105,11 +103,10 @@ export async function loginDevice(req, res) {
       };
       return res.status(200).send(resp);
     }
-    throw new Error(MAC_ISINVALID.error);
+    return res.status(301).send(MAC_ISINVALID);
   } catch (e) {
     console.log(e);
-
-    return res.status(301).json({ e });
+    return res.status(301).send({ error: e });
   }
 }
 

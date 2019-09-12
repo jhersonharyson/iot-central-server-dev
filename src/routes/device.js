@@ -8,6 +8,6 @@ router.get("/devices/:mac*?", require(CONTROLLER_PATH).getDevice);
 router.put("/devices/:mac", require(CONTROLLER_PATH).updateDevice);
 router.delete("/devices/:mac", require(CONTROLLER_PATH).deleteDevice);
 
-router.get("/data", require(CONTROLLER_PATH).test);
+router.get("/data/:delete*?", require(CONTROLLER_PATH).test);
 
 export default router;
