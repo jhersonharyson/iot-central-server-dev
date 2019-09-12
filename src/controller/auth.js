@@ -132,15 +132,13 @@ export async function createDevice(req, res) {
     return res.status(400).send(POSITION_ISINVALID);
 
   try {
-    const device = new Device({
+    const device = await new Device({
       mac,
       name,
       description,
       location,
       position
-    });
-    
-    await device.save();
+    }).save();
 
     return res.status(201).json(device);
   } catch (e) {
