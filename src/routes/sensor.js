@@ -3,8 +3,7 @@ import { basename } from "path";
 
 const CONTROLLER_PATH = "../controller/" + basename(__filename);
 
-router.post("/iot", require(CONTROLLER_PATH).post);
-router.get("/iot", require(CONTROLLER_PATH).test);
-router.get("/data", require(CONTROLLER_PATH).get);
+router.post("/sensors", require(CONTROLLER_PATH).postSensor);
+router.get("/sensors/:mac*?", require(CONTROLLER_PATH).getSensor);
 
 export default router;
