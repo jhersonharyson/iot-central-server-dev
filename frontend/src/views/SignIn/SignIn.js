@@ -1,4 +1,12 @@
-import { Button, Grid, Link, TextField, Typography } from '@material-ui/core';
+import {
+  Button,
+  Grid,
+  Link,
+  TextField,
+  Typography,
+  LinearProgress
+} from '@material-ui/core';
+import Snackbar from '@material-ui/core/Snackbar';
 import { makeStyles } from '@material-ui/styles';
 import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
@@ -10,7 +18,7 @@ const schema = {
   email: {
     presence: { allowEmpty: false, message: 'é obrigatório' },
     email: {
-      message: 'O email informado não é válido'
+      message: 'informado não é válido'
     },
     length: {
       maximum: 64
@@ -126,6 +134,9 @@ const SignIn = props => {
 
   const classes = useStyles();
 
+  const [snackbar, setSnackbar] = useState(false);
+  const [progressbar, setProgressbar] = useState(true);
+
   const [formState, setFormState] = useState({
     isValid: false,
     values: {},
@@ -142,6 +153,22 @@ const SignIn = props => {
       errors: errors || {}
     }));
   }, [formState.values]);
+
+  useEffect(() => {
+    const verify = setTimeout(async () => {
+      try {
+        const response = await auth.askToServer();
+        if (response) return history.push('/dashboard');
+      } catch (e) {
+        setProgressbar(false);
+      }
+    }, 3000);
+
+    return () => {
+      clearInterval(verify);
+      setProgressbar(false);
+    };
+  }, []);
 
   const handleChange = event => {
     event.persist();
@@ -164,9 +191,15 @@ const SignIn = props => {
 
   const handleSignIn = async event => {
     event.preventDefault();
-    auth.password = '123456';
-    auth.user = 'jherson_k-f@hotmail.com';
-    auth.login(() => history.push('/dashboard'));
+    auth.password = formState.values.password;
+    auth.user = formState.values.email;
+    auth.login(
+      () => history.push('/dashboard'),
+      () => {
+        setSnackbar(true);
+        setProgressbar(false);
+      }
+    );
   };
 
   const hasError = field =>
@@ -237,11 +270,19 @@ const SignIn = props => {
                   color="primary"
                   disabled={!formState.isValid}
                   fullWidth
+                  onClick={() => setProgressbar(true)}
                   size="large"
                   type="submit"
                   variant="contained">
                   Entrar agora
                 </Button>
+                <LinearProgress
+                  variant={progressbar ? 'indeterminate' : 'determinate'}
+                  value={0}
+                  size={50}
+                  thickness={20}
+                />
+
                 <Typography color="textSecondary" variant="body1">
                   Esqueceu a senha?{' '}
                   <Link component={RouterLink} to="/sign-up" variant="h6">
@@ -253,6 +294,19 @@ const SignIn = props => {
           </div>
         </Grid>
       </Grid>
+      <Snackbar
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left'
+        }}
+        open={snackbar}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar(false)}
+        ContentProps={{
+          'aria-describedby': 'message-id'
+        }}
+        message={<span id="message-id">Erro ao entrar no sistema</span>}
+      />
     </div>
   );
 };
