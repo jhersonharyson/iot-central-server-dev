@@ -18,7 +18,7 @@ import Device from "../models/device";
 import { jwtBuilder, jwtVerify } from "../security/jwtBuilder";
 
 // verify if token is valid
-export function verify(req, res) {
+export async function verify(req, res) {
   // get jwt token from header or body
   const authHeader =
     req.headers.authentication || req.body.authentication || req.body.token;
@@ -38,7 +38,8 @@ export function verify(req, res) {
     // verify id jwt token is válid
     const id = jwtVerify(token);
     if (!id) throw new Error();
-    return res.status(200).json({ authenticated: true });
+    const user = await User.findById(id);
+    return res.status(200).json({ authenticated: true, user });
   } catch (e) {
     return res.status(401).json(AUTH_ERROR);
   }
