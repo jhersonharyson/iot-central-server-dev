@@ -7,7 +7,10 @@ import {
   USER_NOTFOUND,
   ACCOUNT_ISINVALID
 } from "../exceptions/userException";
-import { MAC_ISINVALID, MAC_ISNOTFOUND } from "../exceptions/deviceException";
+import { 
+  MAC_ISINVALID, 
+  MAC_ISNOTFOUND
+} from "../exceptions/deviceException";
 
 import User from "../models/user";
 import Device from "../models/device";
@@ -109,26 +112,28 @@ export async function users(req, res) {
   res.send({ users });
 }
 
-export async function iot(req, res) {
+export async function loginDevice(req, res) {
   try {
-    console.log("+++++++++++++++++++++++++++++++++++++");
-
     if (req.params.mac && req.params.mac.length == 17) {
       const mac = req.params.mac;
-      const device = await Device.findOne({ mac });
+      const device = await Device.findOne({ mac: mac, status: {$ne: -1} });
 
-      if (!device) throw new Error(MAC_ISNOTFOUND.error);
+       //console.log(device);
 
+      if (!device) return res.status(301).send(MAC_ISNOTFOUND);
+
+      await Device.updateOne({mac: mac}, 
+        {$set : { status: 1 }
+      });
       const token = jwtBuilder({ id: req.params.mac });
       const resp = {
         token
       };
       return res.status(200).send(resp);
     }
-    throw new Error(MAC_ISINVALID.error);
+    return res.status(301).send(MAC_ISINVALID);
   } catch (e) {
     console.log(e);
-
-    return res.status(301).json({ e });
+    return res.status(301).send({ error: e });
   }
 }
