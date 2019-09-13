@@ -1,17 +1,10 @@
-import {
-  Button,
-  Grid,
-  IconButton,
-  Link,
-  TextField,
-  Typography
-} from '@material-ui/core';
-import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import { Button, Grid, Link, TextField, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
 import { Link as RouterLink, withRouter } from 'react-router-dom';
 import validate from 'validate.js';
+import { auth } from '../../auth';
 
 const schema = {
   email: {
@@ -84,7 +77,8 @@ const useStyles = makeStyles(theme => ({
     paddingTop: theme.spacing(5),
     paddingBototm: theme.spacing(2),
     paddingLeft: theme.spacing(2),
-    paddingRight: theme.spacing(2)
+    paddingRight: theme.spacing(2),
+    height: '50px'
   },
   logoImage: {
     marginLeft: theme.spacing(4)
@@ -149,10 +143,6 @@ const SignIn = props => {
     }));
   }, [formState.values]);
 
-  const handleBack = () => {
-    history.goBack();
-  };
-
   const handleChange = event => {
     event.persist();
 
@@ -172,9 +162,11 @@ const SignIn = props => {
     }));
   };
 
-  const handleSignIn = event => {
+  const handleSignIn = async event => {
     event.preventDefault();
-    history.push('/');
+    auth.password = '123456';
+    auth.user = 'jherson_k-f@hotmail.com';
+    auth.login(() => history.push('/dashboard'));
   };
 
   const hasError = field =>
@@ -203,11 +195,7 @@ const SignIn = props => {
         </Grid>
         <Grid className={classes.content} item lg={7} xs={12}>
           <div className={classes.content}>
-            <div className={classes.contentHeader}>
-              <IconButton onClick={handleBack}>
-                <ArrowBackIcon />
-              </IconButton>
-            </div>
+            <div className={classes.contentHeader} />
             <div className={classes.contentBody}>
               <form className={classes.form} onSubmit={handleSignIn}>
                 <Typography className={classes.title} variant="h2">
