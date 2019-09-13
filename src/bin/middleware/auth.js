@@ -1,4 +1,4 @@
-import { AUTH_ERROR } from "../../exceptions/authException.js";
+import { AUTH_ERROR, AUTH_NOTOKEN, AUTH_TOKENINVALID } from "../../exceptions/authException.js";
 import { jwtVerify } from "../../security/jwtBuilder";
 import { BASE_URL } from "../../config/constants";
 
@@ -12,16 +12,16 @@ export default (req, res, next) => {
   const authHeader =
     req.headers.authentication || req.body.authentication || req.body.token;
 
-  if (!authHeader) return res.status(401).send(AUTH_ERROR);
+  if (!authHeader) return res.status(401).send(AUTH_NOTOKEN);
 
   const parts = authHeader.split(" ");
 
   // verify if the authentication have two partes 'Bearer' and 'token'
-  if (!parts.length === 2) return res.status(401).send(AUTH_ERROR);
+  if (!parts.length === 2) return res.status(401).send(AUTH_TOKENINVALID);
 
   const [scheme, token] = parts;
 
-  if (!/^Bearer$/i.test(scheme)) return res.status(401).send(AUTH_ERROR);
+  if (!/^Bearer$/i.test(scheme)) return res.status(401).send(AUTH_TOKENINVALID);
 
   try {
     // verify id jwt token is válid
