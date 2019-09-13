@@ -9,7 +9,7 @@ import cors from "cors";
 
 import auth from "./middleware/auth";
 import socket from "./middleware/socket";
-// import cors from "./middleware/cors";
+//import cors from "./middleware/cors";
 
 import constants from "./../config/constants";
 
@@ -18,8 +18,8 @@ const { mongoDB: mongoUrlConnection } = constants;
 
 const app = express();
 const http = require('http').Server(app);
-const io = require('socket.io')(http);
 const port = process.env.PORT || 3001;
+const io = require('socket.io')(http);
 
 // mongoDB connection
 connect(
