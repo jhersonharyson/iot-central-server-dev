@@ -1,4 +1,4 @@
-import { AUTH_ERROR } from "../exceptions/authException";
+import { AUTH_ERROR, AUTH_NOTOKEN } from "../exceptions/authException";
 import { UNEXPECTED_ERROR } from "../exceptions/serverException";
 import {
   EMAIL_ISINVALID,
@@ -23,7 +23,7 @@ export function verify(req, res) {
   const authHeader =
     req.headers.authentication || req.body.authentication || req.body.token;
 
-  if (!authHeader) return res.status(401).json(AUTH_ERROR);
+  if (!authHeader) return res.status(401).json(AUTH_NOTOKEN);
 
   const parts = authHeader.split(" ");
 

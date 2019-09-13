@@ -77,7 +77,7 @@ export async function deleteDevice(req, res, next){
 export async function updateDevice(req, res, next){
   if(! await isExist(req.params.mac)){ return res.send(MAC_ISNOTFOUND) }
 
-  await Device.updateOne({mac: req.params.mac}, 
+  const up = await Device.updateOne({mac: req.params.mac}, 
     {$set : {
       name: req.body.name, 
       description: req.body.description, 
@@ -85,7 +85,7 @@ export async function updateDevice(req, res, next){
       position: req.body.position, 
     }
   });
-  res.send("update");
+  res.send(up);
 }
 
 export async function test(req, res, next) {
