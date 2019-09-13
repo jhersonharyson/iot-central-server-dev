@@ -54,15 +54,13 @@ export async function getSensor(req, res, next) {
 
   res
     .send(
-      await Device
-        .findOne(
-          (mac) ? { mac: mac } : {}
-        )
+      await Sensor
+        .find()
+        .select('-_id')
         .populate({
-          path: 'sensorData',
-          model: 'sensor',
-          select: 'type value createAt -_id',
-          options: { limit: 10, sort: { createAt: -1 } }
+          path: 'deviceId',
+          model: 'device',
+          select: 'mac name -_id'
         })
         .populate({
           path: 'location',
