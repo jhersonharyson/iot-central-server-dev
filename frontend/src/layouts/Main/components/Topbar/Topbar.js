@@ -14,6 +14,7 @@ import {
 import MenuIcon from '@material-ui/icons/Menu';
 import NotificationsIcon from '@material-ui/icons/NotificationsOutlined';
 import InputIcon from '@material-ui/icons/Input';
+import { auth } from '../../../../auth';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -37,7 +38,7 @@ const Topbar = props => {
   return (
     <AppBar {...rest} className={clsx(classes.root, className)}>
       <Toolbar>
-        <RouterLink to="/">
+        <RouterLink to="/dashboard">
           <div
             style={{
               display: 'flex',
@@ -66,9 +67,6 @@ const Topbar = props => {
               variant="dot">
               <NotificationsIcon />
             </Badge>
-          </IconButton>
-          <IconButton className={classes.signOutButton} color="inherit">
-            <InputIcon />
           </IconButton>
         </Hidden>
         <Hidden lgUp>
