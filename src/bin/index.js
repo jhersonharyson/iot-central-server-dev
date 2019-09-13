@@ -8,6 +8,7 @@ import morgan from "morgan";
 import cors from "cors";
 
 import auth from "./middleware/auth";
+import socket from "./middleware/socket";
 // import cors from "./middleware/cors";
 
 import constants from "./../config/constants";
@@ -16,6 +17,8 @@ global.constants = constants;
 const { mongoDB: mongoUrlConnection } = constants;
 
 const app = express();
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
 const port = process.env.PORT || 3001;
 
 // mongoDB connection
@@ -23,6 +26,9 @@ connect(
   mongoUrlConnection,
   { useNewUrlParser: true, useCreateIndex: true }
 );
+
+//socket.io
+app.use(socket(io));
 
 // request and response middleware
 app.use(urlencoded({ extended: false }));
@@ -42,4 +48,4 @@ app.use(auth);
 require("../routes").default(app);
 
 // server
-app.listen(port, () => console.log(`Server listening on port ${port}`));
+http.listen(port, () => console.log(`Server listening on port ${port}`));
