@@ -142,9 +142,15 @@ export async function deleteDevice(req, res, next) {
 export async function updateDevice(req, res, next) {
   if (! await isExist(req.params.mac)) { return res.send(MAC_ISNOTFOUND) }
 
-  await Device
-    .updateOne(
-      { mac: req.params.mac },
+  const fields = ['name','description','location','position'];
+
+  Object.entries(req.body).forEach(([key, value]) => {
+    if(!fields.includes(key) || value === ""){
+      return res.send({required: fields});//Por um melhor retorno
+    }
+  });
+
+  await Device.updateOne({ mac: req.params.mac },
       {
         $set: {
           name: req.body.name,
