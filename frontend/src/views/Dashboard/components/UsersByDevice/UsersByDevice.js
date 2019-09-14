@@ -1,20 +1,20 @@
-import React from 'react';
-import { Doughnut } from 'react-chartjs-2';
-import clsx from 'clsx';
-import PropTypes from 'prop-types';
-import { makeStyles, useTheme } from '@material-ui/styles';
 import {
   Card,
-  CardHeader,
   CardContent,
-  IconButton,
+  CardHeader,
   Divider,
   Typography
 } from '@material-ui/core';
 import LaptopMacIcon from '@material-ui/icons/LaptopMac';
-import PhoneIphoneIcon from '@material-ui/icons/PhoneIphone';
-import RefreshIcon from '@material-ui/icons/Refresh';
-import TabletMacIcon from '@material-ui/icons/TabletMac';
+import { makeStyles, useTheme } from '@material-ui/styles';
+import clsx from 'clsx';
+import PropTypes from 'prop-types';
+import React, { useEffect, useState } from 'react';
+import { Doughnut } from 'react-chartjs-2';
+import axios from './../../../../http';
+import Socket from './../../../../socket';
+
+import './styles.css';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -22,7 +22,7 @@ const useStyles = makeStyles(theme => ({
   },
   chartContainer: {
     position: 'relative',
-    height: '300px'
+    height: '200px'
   },
   stats: {
     marginTop: theme.spacing(2),
@@ -44,22 +44,64 @@ const UsersByDevice = props => {
   const classes = useStyles();
   const theme = useTheme();
 
-  const data = {
-    datasets: [
-      {
-        data: [63, 15, 22],
-        backgroundColor: [
-          theme.palette.primary.main,
-          theme.palette.error.main,
-          theme.palette.warning.main
-        ],
-        borderWidth: 8,
-        borderColor: theme.palette.white,
-        hoverBorderColor: theme.palette.white
+  const [data, setData] = useState({});
+  const [percents, setPercents] = useState(null);
+
+  useEffect(() => {
+    async function getDevices() {
+      let authentication = await localStorage.getItem('authentication');
+      let response = await axios.get('locations', {
+        headers: { authentication }
+      });
+
+      const resp = response.data;
+      let d = [];
+      let l = [];
+      let d_bottom = [];
+      if (resp && resp.locations) {
+        const locations = resp.locations;
+
+        for (const location of locations) {
+          l.push(location.name);
+          d.push(location.device.length);
+        }
+        const total = d.reduce((a, b) => a + b);
+        let percents = d.map(x => (x * 100) / total);
+
+        locations.forEach((v, i) => {
+          d_bottom.push({
+            title: l[i],
+            value: percents[i],
+            icon: <LaptopMacIcon />,
+            color: theme.palette.primary.main
+          });
+        });
       }
-    ],
-    labels: ['Desktop', 'Tablet', 'Mobile']
-  };
+
+      const data = {
+        datasets: [
+          {
+            data: d,
+            backgroundColor: [
+              theme.palette.primary.main,
+              theme.palette.error.main,
+              theme.palette.warning.main
+            ],
+            borderWidth: 8,
+            borderColor: theme.palette.white,
+            hoverBorderColor: theme.palette.white
+          }
+        ],
+        labels: l
+      };
+      setData(data);
+      setPercents(d_bottom);
+    }
+
+    getDevices();
+    Socket.on('postDevice', () => getDevices());
+    Socket.on('deleteDevice', () => getDevices());
+  }, []);
 
   const options = {
     legend: {
@@ -83,64 +125,36 @@ const UsersByDevice = props => {
     }
   };
 
-  const devices = [
-    {
-      title: 'Desktop',
-      value: '63',
-      icon: <LaptopMacIcon />,
-      color: theme.palette.primary.main
-    },
-    {
-      title: 'Tablet',
-      value: '15',
-      icon: <TabletMacIcon />,
-      color: theme.palette.error.main
-    },
-    {
-      title: 'Mobile',
-      value: '23',
-      icon: <PhoneIphoneIcon />,
-      color: theme.palette.warning.main
-    }
-  ];
-
   return (
     <Card
       {...rest}
       className={clsx(classes.root, className)}
+      // style={{ ['background-color']: 'black' }}
     >
       <CardHeader
-        action={
-          <IconButton size="small">
-            <RefreshIcon />
-          </IconButton>
-        }
-        title="Users By Device"
+        // action={
+        //   <IconButton size="small">
+        //     <RefreshIcon />
+        //   </IconButton>
+        // }
+        title="Dispositivos Por Local"
       />
       <Divider />
-      <CardContent>
+      <CardContent className={percents && 'fadeIn'}>
         <div className={classes.chartContainer}>
-          <Doughnut
-            data={data}
-            options={options}
-          />
+          <Doughnut data={data} options={options} />
         </div>
         <div className={classes.stats}>
-          {devices.map(device => (
-            <div
-              className={classes.device}
-              key={device.title}
-            >
-              <span className={classes.deviceIcon}>{device.icon}</span>
-              <Typography variant="body1">{device.title}</Typography>
-              <Typography
-                style={{ color: device.color }}
-                variant="h2"
-              >
-                {device.value}%
-              </Typography>
-            </div>
-          ))}
+          {percents &&
+            percents.map(device => (
+              <div className={classes.device} key={device.title}>
+                <span className={classes.deviceIcon}>{device.icon}</span>
+                <Typography variant="body1">{device.title}</Typography>
+                <Typography style={{ color: device.color }} variant="h2">
+                  {device.value}%
+                </Typography>
+              </div>
+            ))}
         </div>
       </CardContent>
     </Card>

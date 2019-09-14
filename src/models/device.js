@@ -13,8 +13,8 @@ const devices = new Schema({
     default: 0 //[-1] - disabled/deleted, [0] - no connected, [1] - connected
   },
   createAt: {
-    type: String,
-    default: Date.now()
+    type: Date,
+    default: Date.now
   }
 });
 

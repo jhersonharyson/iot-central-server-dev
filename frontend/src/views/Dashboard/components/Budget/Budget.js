@@ -1,15 +1,21 @@
-import React from 'react';
+import {
+  Avatar,
+  Card,
+  CardContent,
+  Grid,
+  Switch,
+  Typography
+} from '@material-ui/core';
+import WorkIcon from '@material-ui/icons/Work';
+import { makeStyles, withStyles } from '@material-ui/styles';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
-import { makeStyles } from '@material-ui/styles';
-import { Card, CardContent, Grid, Typography, Avatar } from '@material-ui/core';
-import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
-import MoneyIcon from '@material-ui/icons/Money';
+import React from 'react';
+import axios from './../../../../http';
+import Socket from './../../../../socket';
 
 const useStyles = makeStyles(theme => ({
-  root: {
-    height: '100%'
-  },
+  root: {},
   content: {
     alignItems: 'center',
     display: 'flex'
@@ -40,53 +46,86 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
+// const Switcher = withStyles({
+//   switchBase: {
+//     color: purple[300],
+//     '&$checked': {
+//       color: purple[500],
+//     },
+//     '&$checked + $track': {
+//       backgroundColor: purple[500],
+//     },
+//   },
+//   checked: {},
+//   track: {},
+// })(Switch);
+
 const Budget = props => {
   const { className, ...rest } = props;
-
   const classes = useStyles();
 
+  const [inflador, setInflador] = React.useState({ value: false });
+  React.useEffect(() => {
+    async function getInflador() {
+      const headers = {
+        authentication: await localStorage.getItem('authentication')
+      };
+      const response = await axios.get('actuators/INFLADOR', { headers });
+
+      if (response.data[0]) {
+        setInflador(response.data[0]);
+      }
+    }
+
+    getInflador();
+    Socket.on('postActuator', () => getInflador());
+  }, []);
+
+  const onInfladorSwitchChange = async event => {
+    const headers = {
+      authentication: await localStorage.getItem('authentication')
+    };
+    const atuador = {
+      type: 'INFLADOR',
+      value: !inflador.value
+    };
+
+    const response = await axios.post('actuators', atuador, { headers });
+    if (response) {
+      setInflador(response.data);
+    }
+  };
+
   return (
-    <Card
-      {...rest}
-      className={clsx(classes.root, className)}
-    >
+    <Card {...rest} className={clsx(classes.root, className)}>
       <CardContent>
-        <Grid
-          container
-          justify="space-between"
-        >
+        <Grid container justify="space-between">
           <Grid item>
             <Typography
               className={classes.title}
               color="textSecondary"
               gutterBottom
-              variant="body2"
-            >
-              BUDGET
+              variant="body2">
+              INFLADOR
             </Typography>
-            <Typography variant="h3">$24,000</Typography>
+            <Typography variant="h3">
+              {inflador.value ? 'Ligado' : 'Desligado'}
+            </Typography>
           </Grid>
           <Grid item>
             <Avatar className={classes.avatar}>
-              <MoneyIcon className={classes.icon} />
+              <WorkIcon className={classes.icon} />
             </Avatar>
           </Grid>
         </Grid>
         <div className={classes.difference}>
-          <ArrowDownwardIcon className={classes.differenceIcon} />
-          <Typography
-            className={classes.differenceValue}
-            variant="body2"
-          >
-            12%
-          </Typography>
-          <Typography
-            className={classes.caption}
-            variant="caption"
-          >
-            Since last month
+          <Switch checked={inflador.value} onChange={onInfladorSwitchChange} />
+          <Typography className={classes.caption} variant="body2">
+            Último registro:{' '}
+            {inflador.createAt && new Date(inflador.createAt).toLocaleString()}
           </Typography>
         </div>
+        <br />
       </CardContent>
     </Card>
   );
