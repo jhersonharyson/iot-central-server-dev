@@ -6,8 +6,8 @@ const actuators = new Schema({
   value: Boolean,
   description: String,
   createAt: {
-    type: String,
-    default: Date.now()
+    type: Date,
+    default: Date.now
   }
 });
 

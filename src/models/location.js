@@ -7,8 +7,8 @@ const locations = new Schema({
   img_url: String,
   device: [{ type: Schema.Types.ObjectId, ref: "device" }],
   createAt: {
-    type: String,
-    default: Date.now()
+    type: Date,
+    default: Date.now
   }
 });
 

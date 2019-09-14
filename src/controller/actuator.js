@@ -4,11 +4,11 @@ export async function postActuator(req, res) {
 	const { type, value, description } = req.body;
 
 	try {
-		const actuator = await new Actuator({
+		const actuator = await Actuator.create({
 			type,
 			value,
 			description
-		}).save();
+		});
 
 		return res.status(201).json(actuator);
 	} catch (e) {
@@ -18,6 +18,12 @@ export async function postActuator(req, res) {
 }
 
 export async function getActuator(req, res, next) {
-	const name = req.params.name;
-	res.send(await Actuator.find((name) ? {type: name} : {}))//.sort([["data", "descending"]]););
+	const type = req.params.name;
+
+	res.send(
+		await Actuator
+			.find(type ? { type } : {})
+			.sort([["createAt", "descending"]])
+			.limit(1)
+	);
 }
