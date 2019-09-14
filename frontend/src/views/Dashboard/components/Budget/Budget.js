@@ -6,7 +6,7 @@ import { auth } from './../../../../auth';
 import { makeStyles } from '@material-ui/styles';
 import { Card, CardContent, Grid, Typography, Avatar, Switch } from '@material-ui/core';
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
-import MoneyIcon from '@material-ui/icons/Money';
+import WorkIcon from '@material-ui/icons/Work';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -98,7 +98,7 @@ const Budget = props => {
           </Grid>
           <Grid item>
             <Avatar className={classes.avatar}>
-              <MoneyIcon className={classes.icon} />
+              <WorkIcon className={classes.icon} />
             </Avatar>
           </Grid>
         </Grid>
