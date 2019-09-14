@@ -1,47 +1,63 @@
 {
-  "name": "node-template-server",
-  "version": "1.0.0",
-  "main": "index.js",
+  "name": "react-material-dashboard",
+  "author": "DeviasIO",
+  "email": "contact@devias.io",
+  "licence": "MIT",
+  "version": "0.3.0",
+  "private": false,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npm run build && node ./build/bin/index.js",
-    "build": "npm run clean && npm run build-server",
-    "clean": "rm -rf build && mkdir build",
-    "build-server": "babel ./src -d ./build -s",
-    "run-babel": "babel-node ./src/bin/index.js",
-    "start-node": "node src/bin/index.js",
-    "debbug": "node --inspect-brk ./src/bin",
-    "dev": "nodemon ./src/bin/index.js",
-    "run": "nodemon --exec babel-node ./src/bin/index.js",
-    "start-build": "node ./build/bin/index.js",
-    "start-test": "mocha"
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
   "dependencies": {
-    "@babel/cli": "^7.5.5",
-    "@babel/core": "^7.5.5",
-    "@babel/node": "^7.5.5",
-    "@babel/plugin-proposal-class-properties": "^7.5.5",
-    "@babel/preset-env": "^7.5.5",
+    "@material-ui/core": "^4.2.1",
+    "@material-ui/icons": "^4.2.1",
+    "@material-ui/styles": "^4.2.1",
     "axios": "^0.19.0",
-    "bcrypt": "^3.0.6",
-    "body-parser": "^1.18.3",
-    "core-js": "^3.2.1",
-    "cors": "^2.8.5",
-    "express": "^4.16.4",
-    "jsonwebtoken": "^8.5.1",
-    "mongoose": "^5.4.17",
-    "morgan": "^1.9.1",
-    "multer": "^1.4.1",
-    "regenerator-runtime": "^0.13.3",
-    "socket.io": "^2.2.0"
+    "chart.js": "^2.8.0",
+    "clsx": "^1.0.4",
+    "history": "^4.9.0",
+    "moment": "^2.24.0",
+    "node-sass": "^4.12.0",
+    "prop-types": "^15.7.2",
+    "random-hex-color": "^1.0.1",
+    "randomcolor": "^0.5.4",
+    "react": "^16.8.6",
+    "react-chartjs-2": "^2.7.6",
+    "react-dom": "^16.8.6",
+    "react-perfect-scrollbar": "^1.5.3",
+    "react-router-dom": "^5.0.1",
+    "react-scripts": "^3.0.1",
+    "recompose": "^0.30.0",
+    "socket.io-client": "^2.2.0",
+    "underscore": "^1.9.1",
+    "uuid": "^3.3.2",
+    "validate.js": "^0.13.1"
   },
   "devDependencies": {
-    "chai": "^4.2.0",
-    "mocha": "^6.2.0",
-    "nodemon": "^1.18.10"
+    "eslint": "5.16.0",
+    "eslint-plugin-prettier": "^3.0.1",
+    "eslint-plugin-react": "^7.12.4",
+    "prettier": "^1.17.1",
+    "prettier-eslint": "^8.8.2",
+    "prettier-eslint-cli": "^4.7.1",
+    "typescript": "^3.5.1"
   }
 }
