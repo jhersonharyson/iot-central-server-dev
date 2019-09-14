@@ -1,4 +1,3 @@
-import { Types } from './index';
 import randomHexColor from 'random-hex-color';
 import palette from 'theme/palette';
 
@@ -20,15 +19,13 @@ export function makeDeviceDataset(devices = [], graphFilter) {
   });
 
   return {
-    labels: labels.map(num => {
-      return (
-        num +
-        (Types.MINUTES_GRAPH_TYPE === graphFilter
-          ? ' m'
-          : Types.HOURS_GRAPH_TYPE === graphFilter
-          ? ' h'
-          : ' d')
-      );
+    labels: new Array(10).fill(1).map((num, i) => {
+      return i + ' s';
+      // (Types.MINUTES_GRAPH_TYPE === graphFilter
+      //   ? ' m'
+      //   : Types.HOURS_GRAPH_TYPE === graphFilter
+      //   ? ' h'
+      //   : ' d')
     }),
     datasets
   };

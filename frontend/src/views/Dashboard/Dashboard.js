@@ -1,4 +1,5 @@
 import { Grid } from '@material-ui/core';
+import Drawer from '@material-ui/core/Drawer';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
 import {
@@ -16,7 +17,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const Dashboard = () => {
+const Dashboard = props => {
   const classes = useStyles();
 
   return (
@@ -59,6 +60,9 @@ const Dashboard = () => {
           <LatestOrders />
         </Grid> */}
       </Grid>
+      <Drawer anchor="right" open={false} onClose={props.drawerOnClose}>
+        <div style={{ width: '300px' }}></div>
+      </Drawer>
     </div>
   );
 };

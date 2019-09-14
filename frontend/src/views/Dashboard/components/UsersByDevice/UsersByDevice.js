@@ -22,7 +22,7 @@ const useStyles = makeStyles(theme => ({
   },
   chartContainer: {
     position: 'relative',
-    height: '300px'
+    height: '200px'
   },
   stats: {
     marginTop: theme.spacing(2),
@@ -137,7 +137,7 @@ const UsersByDevice = props => {
         //     <RefreshIcon />
         //   </IconButton>
         // }
-        title="Dispositivo Por Local"
+        title="Dispositivos Por Local"
       />
       <Divider />
       <CardContent className={percents && 'fadeIn'}>

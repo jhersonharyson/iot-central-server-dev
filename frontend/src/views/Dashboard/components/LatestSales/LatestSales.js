@@ -53,6 +53,7 @@ const LatestSales = props => {
   //Carrego os dados iniciais
   const [needOverview, setNeedOverview] = useState(false);
   const [devices, setDevice] = useState([]);
+  let updated_devices = devices;
   useEffect(() => {
     async function getDevices() {
       let authentication = await localStorage.getItem('authentication');
@@ -63,13 +64,14 @@ const LatestSales = props => {
       let dev = response.data;
       console.warn(dev);
       if (dev) {
-        if (dev.lenght > 5) {
-          setNeedOverview(true);
+        // if (dev.lenght > 5) {
+        //   setNeedOverview(true);
 
-          dev = dev.filter((device, key) => key < 5);
-        }
+        //   dev = dev.filter((device, key) => key < 5);
+        // }
 
         await setDevice(makeDeviceDataset(dev, graphFilter));
+
         console.log(devices);
       }
     }
@@ -77,6 +79,7 @@ const LatestSales = props => {
     getDevices();
     Socket.on('postDevice', () => getDevices());
     Socket.on('deleteDevice', () => getDevices());
+    Socket.on('postSensor', () => setTimeout(getDevices, 3000));
   }, []);
 
   return (
@@ -119,17 +122,17 @@ const LatestSales = props => {
         title="Níveis de CO²"
       />
       <Divider />
-      <CardContent>
+      {/* <CardContent>
         <div className={classes.chartContainer}>
-          {/* <Bar data={dataG} options={optionsG} /> */}
+          <Bar data={dataG} options={optionsG} />
         </div>
-      </CardContent>
+      </CardContent> */}
       <CardContent>
         <div className={classes.chartContainer}>
           {devices && <Line data={devices} options={options} />}
         </div>
       </CardContent>
-      {needOverview ? (
+      {/* {needOverview ? (
         <div>
           <Divider />
           <CardActions className={classes.actions}>
@@ -138,7 +141,7 @@ const LatestSales = props => {
             </Button>
           </CardActions>
         </div>
-      ) : null}
+      ) : null} */}
     </Card>
   );
 };

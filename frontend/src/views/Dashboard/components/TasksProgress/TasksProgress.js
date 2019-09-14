@@ -8,10 +8,13 @@ import {
   Grid,
   Typography,
   Avatar,
-  LinearProgress
+  LinearProgress,
+  TextField
 } from '@material-ui/core';
 import InsertChartIcon from '@material-ui/icons/InsertChartOutlined';
-
+import { useEffect, useState } from 'react';
+import axios from '../../../../http';
+import Socket from '../../../../socket';
 const useStyles = makeStyles(theme => ({
   root: {
     height: '100%'
@@ -43,26 +46,39 @@ const TasksProgress = props => {
 
   const classes = useStyles();
 
+  const [events, setEvents] = useState(undefined);
+  const [minDate, setMinDate] = useState(24);
+
+  useEffect(() => {
+    async function getDevices() {
+      const interval = minDate || Date.now() - 60 * 1000 * 60 * 24;
+      let authentication = await localStorage.getItem('authentication');
+      let response = await axios.get('events/interval/' + interval, {
+        headers: { authentication }
+      });
+
+      let { events_counter } = response.data;
+      console.warn(events_counter);
+      setEvents(events_counter);
+    }
+
+    getDevices();
+    Socket.on('postEvent', () => getDevices());
+  }, [minDate]);
+
   return (
-    <Card
-      {...rest}
-      className={clsx(classes.root, className)}
-    >
+    <Card {...rest} className={clsx(classes.root, className)}>
       <CardContent>
-        <Grid
-          container
-          justify="space-between"
-        >
+        <Grid container justify="space-between">
           <Grid item>
             <Typography
               className={classes.title}
               color="textSecondary"
               gutterBottom
-              variant="body2"
-            >
-              TASKS PROGRESS
+              variant="body2">
+              EVENTOS DE ALERTA
             </Typography>
-            <Typography variant="h3">75.5%</Typography>
+            <Typography variant="h3">{events}</Typography>
           </Grid>
           <Grid item>
             <Avatar className={classes.avatar}>
@@ -70,11 +86,29 @@ const TasksProgress = props => {
             </Avatar>
           </Grid>
         </Grid>
-        <LinearProgress
+        {/* <LinearProgress
           className={classes.progress}
           value={75.5}
           variant="determinate"
-        />
+        /> */}
+        <Grid item></Grid>
+        <Grid item>
+          <Typography variant="body2" style={{ wordWrap: 'break-word' }}>
+            Ocorrências nas ultimas
+          </Typography>
+          <TextField
+            placeholder="24"
+            onChange={event => {
+              if (!event.target.value)
+                return setMinDate(Date.now() - 60 * 1000 * 60 * 24);
+
+              return setMinDate(
+                parseInt(Date.now() - event.target.value * 60 * 1000 * 60)
+              );
+            }}
+          />
+          <Typography variant="body2">Horas </Typography>
+        </Grid>
       </CardContent>
     </Card>
   );

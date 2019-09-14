@@ -2,6 +2,7 @@ import { MAC_ISINVALID, MAC_ISNOTFOUND } from "../exceptions/deviceException";
 import Device from "../models/device";
 import Location from "../models/location";
 import Sensor from "../models/sensor";
+import Event from "../models/event";
 import { jwtBuilder } from "../security/jwtBuilder";
 const constants = global.constants;
 
@@ -20,7 +21,7 @@ export async function postSensor(req, res) {
 
     if (mac) {
       try {
-        sensorData.map(function(arr) {
+        await sensorData.map(async function(arr) {
           let type = arr.type;
           let value = arr.value;
           const sensor = new Sensor({
@@ -30,14 +31,17 @@ export async function postSensor(req, res) {
             location,
             position
           });
-          sensor.save();
-          Device.updateOne(
-            { _id: deviceId },
-            { $push: { sensorData: sensor._id } },
-            function(error, success) {}
-          );
+          await sensor.save();
+          const device = await Device.findById(deviceId);
 
-          return sensor;
+          device.sensorData.push(sensor._id);
+          await device.save();
+
+          const verify_resp = await verify_event(sensor);
+          if (verify_resp) {
+            console.log("emmitind");
+            req.io.emit("postEvent", verify_resp);
+          }
         });
       } catch (e) {
         return res.status(400).send({ error: e });
@@ -94,3 +98,56 @@ export async function getAllSensors(req, res) {
 
   res.send(sensors);
 }
+
+const verify_event = async sensor => {
+  const s = sensor;
+
+  if (s.value >= 4000) {
+    const e = await Event.find({}).countDocuments();
+
+    if (e == 0) {
+      try {
+        const evs = await Event.create({
+          type: s.type,
+          description: `${new Date().toLocaleString()} - Nível de ${
+            s.type
+          } em ${s.value} ppm`,
+          sensorData: [s._id]
+        });
+        console.log("create");
+        return evs;
+      } catch (e) {
+        console.log(e);
+      }
+    } else {
+      const evs = await Event.find({});
+
+      const incident = evs.find(e => {
+        console.log(e.createAt.getTime() + " - " + Date.now());
+        return e.createAt.getTime() + 10 * 1000 * 60 > Date.now() == true;
+      });
+      if (incident) {
+        incident.sensorData.push(s._id);
+        incident.description = `${new Date().toLocaleString()} - Nível de ${
+          s.type
+        } em ${s.value} ppm`;
+        incident.save();
+        return incident;
+      } else {
+        try {
+          const evs = await Event.create({
+            type: s.type,
+            description: `${new Date().toLocaleString()} - Nível de ${
+              s.type
+            } em ${s.value} ppm`,
+            sensorData: [s._id]
+          });
+          console.log("create");
+          return evs;
+        } catch (e) {
+          console.log(e);
+        }
+      }
+    }
+  }
+};

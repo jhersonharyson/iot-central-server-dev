@@ -41,39 +41,12 @@ const sensors = new Schema({
   }
 });
 
+model("location", locations);
+model("sensor", sensors);
+model("device", devices);
 (async () => {
-  model("location", locations);
-  model("sensor", sensors);
-  model("device", devices);
-
-  arr = [
-    { d: "5d7b2a0c4f457439281f11ff", l: "5d7a22abd6a58d01633ddb53" },
-    { d: "5d7b2acdefbd4f2e8cef86d3", l: "5d7a22abd6a58d01633ddb53" },
-    { d: "5d7b2aeb9107e71728bf81c9", l: "5d7a22cd56acba01781fe682" },
-    { d: "5d7ac6ba9a5fef0ca4ba0c31", l: "5d7a22abd6a58d01633ddb53" }
-  ];
-
-  for (let i = 0; i < 100; i++)
-    await arr.forEach(async x => {
-      const s = await model("sensor", sensors).create({
-        deviceId: x.d,
-        ["type"]: "CO2",
-        value: Math.floor(Math.random() * 1000) + 100,
-        location: x.l,
-        position: {
-          x: Math.floor(Math.random() * 30) + 0,
-          y: Math.floor(Math.random() * 30) + 0
-        },
-        teste: 1
-      });
-
-      const d = await model("device", devices).findByIdAndUpdate(x.d, {
-        $push: { sensorData: s._id }
-      });
-    });
-
-  const dev = await model("device", devices)
-    .find({})
-    .populate("sensor");
-  console.log(dev);
+  const r = await model("sensor", sensors).deleteMany({
+    deviceId: "5d7d16aee7179a084efd40b2"
+  });
+  console.log(r);
 })();
