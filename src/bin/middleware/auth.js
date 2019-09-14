@@ -1,10 +1,14 @@
-import { AUTH_ERROR, AUTH_NOTOKEN, AUTH_TOKENINVALID } from "../../exceptions/authException.js";
+import {
+  AUTH_ERROR,
+  AUTH_NOTOKEN,
+  AUTH_TOKENINVALID
+} from "../../exceptions/authException.js";
 import { jwtVerify } from "../../security/jwtBuilder";
 import { BASE_URL } from "../../config/constants";
 
 export default (req, res, next) => {
   // all routes */auth/* dont have jwt security
-  if (req.url.split("/").indexOf("auth") >= 0 || req.url === BASE_URL) {
+  if (req.url.split("/").indexOf("auth") >= 0 || req.url + "/" === BASE_URL) {
     return next();
   }
 
