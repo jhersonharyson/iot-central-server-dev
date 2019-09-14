@@ -1,6 +1,8 @@
 import React from 'react';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
+import axios from './../../../../http';
+import { auth } from './../../../../auth';
 import { makeStyles } from '@material-ui/styles';
 import { Card, CardContent, Grid, Typography, Avatar, Switch } from '@material-ui/core';
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
@@ -43,9 +45,32 @@ const Budget = props => {
   const { className, ...rest } = props;
   const classes = useStyles();
 
-  const [inflador, setInflador] = React.useState({});
-  const onInfladorSwitchChange = event => {
-    setInflador({ value: event.target.checked })
+  const [inflador, setInflador] = React.useState({ value: false });
+  React
+    .useEffect(() => {
+      async function getInflador() {
+        const headers = { authentication: await localStorage.getItem('authentication') };
+        const response = await axios.get('actuators/INFLADOR', { headers });
+
+        if (response.data[0]) {
+          setInflador(response.data[0]);
+        }
+      }
+
+      getInflador();
+    }, []);
+
+  const onInfladorSwitchChange = async event => {
+    const headers = { authentication: await localStorage.getItem('authentication') };
+    const atuador = {
+      "type": "INFLADOR",
+      "value": !inflador.value
+    };
+
+    const response = await axios.post('actuators', atuador, { headers });
+    if (response) {
+      setInflador(response.data);
+    }
   }
 
   return (
@@ -86,7 +111,7 @@ const Budget = props => {
             className={classes.caption}
             variant="caption"
           >
-            Último registro: 14/09/2019
+            Último registro: {inflador.createAt && new Date(inflador.createAt).toLocaleString()}
           </Typography>
         </div>
       </CardContent>
