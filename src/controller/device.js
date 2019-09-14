@@ -52,21 +52,74 @@ export async function postDevice(req, res) {
 
 export async function getDevice(req, res, next) {
   const mac = req.params.mac;
+  let filter = {};
+  if(mac) filter.mac = mac;
+
+  let popuLocation = {
+    path: 'location',
+    select: 'name description -_id',
+    options: {}
+  };
+
+  let ref = ['limit','location'];
+  let reg = ['name','description'];
+
+  Object.entries(req.query).forEach(([key, value]) => {
+    if(!ref.includes(key)) filter[key] = value;     
+    if(reg.includes(key)) filter[key] = {'$regex': value, '$options': 'i'};
+  });
+
+  if(req.query.location){
+    const location = await Location.findOne({name: req.query.location});
+    if(!location){
+      return res.send({error: 'location is invalid'});
+    }
+    popuLocation.options.find = {name: location.name};
+  }
+  console.log(filter);
 
   res
     .send(
       await Device
-        .find((mac) ? { mac: mac } : {})
-        .populate({
-          path: 'sensorData',
-          model: 'sensor',
-          select: 'type value createAt -_id',
-          options: { limit: 10, sort: { createAt: -1 } }
-        })
-        .populate({
-          path: 'location',
-          select: 'name description -_id'
-        })
+        .find(filter)
+        .limit(parseInt(req.query.limit))
+        .select('')
+        .populate(popuLocation)
+    )
+}
+
+export async function getDeviceData(req, res, next) {
+  const mac = req.params.mac;
+  let filter = {};
+  filter.mac = mac;
+
+  let popuSensor = {
+    path: 'sensorData',
+    model: 'sensor',
+    select: 'type value createAt -_id',
+    options: { 
+      limit: req.query.limit,
+      sort: { 
+        createAt: -1 
+      }
+    }
+  };
+
+  let ref = ['limit','type', 'page'];
+
+  Object.entries(req.query).forEach(([key, value]) => {
+    if(!ref.includes(key)) filter[key] = value;     
+  });
+
+  if(req.query.type) popuSensor.options.find = {type: req.query.type};
+  if(req.query.limit) popuSensor.options.skip = (parseInt(req.query.limit) * (req.query.page ? parseInt(req.query.page)-1 : 0));
+
+  res
+    .send(
+      await Device
+        .find(filter)
+        .select('sensorData')
+        .populate(popuSensor)
     )
 }
 
@@ -102,8 +155,10 @@ export async function updateDevice(req, res, next) {
       }
     );
 
-  req.io.emit('updateDevice', await isExist(req.params.mac));
-  res.send("update");
+  const up = await isExist(req.params.mac);
+
+  req.io.emit('updateDevice', up);
+  res.send(up);
 }
 
 export async function test(req, res, next) {

@@ -30,7 +30,6 @@ const Profile = props => {
   const { className, ...rest } = props;
 
   const classes = useStyles();
-  console.log(auth);
   const user = {
     name: `${auth.user_name}`.toUpperCase(),
     avatar: '/images/avatars/avatar_11.png',
