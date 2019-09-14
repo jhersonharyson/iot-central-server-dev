@@ -8,8 +8,8 @@ const sensors = new Schema({
   location: { type: Schema.Types.ObjectId, ref: "location" },
   position: { x: { type: Number }, y: { type: Number } },
   createAt: {
-    type: String,
-    default: Date.now()
+    type: Date,
+    default: Date.now
   }
 });
 

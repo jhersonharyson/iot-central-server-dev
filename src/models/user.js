@@ -15,19 +15,19 @@ const users = new Schema({
     required: true
   },
   createAt: {
-    type: String,
-    default: Date.now()
+    type: Date,
+    default: Date.now
   }
 });
 
-users.pre("save", function(next) {
+users.pre("save", function (next) {
   let user = this;
   if (!user.isModified("password")) return next();
 
-  genSalt(SALT_WORK_FACTOR, function(err, salt) {
+  genSalt(SALT_WORK_FACTOR, function (err, salt) {
     if (err) return next(err);
 
-    _hash(user.password, salt, function(err, hash) {
+    _hash(user.password, salt, function (err, hash) {
       if (err) return next(err);
 
       user.password = hash;
@@ -36,12 +36,12 @@ users.pre("save", function(next) {
   });
 });
 
-users.methods.comparePassword = function(
+users.methods.comparePassword = function (
   candidatePassword,
   password,
   callback
 ) {
-  compare(candidatePassword, password, function(err, isMatch) {
+  compare(candidatePassword, password, function (err, isMatch) {
     if (err) return callback(err);
     callback(null, isMatch);
   });

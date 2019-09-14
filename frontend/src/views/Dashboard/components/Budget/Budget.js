@@ -1,14 +1,15 @@
 import React from 'react';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
+import axios from './../../../../http';
+import { auth } from './../../../../auth';
 import { makeStyles } from '@material-ui/styles';
-import { Card, CardContent, Grid, Typography, Avatar } from '@material-ui/core';
+import { Card, CardContent, Grid, Typography, Avatar, Switch } from '@material-ui/core';
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
-import MoneyIcon from '@material-ui/icons/Money';
+import WorkIcon from '@material-ui/icons/Work';
 
 const useStyles = makeStyles(theme => ({
   root: {
-    height: '100%'
   },
   content: {
     alignItems: 'center',
@@ -42,8 +43,35 @@ const useStyles = makeStyles(theme => ({
 
 const Budget = props => {
   const { className, ...rest } = props;
-
   const classes = useStyles();
+
+  const [inflador, setInflador] = React.useState({ value: false });
+  React
+    .useEffect(() => {
+      async function getInflador() {
+        const headers = { authentication: await localStorage.getItem('authentication') };
+        const response = await axios.get('actuators/INFLADOR', { headers });
+
+        if (response.data[0]) {
+          setInflador(response.data[0]);
+        }
+      }
+
+      getInflador();
+    }, []);
+
+  const onInfladorSwitchChange = async event => {
+    const headers = { authentication: await localStorage.getItem('authentication') };
+    const atuador = {
+      "type": "INFLADOR",
+      "value": !inflador.value
+    };
+
+    const response = await axios.post('actuators', atuador, { headers });
+    if (response) {
+      setInflador(response.data);
+    }
+  }
 
   return (
     <Card
@@ -62,29 +90,28 @@ const Budget = props => {
               gutterBottom
               variant="body2"
             >
-              BUDGET
+              INFLADOR
             </Typography>
-            <Typography variant="h3">$24,000</Typography>
+            <Typography variant="h3">
+              {inflador.value ? 'Ligado' : 'Desligado'}
+            </Typography>
           </Grid>
           <Grid item>
             <Avatar className={classes.avatar}>
-              <MoneyIcon className={classes.icon} />
+              <WorkIcon className={classes.icon} />
             </Avatar>
           </Grid>
         </Grid>
         <div className={classes.difference}>
-          <ArrowDownwardIcon className={classes.differenceIcon} />
-          <Typography
-            className={classes.differenceValue}
-            variant="body2"
-          >
-            12%
-          </Typography>
+          <Switch
+            checked={inflador.value}
+            onChange={onInfladorSwitchChange}
+          />
           <Typography
             className={classes.caption}
             variant="caption"
           >
-            Since last month
+            Último registro: {inflador.createAt && new Date(inflador.createAt).toLocaleString()}
           </Typography>
         </div>
       </CardContent>
