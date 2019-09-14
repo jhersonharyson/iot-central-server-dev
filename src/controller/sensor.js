@@ -90,8 +90,7 @@ export async function isExist(mac) {
 }
 
 export async function getAllSensors(req, res) {
-  const sensors = await Sensor.find({}).populate("deviceId"); //.populate("deviceId");
-  console.log("asdasd");
+  const sensors = await Sensor.find({}); //.populate("deviceId");
 
-  res.send({ sensors });
+  res.send(sensors);
 }
