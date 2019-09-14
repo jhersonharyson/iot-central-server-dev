@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import axios from './../../../../http';
 import { auth } from './../../../../auth';
 import { makeStyles } from '@material-ui/styles';
+import Socket from './../../../../socket';
 import { Card, CardContent, Grid, Typography, Avatar, Switch } from '@material-ui/core';
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
 import WorkIcon from '@material-ui/icons/Work';
@@ -58,6 +59,7 @@ const Budget = props => {
       }
 
       getInflador();
+      Socket.on('postActuator', () => getInflador());
     }, []);
 
   const onInfladorSwitchChange = async event => {

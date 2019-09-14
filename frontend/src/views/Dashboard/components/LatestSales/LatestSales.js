@@ -14,6 +14,7 @@ import {
   Menu,
   MenuItem
 } from '@material-ui/core';
+import Socket from './../../../../socket';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 
@@ -74,6 +75,8 @@ const LatestSales = props => {
     }
 
     getDevices();
+    Socket.on('postDevice', () => getDevices());
+    Socket.on('deleteDevice', () => getDevices());
   }, []);
 
   return (
@@ -90,8 +93,8 @@ const LatestSales = props => {
               {graphFilter === Types.MINUTES_GRAPH_TYPE
                 ? 'Últimos minutos'
                 : graphFilter === Types.HOURS_GRAPH_TYPE
-                ? 'Últimas horas'
-                : 'Últimos dias'}{' '}
+                  ? 'Últimas horas'
+                  : 'Últimos dias'}{' '}
               <ArrowDropDownIcon />
             </Button>
             <Menu

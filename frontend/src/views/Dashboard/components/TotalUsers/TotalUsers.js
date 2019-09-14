@@ -2,6 +2,7 @@ import React from 'react';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import axios from './../../../../http';
+import Socket from './../../../../socket';
 import { makeStyles } from '@material-ui/styles';
 import { Card, CardContent, Grid, Typography, Avatar } from '@material-ui/core';
 import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
@@ -64,6 +65,8 @@ const TotalUsers = props => {
       }
 
       getDevices();
+      Socket.on('postDevice', () => getDevices());
+      Socket.on('deleteDevice', () => getDevices());
     }, []);
 
   return (

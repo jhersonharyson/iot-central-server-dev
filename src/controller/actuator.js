@@ -10,6 +10,7 @@ export async function postActuator(req, res) {
 			description
 		});
 
+		req.io.emit("postActuator", actuator);
 		return res.status(201).json(actuator);
 	} catch (e) {
 		//console.log(e);
