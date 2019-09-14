@@ -11,7 +11,7 @@ export function makeDeviceDataset(devices = [], graphFilter) {
     let color = randomHexColor();
 
     return {
-      label: `${device.description} - ${device.location.name}`,
+      label: device.location.name,
       backgroundColor: color,
       borderColor: color,
       data: device.sensorData.map(sensor => sensor.value),

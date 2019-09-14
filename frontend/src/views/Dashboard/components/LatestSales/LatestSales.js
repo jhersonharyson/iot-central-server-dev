@@ -82,40 +82,40 @@ const LatestSales = props => {
   return (
     <Card {...rest} className={clsx(classes.root, className)}>
       <CardHeader
-        action={
-          <div>
-            <Button
-              size="small"
-              variant="text"
-              aria-controls="simple-menu"
-              aria-haspopup="true"
-              onClick={handleClickMenu}>
-              {graphFilter === Types.MINUTES_GRAPH_TYPE
-                ? 'Últimos minutos'
-                : graphFilter === Types.HOURS_GRAPH_TYPE
-                  ? 'Últimas horas'
-                  : 'Últimos dias'}{' '}
-              <ArrowDropDownIcon />
-            </Button>
-            <Menu
-              id="simple-menu"
-              anchorEl={anchorElMenu}
-              keepMounted
-              open={Boolean(anchorElMenu)}
-              onClose={handleCloseMenu}>
-              <MenuItem
-                onClick={() => handleCloseMenu(Types.MINUTES_GRAPH_TYPE)}>
-                Últimos minutos
-              </MenuItem>
-              <MenuItem onClick={() => handleCloseMenu(Types.HOURS_GRAPH_TYPE)}>
-                Últimas horas
-              </MenuItem>
-              <MenuItem onClick={() => handleCloseMenu(Types.DAYS_GRAPH_TYPE)}>
-                Últimos dias
-              </MenuItem>
-            </Menu>
-          </div>
-        }
+        // action={
+        //   <div>
+        //     <Button
+        //       size="small"
+        //       variant="text"
+        //       aria-controls="simple-menu"
+        //       aria-haspopup="true"
+        //       onClick={handleClickMenu}>
+        //       {graphFilter === Types.MINUTES_GRAPH_TYPE
+        //         ? 'Últimos minutos'
+        //         : graphFilter === Types.HOURS_GRAPH_TYPE
+        //         ? 'Últimas horas'
+        //         : 'Últimos dias'}{' '}
+        //       <ArrowDropDownIcon />
+        //     </Button>
+        //     <Menu
+        //       id="simple-menu"
+        //       anchorEl={anchorElMenu}
+        //       keepMounted
+        //       open={Boolean(anchorElMenu)}
+        //       onClose={handleCloseMenu}>
+        //       <MenuItem
+        //         onClick={() => handleCloseMenu(Types.MINUTES_GRAPH_TYPE)}>
+        //         Últimos minutos
+        //       </MenuItem>
+        //       <MenuItem onClick={() => handleCloseMenu(Types.HOURS_GRAPH_TYPE)}>
+        //         Últimas horas
+        //       </MenuItem>
+        //       <MenuItem onClick={() => handleCloseMenu(Types.DAYS_GRAPH_TYPE)}>
+        //         Últimos dias
+        //       </MenuItem>
+        //     </Menu>
+        //   </div>
+        // }
         title="Níveis de CO²"
       />
       <Divider />
