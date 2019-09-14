@@ -1,9 +1,11 @@
 import React from 'react';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
+import axios from './../../../../http';
+import Socket from './../../../../socket';
 import { makeStyles } from '@material-ui/styles';
 import { Card, CardContent, Grid, Typography, Avatar } from '@material-ui/core';
-import AttachMoneyIcon from '@material-ui/icons/AttachMoney';
+import ArrowUpward from '@material-ui/icons/ArrowUpward';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -27,13 +29,35 @@ const useStyles = makeStyles(theme => ({
   icon: {
     height: 32,
     width: 32
+  },
+  co2: {
+    marginTop: 10
   }
 }));
 
 const TotalProfit = props => {
   const { className, ...rest } = props;
-
   const classes = useStyles();
+
+  const [maxSensor, setMaxSensor] = React.useState(0);
+  React
+    .useEffect(() => {
+      async function getDevices() {
+        const headers = { authentication: await localStorage.getItem('authentication') };
+        const response = await axios.get('sensors', { headers });
+
+        if (response.data[0]) {
+          let map = response.data.map(sensor => sensor.value);
+          let max = Math.max(...map);
+
+          setMaxSensor(max);
+        }
+      }
+
+      getDevices();
+      Socket.on('postSensor', () => getDevices());
+    }, []);
+
 
   return (
     <Card
@@ -52,18 +76,26 @@ const TotalProfit = props => {
               gutterBottom
               variant="body2"
             >
-              TOTAL PROFIT
+              MAIOR MEDIÇÃO
             </Typography>
             <Typography
               color="inherit"
               variant="h3"
             >
-              $23,200
+              {maxSensor} ppm
+            </Typography>
+
+            <Typography
+              className={classes.co2}
+              color="inherit"
+              variant="h2"
+            >
+              CO²
             </Typography>
           </Grid>
           <Grid item>
             <Avatar className={classes.avatar}>
-              <AttachMoneyIcon className={classes.icon} />
+              <ArrowUpward className={classes.icon} />
             </Avatar>
           </Grid>
         </Grid>
