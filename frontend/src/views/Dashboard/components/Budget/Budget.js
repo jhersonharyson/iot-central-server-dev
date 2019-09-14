@@ -2,13 +2,12 @@ import React from 'react';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/styles';
-import { Card, CardContent, Grid, Typography, Avatar } from '@material-ui/core';
+import { Card, CardContent, Grid, Typography, Avatar, Switch } from '@material-ui/core';
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
 import MoneyIcon from '@material-ui/icons/Money';
 
 const useStyles = makeStyles(theme => ({
   root: {
-    height: '100%'
   },
   content: {
     alignItems: 'center',
@@ -42,8 +41,12 @@ const useStyles = makeStyles(theme => ({
 
 const Budget = props => {
   const { className, ...rest } = props;
-
   const classes = useStyles();
+
+  const [inflador, setInflador] = React.useState({});
+  const onInfladorSwitchChange = event => {
+    setInflador({ value: event.target.checked })
+  }
 
   return (
     <Card
@@ -62,9 +65,11 @@ const Budget = props => {
               gutterBottom
               variant="body2"
             >
-              BUDGET
+              INFLADOR
             </Typography>
-            <Typography variant="h3">$24,000</Typography>
+            <Typography variant="h3">
+              {inflador.value ? 'Ligado' : 'Desligado'}
+            </Typography>
           </Grid>
           <Grid item>
             <Avatar className={classes.avatar}>
@@ -73,18 +78,15 @@ const Budget = props => {
           </Grid>
         </Grid>
         <div className={classes.difference}>
-          <ArrowDownwardIcon className={classes.differenceIcon} />
-          <Typography
-            className={classes.differenceValue}
-            variant="body2"
-          >
-            12%
-          </Typography>
+          <Switch
+            checked={inflador.value}
+            onChange={onInfladorSwitchChange}
+          />
           <Typography
             className={classes.caption}
             variant="caption"
           >
-            Since last month
+            Último registro: 14/09/2019
           </Typography>
         </div>
       </CardContent>
