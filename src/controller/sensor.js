@@ -6,13 +6,13 @@ import { jwtBuilder } from "../security/jwtBuilder";
 const constants = global.constants;
 
 export async function postSensor(req, res) {
-
   try {
     const { token, sensorData } = req.body;
     const mac = req.userId;
     const device = await isExist(req.userId);
-    if (!device) { return res.send(MAC_ISNOTFOUND) }
-
+    if (!device) {
+      return res.send(MAC_ISNOTFOUND);
+    }
 
     const deviceId = device._id;
     const location = device.location;
@@ -20,7 +20,7 @@ export async function postSensor(req, res) {
 
     if (mac) {
       try {
-        sensorData.map(function (arr) {
+        sensorData.map(function(arr) {
           let type = arr.type;
           let value = arr.value;
           const sensor = new Sensor({
@@ -31,7 +31,11 @@ export async function postSensor(req, res) {
             position
           });
           sensor.save();
-          Device.updateOne({ _id: deviceId }, { $push: { sensorData: sensor._id } }, function (error, success) { })
+          Device.updateOne(
+            { _id: deviceId },
+            { $push: { sensorData: sensor._id } },
+            function(error, success) {}
+          );
 
           return sensor;
         });
@@ -39,7 +43,7 @@ export async function postSensor(req, res) {
         return res.status(400).send({ error: e });
       }
 
-      req.io.emit('postSensor', sensorData);
+      req.io.emit("postSensor", sensorData);
       res.send({ status: "ok", token: jwtBuilder({ id: deviceId }) });
     } else {
       return res.status(401).send(MAC_ISINVALID);
@@ -52,31 +56,29 @@ export async function postSensor(req, res) {
 export async function getSensor(req, res, next) {
   const mac = req.params.mac;
 
-  res
-    .send(
-      await Sensor
-        .find()
-        .select('-_id')
-        .populate({
-          path: 'deviceId',
-          model: 'device',
-          select: 'mac name -_id'
-        })
-        .populate({
-          path: 'location',
-          select: 'name description -_id'
-        })
-    )
+  res.send(
+    await Sensor.find()
+      .select("-_id")
+      .populate({
+        path: "deviceId",
+        model: "device",
+        select: "mac name -_id"
+      })
+      .populate({
+        path: "location",
+        select: "name description -_id"
+      })
+  );
 }
 
 export async function test(req, res, next) {
   const r = req.params.delete;
   if (r) {
-    if (r === 'sensor') {
+    if (r === "sensor") {
       await Sensor.deleteMany({});
-    } else if (r === 'device') {
+    } else if (r === "device") {
       await Device.deleteMany({});
-    } else if (r === 'location') {
+    } else if (r === "location") {
       await Location.deleteMany({});
     }
   }
@@ -84,5 +86,12 @@ export async function test(req, res, next) {
 
 export async function isExist(mac) {
   const data = await Device.findOne({ mac: mac, status: { $ne: -1 } });
-  return (data ? data : false);
+  return data ? data : false;
+}
+
+export async function getAllSensors(req, res) {
+  const sensors = await Sensor.find({}).populate("deviceId"); //.populate("deviceId");
+  console.log("asdasd");
+
+  res.send({ sensors });
 }

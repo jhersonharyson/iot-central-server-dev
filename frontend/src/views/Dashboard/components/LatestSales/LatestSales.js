@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import clsx from 'clsx';
 import axios from './../../../../http';
 import PropTypes from 'prop-types';
-import { Line } from 'react-chartjs-2';
+import { Line, Bar } from 'react-chartjs-2';
 import { makeStyles } from '@material-ui/styles';
 import {
   Card,
@@ -18,7 +18,8 @@ import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 
 import { makeDeviceDataset, options } from './chart';
-import { Types } from './index'
+import { dataG, optionsG } from './chart';
+import { Types } from './index';
 
 const useStyles = makeStyles(() => ({
   root: {},
@@ -54,31 +55,29 @@ const LatestSales = props => {
   useEffect(() => {
     async function getDevices() {
       let authentication = await localStorage.getItem('authentication');
-      let response = await axios.get('devices', { headers: { authentication } });
+      let response = await axios.get('devices', {
+        headers: { authentication }
+      });
 
-      let devices = response.data;
-      if (devices) {
-        if (devices.lenght > 5) {
+      let dev = response.data;
+      console.warn(dev);
+      if (dev) {
+        if (dev.lenght > 5) {
           setNeedOverview(true);
 
-          devices = devices.filter((device, key) => key < 5);
+          dev = dev.filter((device, key) => key < 5);
         }
 
-        setDevice(
-          makeDeviceDataset(devices, graphFilter)
-        );
+        await setDevice(makeDeviceDataset(dev, graphFilter));
+        console.log(devices);
       }
     }
 
     getDevices();
   }, []);
 
-
   return (
-    <Card
-      {...rest}
-      className={clsx(classes.root, className)}
-    >
+    <Card {...rest} className={clsx(classes.root, className)}>
       <CardHeader
         action={
           <div>
@@ -87,24 +86,30 @@ const LatestSales = props => {
               variant="text"
               aria-controls="simple-menu"
               aria-haspopup="true"
-              onClick={handleClickMenu}
-            >
-              {
-                graphFilter === Types.MINUTES_GRAPH_TYPE ? 'Últimos minutos' :
-                  graphFilter === Types.HOURS_GRAPH_TYPE ? 'Últimas horas' :
-                    'Últimos dias'
-              } <ArrowDropDownIcon />
+              onClick={handleClickMenu}>
+              {graphFilter === Types.MINUTES_GRAPH_TYPE
+                ? 'Últimos minutos'
+                : graphFilter === Types.HOURS_GRAPH_TYPE
+                ? 'Últimas horas'
+                : 'Últimos dias'}{' '}
+              <ArrowDropDownIcon />
             </Button>
             <Menu
               id="simple-menu"
               anchorEl={anchorElMenu}
               keepMounted
               open={Boolean(anchorElMenu)}
-              onClose={handleCloseMenu}
-            >
-              <MenuItem onClick={() => handleCloseMenu(Types.MINUTES_GRAPH_TYPE)}>Últimos minutos</MenuItem>
-              <MenuItem onClick={() => handleCloseMenu(Types.HOURS_GRAPH_TYPE)}>Últimas horas</MenuItem>
-              <MenuItem onClick={() => handleCloseMenu(Types.DAYS_GRAPH_TYPE)}>Últimos dias</MenuItem>
+              onClose={handleCloseMenu}>
+              <MenuItem
+                onClick={() => handleCloseMenu(Types.MINUTES_GRAPH_TYPE)}>
+                Últimos minutos
+              </MenuItem>
+              <MenuItem onClick={() => handleCloseMenu(Types.HOURS_GRAPH_TYPE)}>
+                Últimas horas
+              </MenuItem>
+              <MenuItem onClick={() => handleCloseMenu(Types.DAYS_GRAPH_TYPE)}>
+                Últimos dias
+              </MenuItem>
             </Menu>
           </div>
         }
@@ -113,26 +118,24 @@ const LatestSales = props => {
       <Divider />
       <CardContent>
         <div className={classes.chartContainer}>
-          <Line
-            data={devices}
-            options={options}
-          />
+          {/* <Bar data={dataG} options={optionsG} /> */}
         </div>
       </CardContent>
-      {needOverview ?
+      <CardContent>
+        <div className={classes.chartContainer}>
+          {devices && <Line data={devices} options={options} />}
+        </div>
+      </CardContent>
+      {needOverview ? (
         <div>
           <Divider />
           <CardActions className={classes.actions}>
-            <Button
-              color="primary"
-              size="small"
-              variant="text"
-            >
+            <Button color="primary" size="small" variant="text">
               Overview <ArrowRightIcon />
             </Button>
           </CardActions>
         </div>
-        : null}
+      ) : null}
     </Card>
   );
 };
