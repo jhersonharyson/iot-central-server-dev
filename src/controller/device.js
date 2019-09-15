@@ -57,9 +57,7 @@ export async function getDevice(req, res, next) {
   if (mac) filter.mac = mac;
 
   res.send(
-    await Device.find(filter)
-      .populate("sensorData")
-      .populate("location")
+    await Device.find(filter).select('-sensorData')
   );
 }
 
@@ -120,14 +118,6 @@ export async function updateDevice(req, res, next) {
 
   await verifyReq(req.body, res);
 
-  const fields = ['name','description','location','position'];
-
-  Object.entries(req.body).forEach(([key, value]) => {
-    if(!fields.includes(key) || value === ""){
-      return res.send({required: fields});//Por um melhor retorno
-    }
-  });
-
   const dev = await Device.findOne({mac: req.params.mac});
 
   try{
@@ -143,7 +133,7 @@ export async function updateDevice(req, res, next) {
     {
       $set: {
         name: req.body.name,
-        description: req.body.description,
+        description: (req.body.description ? req.body.description : ""),
         location: req.body.location,
         position: req.body.position,
       }
