@@ -41,7 +41,7 @@ const useStyles = makeStyles(theme => ({
   differenceValue: {
     color: theme.palette.success.dark,
     marginRight: theme.spacing(1),
-    marginTop: theme.spacing(.3)
+    marginTop: theme.spacing(0.3)
   }
 }));
 
@@ -50,42 +50,36 @@ const TotalUsers = props => {
   const classes = useStyles();
 
   const [counters, setCounters] = React.useState([]);
-  React
-    .useEffect(() => {
-      async function getDevices() {
-        const headers = { authentication: await localStorage.getItem('authentication') };
-        const response = await axios.get('devices', { headers });
+  React.useEffect(() => {
+    async function getDevices() {
+      const headers = {
+        authentication: await localStorage.getItem('authentication')
+      };
+      const response = await axios.get('devices', { headers });
 
-        if (response.data[0]) {
-          setCounters([
-            response.data.filter(device => device.status === 0).length,
-            response.data.filter(device => device.status === 1).length
-          ]);
-        }
+      if (response.data[0]) {
+        setCounters([
+          response.data.filter(device => device.status === 0).length,
+          response.data.filter(device => device.status === 1).length
+        ]);
       }
+    }
 
-      getDevices();
-      Socket.on('postDevice', () => getDevices());
-      Socket.on('deleteDevice', () => getDevices());
-    }, []);
+    getDevices();
+    Socket.on('postDevice', () => getDevices());
+    Socket.on('deleteDevice', () => getDevices());
+  }, []);
 
   return (
-    <Card
-      {...rest}
-      className={clsx(classes.root, className)}
-    >
+    <Card {...rest} className={clsx(classes.root, className)}>
       <CardContent>
-        <Grid
-          container
-          justify="space-between"
-        >
+        <Grid container justify="space-between">
           <Grid item>
             <Typography
               className={classes.title}
               color="textSecondary"
               gutterBottom
-              variant="body2"
-            >
+              variant="body2">
               DISPOSITIVOS
             </Typography>
             <Typography variant="h3">
@@ -99,18 +93,16 @@ const TotalUsers = props => {
           </Grid>
         </Grid>
         <div className={classes.difference}>
-          <Typography
-            className={classes.differenceValue}
-            variant="body2"
-          >
+          <Typography className={classes.differenceValue} variant="body2">
             {counters[0]} {counters[0] > 1 ? 'Inativos' : 'Inativo'}
           </Typography>
 
-          <Typography
-            className={classes.caption}
-            variant="body2"
-          >
-            {counters.reduce((a, b) => a + b, 0)} {counters.reduce((a, b) => a + b, 0) > 1 ? 'dispositivos' : 'dispositivo'} no total geral
+          <Typography className={classes.caption} variant="body2">
+            {counters.reduce((a, b) => a + b, 0)}{' '}
+            {counters.reduce((a, b) => a + b, 0) > 1
+              ? 'dispositivos'
+              : 'dispositivo'}{' '}
+            no total
           </Typography>
         </div>
       </CardContent>

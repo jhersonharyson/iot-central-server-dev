@@ -5,10 +5,10 @@ const labels = [1, 2, 3, 4, 5, 6, 7, 8, 9].reverse();
 
 export function makeDeviceDataset(devices = [], graphFilter) {
   if (!devices) return {};
-
+  let max = 10;
   const datasets = devices.map(device => {
     let color = randomHexColor();
-
+    max = max < device.sensorData.length ? device.sensorData.length : max;
     return {
       label: device.location.name,
       backgroundColor: color,
@@ -19,7 +19,7 @@ export function makeDeviceDataset(devices = [], graphFilter) {
   });
 
   return {
-    labels: new Array(10).fill(1).map((num, i) => {
+    labels: new Array(parseInt(max + max * 0.2)).fill(1).map((num, i) => {
       return i + ' s';
       // (Types.MINUTES_GRAPH_TYPE === graphFilter
       //   ? ' m'
