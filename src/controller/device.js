@@ -57,7 +57,11 @@ export async function getDevice(req, res, next) {
   if (mac) filter.mac = mac;
 
   res.send(
-    await Device.find(filter).select('-sensorData')
+    await Device
+      .find(filter)
+      .populate('sensorData')
+      .populate('lcoation')
+
   );
 }
 
