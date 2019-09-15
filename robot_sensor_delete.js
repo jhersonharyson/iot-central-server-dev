@@ -101,7 +101,7 @@ const sensors = new Schema({
         sensorData: [],
         status: 1,
         mac: "18:FE:34:F2:EC:" + ["AA", "CC", "TT", "FF"][i],
-        name: "ESP " + ["AA", "CC", "DD", "FF"][i],
+        name: "ESP " + ["AA", "CC", "TT", "FF"][i],
         description: "Dispositivo Teste ESP " + ["AA", "CC", "TT", "FF"][i],
         position: {
           x: 999,
@@ -111,6 +111,41 @@ const sensors = new Schema({
       console.log("criando dispositvo => ", dev.d);
     })
   ]);
+
+  new Array(15).fill(1).forEach(async (_, i) => {
+    setTimeout(async () => {
+      device_attr.forEach(async (e, iDevice) => {
+        //login
+        setTimeout(async () => {
+          console.log(
+            `obtendo credenciais para 18:FE:34:F2:EC:${
+              ["AA", "CC", "TT", "FF"][iDevice]
+            }`
+          );
+          const response = await axios.get(
+            `http://localhost:3001/api/v1/ws/auth/devices/18:FE:34:F2:EC:${
+              ["AA", "CC", "TT", "FF"][iDevice]
+            }`
+          );
+          if (response.data && response.data.token) {
+            const { token } = response.data;
+            const data = {
+              token: `Bearer ${token}`,
+              sensorData: [{ type: "tmp", value: Math.random() * 2000 + 2000 }]
+            };
+            //postSensor
+            console.log(`enviando dados`);
+            const post_response = await axios.post(
+              "http://localhost:3001/api/v1/ws/sensors",
+              data
+            );
+            console.log(`recebendo confirmação`);
+            console.log(`\n`);
+          }
+        }, 5 * 1000 * (iDevice + 1));
+      });
+    }, 5 * 1000 * 4 * (i + 1));
+  });
 
   //   const device = await model("device", devices).find({
   //     _id: {
