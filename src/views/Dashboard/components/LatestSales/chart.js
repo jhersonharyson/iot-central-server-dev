@@ -10,17 +10,17 @@ export function makeDeviceDataset(devices = [], graphFilter) {
     let color = randomHexColor();
     max = max < device.sensorData.length ? device.sensorData.length : max;
     return {
-      label: device.location.name,
+      label: `${device.location.name} - ${device.name}`,
       backgroundColor: color,
       borderColor: color,
-      data: device.sensorData.map(sensor => sensor.value),
+      data: device.sensorData.map(sensor => parseInt(sensor.value).toFixed(2)),
       fill: false
     };
   });
 
   return {
     labels: new Array(parseInt(max + max * 0.2)).fill(1).map((num, i) => {
-      return i + ' s';
+      return i; //+ ' s';
       // (Types.MINUTES_GRAPH_TYPE === graphFilter
       //   ? ' m'
       //   : Types.HOURS_GRAPH_TYPE === graphFilter
@@ -47,7 +47,7 @@ export const options = {
         display: true,
         scaleLabel: {
           display: true,
-          labelString: 'Tempo'
+          labelString: 'Tempo (segundos)'
         }
       }
     ],
