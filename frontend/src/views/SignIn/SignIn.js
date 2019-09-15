@@ -235,7 +235,7 @@ const SignIn = props => {
                   Entrar
                 </Typography>
                 <Typography color="textSecondary" gutterBottom>
-                  Entrar no [Nome do projeto aqui]
+                  Entrar no SYCCOO
                 </Typography>
                 <TextField
                   className={classes.textField}

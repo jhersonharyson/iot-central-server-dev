@@ -53,6 +53,7 @@ const Main = props => {
   Socket.on('postEvent', data => {
     setSnackbarFeedback(data.description);
     setOpenSnackbar(true);
+    // browsers limit the number of concurrent audio contexts, so you better re-use'em
   });
 
   return (
@@ -68,6 +69,7 @@ const Main = props => {
         variant={isDesktop ? 'persistent' : 'temporary'}
       />
       <main className={classes.content}>{children}</main>
+      {openSnackbar && beep(50, 500, 500, 3, 1000)}
       <Snack
         open={openSnackbar}
         onClose={() => setOpenSnackbar(false)}
@@ -109,6 +111,23 @@ const Snack = ({ open, onClose, message }) => {
       ]}
     />
   );
+};
+
+const beep = (vol, freq, duration, times, interval = 1) => {
+  new Array(times).fill(1).forEach(async (f, i) => {
+    const a = new AudioContext();
+    let u = a.createGain();
+    let v = a.createOscillator();
+    v.frequency.value = freq;
+    v.connect(u);
+    u.connect(a.destination);
+    v.type = 'square';
+    await setTimeout(() => {
+      v.start(a.currentTime);
+      u.gain.value = vol * 0.01;
+      v.stop(a.currentTime + duration * 0.001);
+    }, interval * (i + 1));
+  });
 };
 
 Main.propTypes = {

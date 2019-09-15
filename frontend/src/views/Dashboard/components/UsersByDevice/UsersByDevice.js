@@ -151,7 +151,7 @@ const UsersByDevice = props => {
                 <span className={classes.deviceIcon}>{device.icon}</span>
                 <Typography variant="body1">{device.title}</Typography>
                 <Typography style={{ color: device.color }} variant="h2">
-                  {device.value}%
+                  {parseInt(device.value * 100) / 100}%
                 </Typography>
               </div>
             ))}
