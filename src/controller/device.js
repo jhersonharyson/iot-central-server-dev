@@ -60,7 +60,7 @@ export async function getDevice(req, res, next) {
     await Device
       .find(filter)
       .populate('sensorData')
-      .populate('lcoation')
+      .populate('location')
 
   );
 }
