@@ -1,3 +1,3 @@
 import io from 'socket.io-client';
 
-export default io('http://localhost:3001');
+export default io(process.env.REACT_APP_API_URL_BASE);

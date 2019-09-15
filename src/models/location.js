@@ -5,10 +5,10 @@ const locations = new Schema({
   name: String,
   description: String,
   img_url: String,
-  device: [{ type: Schema.Types.ObjectId, ref: "device" }],
+  device: [{ type: Schema.Types.ObjectId, ref: "device", unique: true }],
   createAt: {
-    type: String,
-    default: Date.now()
+    type: Date,
+    default: Date.now
   }
 });
 

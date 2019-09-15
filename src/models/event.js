@@ -6,8 +6,8 @@ const events = new Schema({
   description: String,
   sensorData: [{ type: Schema.Types.ObjectId, ref: "sensor" }],
   createAt: {
-    type: String,
-    default: Date.now()
+    type: Date,
+    default: Date.now
   }
 });
 

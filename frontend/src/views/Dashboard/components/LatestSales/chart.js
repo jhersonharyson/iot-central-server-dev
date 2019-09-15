@@ -1,6 +1,69 @@
+import randomHexColor from 'random-hex-color';
 import palette from 'theme/palette';
 
-export const data = {
+const labels = [1, 2, 3, 4, 5, 6, 7, 8, 9].reverse();
+
+export function makeDeviceDataset(devices = [], graphFilter) {
+  if (!devices) return {};
+
+  const datasets = devices.map(device => {
+    let color = randomHexColor();
+
+    return {
+      label: device.location.name,
+      backgroundColor: color,
+      borderColor: color,
+      data: device.sensorData.map(sensor => sensor.value),
+      fill: false
+    };
+  });
+
+  return {
+    labels: new Array(10).fill(1).map((num, i) => {
+      return i + ' s';
+      // (Types.MINUTES_GRAPH_TYPE === graphFilter
+      //   ? ' m'
+      //   : Types.HOURS_GRAPH_TYPE === graphFilter
+      //   ? ' h'
+      //   : ' d')
+    }),
+    datasets
+  };
+}
+
+export const options = {
+  responsive: true,
+  tooltips: {
+    mode: 'index',
+    intersect: false
+  },
+  hover: {
+    mode: 'nearest',
+    intersect: true
+  },
+  scales: {
+    xAxes: [
+      {
+        display: true,
+        scaleLabel: {
+          display: true,
+          labelString: 'Tempo'
+        }
+      }
+    ],
+    yAxes: [
+      {
+        display: true,
+        scaleLabel: {
+          display: true,
+          labelString: 'CO² (ppm)'
+        }
+      }
+    ]
+  }
+};
+
+export const dataG = {
   labels: ['1 Aug', '2 Aug', '3 Aug', '4 Aug', '5 Aug', '6 Aug'],
   datasets: [
     {
@@ -16,7 +79,7 @@ export const data = {
   ]
 };
 
-export const options = {
+export const optionsG = {
   responsive: true,
   maintainAspectRatio: false,
   animation: false,

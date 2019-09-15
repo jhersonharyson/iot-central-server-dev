@@ -20,7 +20,16 @@ export async function postLocation(req, res) { //Não sei como vai funcionar
 
 export async function getLocation(req, res, next) {
 	const name = req.params.name;
-	res.send(await Location.find((name) ? {name: {'$regex': name, '$options': 'i'}} : {}))//.sort([["data", "descending"]]););
+	res.send(await Location.find((name) ? {name: {'$regex': name, '$options': 'i'}} : {}).select('-device'));
+}
+
+
+export async function getLocationDevices(req, res, next) {
+	const name = req.params.name;
+	res.send(await Location.find((name) ? {name: {'$regex': name, '$options': 'i'}} : {}).populate({
+		path: "device",
+		select: "-sensorData"
+	}));
 }
 
 export async function updateLocation(req, res, next) {  //Não sei como vai funcionar
@@ -39,3 +48,4 @@ export async function updateLocation(req, res, next) {  //Não sei como vai func
 export async function deleteLocation(req, res, next) {
 	res.send(await Location.deleteOne({name: req.params.name}));
 }
+
