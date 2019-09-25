@@ -7,6 +7,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Card, CardContent, Grid, Typography, Avatar } from '@material-ui/core';
 import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
 import DevicesIcon from '@material-ui/icons/Devices';
+import SettingsRemoteIcon from '@material-ui/icons/SettingsRemote';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -88,7 +89,7 @@ const TotalUsers = props => {
           </Grid>
           <Grid item>
             <Avatar className={classes.avatar}>
-              <DevicesIcon className={classes.icon} />
+              <SettingsRemoteIcon className={classes.icon} />
             </Avatar>
           </Grid>
         </Grid>

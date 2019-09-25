@@ -80,6 +80,7 @@ const LatestSales = props => {
     Socket.on('postDevice', () => getDevices());
     Socket.on('deleteDevice', () => getDevices());
     Socket.on('postSensor', () => setTimeout(getDevices, 3000));
+    Socket.on('postEvent', getDevices);
   }, []);
 
   return (
@@ -129,7 +130,7 @@ const LatestSales = props => {
       </CardContent> */}
       <CardContent>
         <div className={classes.chartContainer}>
-          {devices && <Line data={devices} options={options} />}
+          <Line data={devices} options={options} />
         </div>
       </CardContent>
       {/* {needOverview ? (
