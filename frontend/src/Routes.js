@@ -7,13 +7,7 @@ import { Main as MainLayout, Minimal as MinimalLayout } from './layouts';
 import {
   Dashboard as DashboardView,
   Device as DeviceView,
-  // ProductList as ProductListView,
-  // UserList as UserListView,
-  // Typography as TypographyView,
-  // Icons as IconsView,
-  // Account as AccountView,
-  // Settings as SettingsView,
-  // SignUp as SignUpView,
+  Environment as EnvironmentView,
   SignIn as SignInView,
   NotFound as NotFoundView
 } from './views';
@@ -33,6 +27,12 @@ const Routes = () => {
         exact
         layout={MainLayout}
         path="/devices"
+      />
+      <PrivateRoute
+        component={EnvironmentView}
+        exact
+        layout={MainLayout}
+        path="/environments"
       />
       {/* <RouteWithLayout
         component={UserListView}
