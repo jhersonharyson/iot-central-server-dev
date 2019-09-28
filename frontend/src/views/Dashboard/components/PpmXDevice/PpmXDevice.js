@@ -114,9 +114,6 @@ const PpmXDevice = props => {
     };
 
     return {
-      title: {
-        text: 'CO² por Sensor'
-      },
       tooltip: {
         trigger: 'axis'
       },
@@ -210,7 +207,8 @@ const PpmXDevice = props => {
         //     </Menu>
         //   </div>
         // }
-        title="Níveis de CO²"
+        title="CO² por Sensor"
+        subheader="Atualizado em "
       />
       <Divider />
       {/* <CardContent>

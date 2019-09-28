@@ -5,6 +5,7 @@ import React from 'react';
 import {
   Budget,
   PpmXDevice,
+  PpmXEnvironment,
   TasksProgress,
   TotalProfit,
   TotalUsers,
@@ -26,18 +27,21 @@ const Dashboard = props => {
         <Grid item lg={12} md={12} xl={12} xs={12}>
           <PpmXDevice />
         </Grid>
+        <Grid item lg={12} md={12} xl={12} xs={12}>
+          <PpmXEnvironment />
+        </Grid>
         {/*<Grid item lg={3} sm={6} xl={3} xs={12}>
           <Budget />
         </Grid>
         <Grid item lg={3} sm={6} xl={3} xs={12}>
           <TotalUsers />
-        </Grid>
+        </Grid>*/}
         <Grid item lg={3} sm={6} xl={3} xs={12}>
           <TasksProgress />
         </Grid>
-        <Grid item lg={3} sm={6} xl={3} xs={12}>
+        {/*<Grid item lg={3} sm={6} xl={3} xs={12}>
           <TotalProfit />
-  </Grid>*/}
+        </Grid>*/}
         {/* <Grid
           item
           lg={4}
@@ -57,9 +61,9 @@ const Dashboard = props => {
           <LatestOrders />
         </Grid> */}
       </Grid>
-      {/*<Drawer anchor="right" open={false} onClose={props.drawerOnClose}>
+      <Drawer anchor="right" open={false} onClose={props.drawerOnClose}>
         <div style={{ width: '300px' }}></div>
-      </Drawer>*/}
+      </Drawer>
     </div>
   );
 };
