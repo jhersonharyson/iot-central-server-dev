@@ -1,7 +1,11 @@
-import React, { forwardRef } from 'react';
-
-import PropTypes from 'prop-types';
-import { Dialog, DialogTitle, DialogContent, Button } from '@material-ui/core';
+import {
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Fab
+} from '@material-ui/core';
 import AddBox from '@material-ui/icons/AddBox';
 import ArrowUpward from '@material-ui/icons/ArrowUpward';
 import Check from '@material-ui/icons/Check';
@@ -13,12 +17,15 @@ import Edit from '@material-ui/icons/Edit';
 import FilterList from '@material-ui/icons/FilterList';
 import FirstPage from '@material-ui/icons/FirstPage';
 import LastPage from '@material-ui/icons/LastPage';
+import MyLocationIcon from '@material-ui/icons/MyLocation';
+import RefreshIcon from '@material-ui/icons/Refresh';
 import Remove from '@material-ui/icons/Remove';
 import SaveAlt from '@material-ui/icons/SaveAlt';
 import Search from '@material-ui/icons/Search';
 import ViewColumn from '@material-ui/icons/ViewColumn';
-import MyLocationIcon from '@material-ui/icons/MyLocation';
 import MaterialTable from 'material-table';
+import PropTypes from 'prop-types';
+import React, { forwardRef } from 'react';
 import axios from '../../../../http';
 
 const tableIcons = {
@@ -49,7 +56,7 @@ export default class ListTable extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      selectedValue: '',
+      selectedValue: {},
       dialog: false,
       isLoading: true,
       table: {
@@ -159,7 +166,32 @@ export default class ListTable extends React.Component {
         />
         <MaterialTable
           isLoading={this.state.isLoading}
-          title=""
+          title={
+            <div
+              onClick={() => {
+                this.setState({ isLoading: true });
+                this.componentWillMount();
+                setTimeout(() => this.setState({ isLoading: false }), 2500);
+              }}
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}>
+              {this.state.isLoading ? (
+                <CircularProgress color="secondary" size="small" />
+              ) : (
+                <Fab
+                  color="secondary"
+                  aria-label="atualizar"
+                  size="small"
+                  variant="extended">
+                  <RefreshIcon />
+                  <span style={{ marginRight: '5px' }}>ATUALIZAR</span>
+                </Fab>
+              )}
+            </div>
+          }
           actions={[
             {
               icon: 'my_location',
@@ -167,7 +199,10 @@ export default class ListTable extends React.Component {
               onClick: (event, rowData) => {
                 this.setState({
                   dialog: true,
-                  selectedValue: rowData.location
+
+                  selectedValue: {
+                    ...rowData
+                  }
                 });
               }
             }
@@ -331,7 +366,25 @@ function SimpleDialog(props) {
         {/* onClick={() => handleListItemClick(email)} */}
       </DialogContent>
       <Button onClick={() => onClose()}>FECHAR</Button>
-      <Button onClick={() => onClose()}>POSICIONAR</Button>
+      <Button
+        onClick={async () => {
+          try {
+            const headers = {
+              authentication: localStorage.getItem('authentication')
+            };
+            const response = await axios.put(
+              `devices/${selectedValue.mac}`,
+              { ...selectedValue, x: position.x, y: position.y },
+              { headers }
+            );
+            console.log(response.data);
+          } catch (e) {
+            //
+          }
+          setTimeout(onClose, 600);
+        }}>
+        POSICIONAR
+      </Button>
     </Dialog>
   );
 }
@@ -339,5 +392,5 @@ function SimpleDialog(props) {
 SimpleDialog.propTypes = {
   onClose: PropTypes.func.isRequired,
   open: PropTypes.bool.isRequired,
-  selectedValue: PropTypes.string.isRequired
+  selectedValue: PropTypes.object.isRequired
 };
