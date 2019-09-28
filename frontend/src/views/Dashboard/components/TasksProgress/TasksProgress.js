@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/styles';
@@ -9,10 +9,26 @@ import {
   Typography,
   Avatar,
   LinearProgress,
-  TextField
+  TextField,
+  InputLabel,
+  MenuItem,
+  FormControl,
+  Select,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Input
 } from '@material-ui/core';
+import DateFnsUtils from '@date-io/date-fns';
+import moment from 'moment';
+import {
+  MuiPickersUtilsProvider,
+  DateTimePicker
+} from '@material-ui/pickers';
+import ptBRLocale from "date-fns/locale/pt-BR";
 import InsertChartIcon from '@material-ui/icons/InsertChartOutlined';
-import { useEffect, useState } from 'react';
 import axios from '../../../../http';
 import Socket from '../../../../socket';
 const useStyles = makeStyles(theme => ({
@@ -38,16 +54,73 @@ const useStyles = makeStyles(theme => ({
   },
   progress: {
     marginTop: theme.spacing(3)
-  }
+  },
+  gridFormControl: {
+    marginTop: theme.spacing(3),
+  },
+  containerPicker: {
+    display: 'flex',
+    flexWrap: 'wrap',
+  },
+  formControlPicker: {
+    margin: theme.spacing(1)
+  },
 }));
 
 const TasksProgress = props => {
   const { className, ...rest } = props;
-
   const classes = useStyles();
 
   const [events, setEvents] = useState(undefined);
-  const [minDate, setMinDate] = useState(24);
+  const [minDate, setMinDate] = useState(Date.now() - 60 * 1000 * 60 * 24);
+  const [openValue, setOpenValue] = React.useState(24);
+  const [open, setOpen] = React.useState(false);
+  const [picker, setPicker] = React.useState({
+    open: false,
+    iniDate: null,
+    fimDate: null,
+  });
+
+  const handlePickerChange = name => date => {
+    setPicker({ ...picker, [name]: Date.parse(date) });
+  };
+
+  const handlePickerClickOpen = () => {
+    setPicker({ ...picker, open: true });
+  };
+
+  const handlePickerClose = (save = false) => () => {
+    if (save) {
+      let [dtInicio, dtFim] = [moment(picker.iniDate), moment(picker.fimDate)];
+      let diff = dtFim.diff(dtInicio, 'hours');
+
+      setMinDate(Date.now() - 60 * 1000 * 60 * Math.abs(diff));
+    }
+
+    setPicker({ ...picker, open: false });
+  };
+
+  const handleChange = event => {
+    if (!event.target.value)
+      return setMinDate(Date.now() - 60 * 1000 * 60 * 24);
+
+    setOpenValue(event.target.value);
+    if (event.target.value === 'Personalizado') {
+      handlePickerClickOpen();
+    } else {
+      return setMinDate(
+        parseInt(Date.now() - event.target.value * 60 * 1000 * 60)
+      );
+    }
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleOpen = () => {
+    setOpen(true);
+  };
 
   useEffect(() => {
     async function getDevices() {
@@ -58,7 +131,6 @@ const TasksProgress = props => {
       });
 
       let { events_counter } = response.data;
-      console.warn(events_counter);
       setEvents(events_counter);
     }
 
@@ -86,28 +158,64 @@ const TasksProgress = props => {
             </Avatar>
           </Grid>
         </Grid>
-        {/* <LinearProgress
-          className={classes.progress}
-          value={75.5}
-          variant="determinate"
-        /> */}
-        <Grid item></Grid>
-        <Grid item>
-          <Typography variant="body2" style={{ wordWrap: 'break-word' }}>
-            Ocorrências nas ultimas
-          </Typography>
-          <TextField
-            placeholder="24"
-            onChange={event => {
-              if (!event.target.value)
-                return setMinDate(Date.now() - 60 * 1000 * 60 * 24);
-
-              return setMinDate(
-                parseInt(Date.now() - event.target.value * 60 * 1000 * 60)
-              );
-            }}
-          />
-          <Typography variant="body2">Horas </Typography>
+        <Grid className={classes.gridFormControl} container justify="space-between">
+          <InputLabel htmlFor="evento-intervalo">Ocorrências nas ultimas</InputLabel>
+          <FormControl>
+            <Select
+              open={open}
+              onClose={handleClose}
+              onOpen={handleOpen}
+              value={openValue}
+              onChange={handleChange}
+              inputProps={{
+                id: "evento-intervalo"
+              }}
+            >
+              <MenuItem value={12}>12 horas</MenuItem>
+              <MenuItem value={24}>24 horas</MenuItem>
+              <MenuItem value={48}>48 horas</MenuItem>
+              <MenuItem value={'Personalizado'}>Personalizado</MenuItem>
+            </Select>
+          </FormControl>
+          <Dialog disableBackdropClick disableEscapeKeyDown open={picker.open} onClose={handlePickerClose}>
+            <DialogTitle>Digite o intervalo personalizado para busca dos Eventos</DialogTitle>
+            <DialogContent>
+              <MuiPickersUtilsProvider utils={DateFnsUtils} locale={ptBRLocale}>
+                <Grid container justify="space-around">
+                  <DateTimePicker
+                    className={classes.formControlPicker}
+                    autoOk
+                    ampm={false}
+                    disableFuture
+                    variant="inline"
+                    label="Data inicial"
+                    value={picker.iniDate}
+                    onChange={handlePickerChange('iniDate')}
+                  />
+                </Grid>
+                <Grid container justify="space-around">
+                  <DateTimePicker
+                    className={classes.formControlPicker}
+                    autoOk
+                    ampm={false}
+                    disableFuture
+                    variant="inline"
+                    label="Data Final"
+                    value={picker.fimDate}
+                    onChange={handlePickerChange('fimDate')}
+                  />
+                </Grid>
+              </MuiPickersUtilsProvider>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handlePickerClose()} color="primary">
+                Cancelar
+              </Button>
+              <Button onClick={handlePickerClose(true)} color="primary">
+                Ok
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Grid>
       </CardContent>
     </Card>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import clsx from 'clsx';
-import axios from './../../../../http';
+import axios from '../../../../http';
 import PropTypes from 'prop-types';
 import { Line, Bar } from 'react-chartjs-2';
 import { makeStyles } from '@material-ui/styles';
@@ -16,7 +16,7 @@ import {
   Menu,
   MenuItem
 } from '@material-ui/core';
-import Socket from './../../../../socket';
+import Socket from '../../../../socket';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 
@@ -34,55 +34,31 @@ const useStyles = makeStyles(() => ({
   }
 }));
 
-const LatestSales = props => {
+const PpmXDevice = props => {
   //Style const
   const { className, ...rest } = props;
   const classes = useStyles();
 
-  //Dropdown Menu Option
-  const [graphFilter, setGraphFilter] = useState(Types.MINUTES_GRAPH_TYPE);
-  const [anchorElMenu, setAnchorElMenu] = useState(null);
-
-  function handleClickMenu(event) {
-    setAnchorElMenu(event.currentTarget);
-  }
-
-  function handleCloseMenu(graphType = graphFilter) {
-    setGraphFilter(graphType);
-    setAnchorElMenu(null);
-  }
-
-  //Carrego os dados iniciais
-  const [needOverview, setNeedOverview] = useState(false);
   const [devices, setDevice] = useState([]);
-  let updated_devices = devices;
   useEffect(() => {
     async function getDevices() {
       let authentication = await localStorage.getItem('authentication');
-      let response = await axios.get('devices', {
+      let response = await axios.get('sensors', {
         headers: { authentication }
       });
 
       let dev = response.data;
-      console.warn(dev);
+      console.log(dev);
       if (dev) {
-        // if (dev.lenght > 5) {
-        //   setNeedOverview(true);
-
-        //   dev = dev.filter((device, key) => key < 5);
-        // }
-
-        await setDevice(makeDeviceDataset(dev, graphFilter));
-
-        console.log(devices);
+        //await setDevice();
       }
     }
 
     getDevices();
-    Socket.on('postDevice', () => getDevices());
-    Socket.on('deleteDevice', () => getDevices());
-    Socket.on('postSensor', () => setTimeout(getDevices, 3000));
-    Socket.on('postEvent', getDevices);
+    //Socket.on('postDevice', () => getDevices());
+    //Socket.on('deleteDevice', () => getDevices());
+    //Socket.on('postSensor', () => setTimeout(getDevices, 3000));
+    //Socket.on('postEvent', getDevices);
   }, []);
 
   const getOption = () => {
@@ -117,30 +93,27 @@ const LatestSales = props => {
       itemStyle: {
         opacity: 0.1
       },
-      data: [ 
+      data: [
         [
           {
             xAxis: "2000-06-05"
-          }, 
+          },
           {
             xAxis: "2007-02-12"
           }
-        ], 
+        ],
         [
           {
             xAxis: "2011-06-07"
-          }, 
+          },
           {
             xAxis: "2012-03-14"
           }
-        ] 
+        ]
       ]
     };
-  
-  return {
-      title: {
-        text: 'CO² por Sensor'
-      },
+
+    return {
       tooltip: {
         trigger: 'axis'
       },
@@ -166,7 +139,7 @@ const LatestSales = props => {
         }
       ],
       legend: {
-        data:['Beijing AQI','Beijing AQIs','Beijing AQIe']
+        data: ['Beijing AQI', 'Beijing AQIs', 'Beijing AQIe']
       },
       series: [
         {
@@ -234,7 +207,8 @@ const LatestSales = props => {
         //     </Menu>
         //   </div>
         // }
-        title="Níveis de CO²"
+        title="CO² por Sensor"
+        subheader="Atualizado em "
       />
       <Divider />
       {/* <CardContent>
@@ -261,8 +235,8 @@ const LatestSales = props => {
   );
 };
 
-LatestSales.propTypes = {
+PpmXDevice.propTypes = {
   className: PropTypes.string
 };
 
-export default LatestSales;
+export default PpmXDevice;
