@@ -26,7 +26,7 @@ export async function postDevice(req, res) {
 
   if (!description) return res.status(400).send(DESCRIPTION_ISEMPTY);
 
-  if (!location || location == "")
+  if (!location || location == "" || !(await Location.findById(location)))
     return res.status(400).send(LOCATION_ISINVALID);
 
   if (!position || position == {})
@@ -113,23 +113,59 @@ export async function deleteDevice(req, res, next) {
 }
 
 export async function updateDevice(req, res, next) {
-  if (!(await isExist(req.params.mac))) {
+  const up = await isExist(req.params.mac);
+  if (!up) {
     return res.send(MAC_ISNOTFOUND);
   }
 
-  await Device.updateOne(
+  const { name, description, location, x, y } = req.body;
+
+  if (!name || name == "" || name.length < 3 || name.length > 80)
+    return res.status(400).send(NAMED_ISINVALID);
+  if (!(await Location.findById(location)))
+    return res.status(400).send(LOCATION_ISINVALID);
+  if ((x && !y) || (!x && y)) return res.status(400).send(POSITION_ISINVALID);
+
+  const device = await Device.findOneAndUpdate(
     { mac: req.params.mac },
-    {
-      $set: {
-        name: req.body.name,
-        description: req.body.description,
-        location: req.body.location,
-        position: req.body.position
-      }
-    }
+    { useFindAndModify: true }
   );
 
-  const up = await isExist(req.params.mac);
+  if (!device) {
+    return res.send(MAC_ISNOTFOUND);
+  }
+  if (name) {
+    device.name = name;
+  }
+  if (description === "" || description != undefined || description != null) {
+    device.description = description;
+  }
+  if (x && y) {
+    device.position = { x, y };
+  }
+  if (location) {
+    //before
+    const oldLocation = await Location.findById(up.location);
+    if (oldLocation) {
+      oldLocation.device.pull({ _id: up._id });
+
+      //after
+      const newLocation = await Location.findById(location);
+      if (newLocation) {
+        newLocation.device.push({ _id: up._id });
+        console.log("save");
+        oldLocation.save();
+        newLocation.save();
+        device.location = location;
+      } else {
+        return res.status(400).send(LOCATION_ISINVALID);
+      }
+    } else {
+      return res.status(400).send(LOCATION_ISINVALID);
+    }
+  }
+
+  await device.save();
 
   req.io.emit("updateDevice", up);
   res.send(up);
@@ -146,6 +182,22 @@ export async function test(req, res, next) {
       await Location.deleteMany({});
     }
   }
+}
+
+export async function getAllDevices(req, res) {
+  const devices = await Device.find(
+    { status: { $ne: -1 } },
+    {
+      status: 1,
+      name: 1,
+      mac: 1,
+      description: 1,
+      location: 1,
+      position: 1
+    }
+  ).sort([["createAt", -1]]);
+  // .limit(10);
+  res.send(devices);
 }
 
 export async function isExist(mac) {

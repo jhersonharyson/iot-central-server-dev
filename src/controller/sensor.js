@@ -4,56 +4,90 @@ import Location from "../models/location";
 import Sensor from "../models/sensor";
 import Event from "../models/event";
 import { jwtBuilder } from "../security/jwtBuilder";
+import moment from 'moment';
 const constants = global.constants;
 
 export async function postSensor(req, res) {
   try {
-    const { token, sensorData } = req.body;
-    const mac = req.userId;
-    const device = await isExist(req.userId);
+    const { userId: mac, body: { sensorData } } = req;
+
+    const device = await isExist(mac);
     if (!device) {
       return res.send(MAC_ISNOTFOUND);
     }
 
-    const deviceId = device._id;
-    const location = device.location;
-    const position = device.position;
-
+    const { _id: deviceId, location, position } = device;
     if (mac) {
       try {
-        await sensorData.map(async function(arr) {
-          let type = arr.type;
-          let value = arr.value;
-          const sensor = new Sensor({
-            deviceId,
-            type,
-            value,
-            location,
-            position
+        await Promise.all(
+          sensorData.map(async function (arr) {
+            let { type, value } = arr;
+
+            const sensor = new Sensor({ deviceId, type, value, location, position });
+            await sensor.save();
+
+            device
+              .sensorData
+              .push(sensor._id);
+            await device.save();
+          })
+        );
+
+        let sensorsByDevice = await Device
+          .find()
+          .select('_id')
+          .where('location')
+          .equals(device.location)
+          .populate({
+            path: 'sensorData',
+            select: 'value -_id',
+            options: {
+              limit: 1,
+              sort: {
+                createAt: -1
+              }
+            }
           });
-          await sensor.save();
-          const device = await Device.findById(deviceId);
 
-          device.sensorData.push(sensor._id);
-          await device.save();
+        let maxSensorValue = -1;
+        let sumSensorValue = sensorsByDevice
+          .reduce((sumSensorByDevice, sensorByDevice) => {
+            let sensorByDeviceValue = sensorByDevice.sensorData[0].value;
 
-          const verify_resp = await verify_event(sensor);
-          if (verify_resp) {
-            console.log("emmitind");
-            req.io.emit("postEvent", verify_resp);
+            if (sensorByDeviceValue > maxSensorValue)
+              maxSensorValue = sensorByDeviceValue;
+
+            return sumSensorByDevice += sensorByDeviceValue;
+          }, 0);
+
+        req.io.emit(
+          'redrawLocationGraphic',
+          {
+            location: (await Location.findById(device.location, 'name')).name,
+            avg: Math.floor(sensorsByDevice.length ? sumSensorValue / sensorsByDevice.length : 0),
+            max: maxSensorValue
           }
-        });
+        );
       } catch (e) {
-        return res.status(400).send({ error: e });
+        return res
+          .status(400)
+          .send({ error: e });
       }
 
-      req.io.emit("postSensor", sensorData);
-      res.send({ status: "ok", token: jwtBuilder({ id: deviceId }) });
+      //req.io.emit("postSensor", sensorData);
+      res.send({
+        status: "ok",
+        token: jwtBuilder({ id: deviceId })
+      });
     } else {
-      return res.status(401).send(MAC_ISINVALID);
+      return res
+        .status(401)
+        .send(MAC_ISINVALID);
     }
   } catch (e) {
-    res.send({ error: e });
+    res
+      .status(500)
+      .send({ error: e });
   }
 }
 
@@ -94,7 +128,10 @@ export async function isExist(mac) {
 }
 
 export async function getAllSensors(req, res) {
-  const sensors = await Sensor.find({}); //.populate("deviceId");
+  const sensors = await Sensor
+    .find()
+    .where('createAt')
+    .gte(moment().subtract(1, 'day'));
 
   res.send(sensors);
 }
@@ -111,7 +148,7 @@ const verify_event = async sensor => {
           type: s.type,
           description: `${new Date().toLocaleString()} - Nível de ${
             s.type
-          } em ${s.value} ppm`,
+            } em ${s.value} ppm`,
           sensorData: [s._id]
         });
         console.log("create");
@@ -130,7 +167,7 @@ const verify_event = async sensor => {
         incident.sensorData.push(s._id);
         incident.description = `${new Date().toLocaleString()} - Nível de ${
           s.type
-        } em ${s.value} ppm`;
+          } em ${s.value} ppm`;
         incident.save();
         return incident;
       } else {
@@ -139,7 +176,7 @@ const verify_event = async sensor => {
             type: s.type,
             description: `${new Date().toLocaleString()} - Nível de ${
               s.type
-            } em ${s.value} ppm`,
+              } em ${s.value} ppm`,
             sensorData: [s._id]
           });
           console.log("create");

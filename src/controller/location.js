@@ -7,3 +7,17 @@ export async function getAllLocations(req, res) {
   });
   res.send({ locations });
 }
+
+export async function postLocation(req, res) {
+  const { name, description } = req.body;
+
+  //if (!name) res.send("error");
+
+  console.log(req.file.filename);
+  res.send("ok");
+
+  // await Location.create({
+  //   name,
+  //   description
+  // });
+}
