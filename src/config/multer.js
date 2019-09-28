@@ -13,6 +13,7 @@ const multer_upload = {
         if (err) callback(err);
 
         const filename = `${hash.toString("hex")}-${file.originalname}`;
+        //console.log(filename);
         callback(null, filename);
       });
     }
