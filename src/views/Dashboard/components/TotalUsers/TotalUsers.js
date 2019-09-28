@@ -1,11 +1,13 @@
-import { Avatar, Card, CardContent, Grid, Typography } from '@material-ui/core';
-import SettingsRemoteIcon from '@material-ui/icons/SettingsRemote';
-import { makeStyles } from '@material-ui/styles';
+import React from 'react';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
-import React from 'react';
 import axios from './../../../../http';
 import Socket from './../../../../socket';
+import { makeStyles } from '@material-ui/styles';
+import { Card, CardContent, Grid, Typography, Avatar } from '@material-ui/core';
+import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
+import DevicesIcon from '@material-ui/icons/Devices';
+import SettingsRemoteIcon from '@material-ui/icons/SettingsRemote';
 
 const useStyles = makeStyles(theme => ({
   root: {
