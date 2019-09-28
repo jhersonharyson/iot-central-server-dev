@@ -1,4 +1,4 @@
-export { default } from './LatestSales';
+export { default } from './PpmXDevice';
 
 export const Types = {
     MINUTES_GRAPH_TYPE: 1,
