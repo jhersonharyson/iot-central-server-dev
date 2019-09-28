@@ -16,6 +16,25 @@ import axios from '../../../../http';
 
 import PropTypes from 'prop-types';
 
+const schema = {
+  email: {
+    presence: { allowEmpty: false, message: 'é obrigatório' },
+    email: {
+      message: 'informado não é válido'
+    },
+    length: {
+      maximum: 64
+    }
+  },
+  password: {
+    presence: { allowEmpty: false, message: 'é obrigatório' },
+
+    length: {
+      maximum: 128
+    }
+  }
+};
+
 class DeviceRegistration extends Component {
   constructor(props) {
     super(props);
@@ -23,10 +42,14 @@ class DeviceRegistration extends Component {
       name: '',
       desc: '',
       mac: '',
+      isValid: false,
+      values: {},
+      touched: {},
+      errors: {},
       environment: 0,
       position: false,
       feedback: false,
-
+      erro_field: '',
       locations: []
     };
     this.inputLabelDropdown = React.createRef();
@@ -83,6 +106,14 @@ class DeviceRegistration extends Component {
     } else if (!position) {
       this.message =
         'O posicionamento do dispositivo no ambiente é obrigatório.';
+      this.setState({ feedback: true });
+      return;
+    } else if (name.length < 3 || name.length > 80) {
+      this.message = 'O nome deve conter entre 3 e 80 caracteres.';
+      this.setState({ feedback: true });
+      return;
+    } else if (mac.length != 17) {
+      this.message = 'O endereço informado MAC não é válido.';
       this.setState({ feedback: true });
       return;
     }
@@ -198,7 +229,7 @@ class DeviceRegistration extends Component {
                 );
               })}
             </Select>
-
+            <br />
             {this.state.environment != 0 && (
               <img
                 draggable={false}
@@ -211,10 +242,9 @@ class DeviceRegistration extends Component {
                   });
                 }}
                 ref={this.imageRef}
-                src="https://randomuser.me/api/portraits/men/65.jpg"
+                src="https://imagens-revista-pro.vivadecora.com.br/uploads/2019/05/Planta-baixa-com-cobertura.png"
               />
             )}
-
             {this.state.environment != 0 && this.state.position['y'] && (
               <div
                 style={{

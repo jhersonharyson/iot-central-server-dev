@@ -9,6 +9,11 @@ export function makeDeviceDataset(devices = [], graphFilter) {
   const datasets = devices.map(device => {
     let color = randomHexColor();
     max = max < device.sensorData.length ? device.sensorData.length : max;
+    try {
+      const a = device.location.name;
+    } catch (e) {
+      console.log(device);
+    }
     return {
       label: `${device.location.name} - ${device.name}`,
       backgroundColor: color,

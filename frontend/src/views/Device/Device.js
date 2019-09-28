@@ -13,7 +13,7 @@ import PropTypes from 'prop-types';
 import React, { useState } from 'react';
 import { withRouter } from 'react-router-dom';
 
-import { DeviceRegistration } from './components';
+import { DeviceRegistration, ListTable } from './components';
 
 const schema = {
   email: {
@@ -129,7 +129,7 @@ const useStyles = makeStyles(theme => ({
     margin: theme.spacing(2, 0)
   },
   fab: {
-    position: 'absolute',
+    position: 'fixed',
     bottom: '15px',
     right: '15px'
   }
@@ -199,7 +199,7 @@ const Device = props => {
             <DeviceRegistration goBack={toggleRegistration} />
           ) : (
             <>
-              <Paper
+              {/* <Paper
                 className={classes.root}
                 style={{
                   paddingLeft: '15px',
@@ -215,9 +215,12 @@ const Device = props => {
                 <IconButton className={classes.iconButton} aria-label="search">
                   <SearchIcon />
                 </IconButton>
-              </Paper>
-              <div style={{ marginTop: '25px' }}>
-                <Typography variant="h5">Lista de dispositivos</Typography>
+              </Paper> */}
+              <div style={{ marginTop: '15px' }}>
+                <Typography variant="h4">Lista de dispositivos</Typography>
+                <div style={{ padding: '15px', paddingTop: '25px' }}>
+                  <ListTable />
+                </div>
               </div>
             </>
           )}

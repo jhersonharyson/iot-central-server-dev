@@ -4,6 +4,9 @@ import { basename } from "path";
 const CONTROLLER_PATH = "../controller/" + basename(__filename);
 
 router.post("/devices", require(CONTROLLER_PATH).postDevice);
+
+router.get("/devices/all*?", require(CONTROLLER_PATH).getAllDevices);
+
 router.get("/devices/:mac/sensors", require(CONTROLLER_PATH).getDeviceData);
 router.get("/devices/:mac*?", require(CONTROLLER_PATH).getDevice);
 router.put("/devices/:mac", require(CONTROLLER_PATH).updateDevice);
