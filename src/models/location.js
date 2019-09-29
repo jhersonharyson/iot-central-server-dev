@@ -10,6 +10,11 @@ const locations = new Schema({
     time: Date,
     value: Boolean
   }],
+  status: {
+    type: Number,
+    enum: [1, -1],
+    default: 1
+  },
   createAt: {
     type: Date,
     default: Date.now

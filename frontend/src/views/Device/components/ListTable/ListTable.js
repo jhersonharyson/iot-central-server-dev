@@ -341,6 +341,9 @@ function SimpleDialog(props) {
             style={{ margin: 'auto' }}
             draggable={false}
             onClick={event => {
+              event.persist();
+              console.log(event);
+
               console.log({
                 y: event.pageY,
                 x: event.pageX
