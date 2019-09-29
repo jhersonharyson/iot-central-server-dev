@@ -94,21 +94,21 @@ const PpmXEnvironment = props => {
         }
       },
       legend: {
-        data: ['ABC', 'DEF']
+        data: ['Média', 'Máxima']
       },
       xAxis: {
         type: 'category',
         data: [
-          '周一',
-          '周二',
-          '周三',
-          '周四',
-          '周五',
-          '周六',
-          '周日',
-          '周五',
-          '周六',
-          '周日'
+          'Sala 01',
+          'Sala 02',
+          'Sala 03',
+          'Sala 04',
+          'Sala 05',
+          'Sala 06',
+          'Sala 07',
+          'Sala 08',
+          'Sala 09',
+          'Sala 10'
         ]
       },
       yAxis: {
@@ -116,7 +116,7 @@ const PpmXEnvironment = props => {
       },
       series: [
         {
-          name: 'ABC',
+          name: 'Média',
           type: 'bar',
           stack: '0',
           itemStyle: {
@@ -126,7 +126,7 @@ const PpmXEnvironment = props => {
           data: [320, 302, 301, 334, 390, 330, 320, 389, 342, 312]
         },
         {
-          name: 'DEF',
+          name: 'Máxima',
           type: 'bar',
           stack: '0',
           itemStyle: {
@@ -142,7 +142,7 @@ const PpmXEnvironment = props => {
   return (
     <>
       <Card {...rest} className={clsx(classes.root, className)}>
-        <CardHeader title="CO² por Ambiente" subheader="Atualizado em " />
+        <CardHeader title="CO² por Ambiente" />
         <Divider />
         <CardContent>
           <div className={classes.chartContainer}>
@@ -164,7 +164,7 @@ const PpmXEnvironment = props => {
         open={detail.active}
         handleToggle={handleToggle}
         title={detail.active && detail.data.name}>
-        <PpmXDevice data={detail.data} />
+        <PpmXDevice data={detail.data} style={{ margin: '20px' }} />
       </Detail>
     </>
   );

@@ -128,11 +128,11 @@ const PpmXDevice = props => {
         }
       ],
       legend: {
-        data: ['Beijing AQI', 'Beijing AQIs', 'Beijing AQIe']
+        data: ['Dispositivo 01', 'Dispositivo 02', 'Dispositivo 03']
       },
       series: [
         {
-          name: 'Beijing AQI',
+          name: 'Dispositivo 01',
           type: 'line',
           smooth: true,
           data: data.map(item => item[1] * 15),
@@ -140,7 +140,7 @@ const PpmXDevice = props => {
           markArea
         },
         {
-          name: 'Beijing AQIs',
+          name: 'Dispositivo 02',
           type: 'line',
           smooth: true,
           data: data.map(item => item[1] * 11),
@@ -148,7 +148,7 @@ const PpmXDevice = props => {
           markArea
         },
         {
-          name: 'Beijing AQIe',
+          name: 'Dispositivo 03',
           type: 'line',
           smooth: true,
           data: data.map(item => item[1] * 6),
@@ -161,7 +161,7 @@ const PpmXDevice = props => {
 
   return (
     <Card {...rest} className={clsx(classes.root, className)}>
-      <CardHeader title="CO² por Sensor" subheader="Atualizado em " />
+      <CardHeader title="CO² por Sensor" />
       <Divider />
       <CardContent>
         <div className={classes.chartContainer}>

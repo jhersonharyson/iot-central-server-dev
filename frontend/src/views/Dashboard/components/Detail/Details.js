@@ -38,7 +38,8 @@ export default function Details(props) {
       fullScreen
       open={open}
       onClose={handleToggle}
-      TransitionComponent={Transition}>
+      TransitionComponent={Transition}
+      style={{ paddingTop: '65px' }}>
       <AppBar>
         <Toolbar style={{ display: 'flex', justifyContent: 'space-between' }}>
           <Typography style={{ color: '#fff' }} variant="h4">
