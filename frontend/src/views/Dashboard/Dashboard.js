@@ -1,7 +1,8 @@
 import {
-  Grid,
-  Fab,
+  Avatar,
   Badge,
+  Fab,
+  Grid,
   List,
   Zoom,
   ListItemIcon,
@@ -11,6 +12,11 @@ import {
   Tooltip
 } from '@material-ui/core';
 import Drawer from '@material-ui/core/Drawer';
+import {
+  MeetingRoom as MeetingOnIcon,
+  MeetingRoomOutlined as MeetingOffIcon,
+  ToysOutlined as ToysIcon
+} from '@material-ui/icons';
 import { makeStyles } from '@material-ui/styles';
 import React, { useEffect, useState } from 'react';
 import axios from './../../http';
@@ -20,15 +26,12 @@ import { MeetingRoom as MeetingOnIcon } from '@material-ui/icons';
 import { MeetingRoomOutlined as MeetingOffIcon } from '@material-ui/icons';
 
 import {
-  Budget,
   PpmXDevice,
   PpmXEnvironment,
   TasksProgress,
   TotalProfit,
-  TotalUsers,
-  UsersByDevice
+  TotalUsers
 } from './components';
-
 import './styles.css';
 
 const useStyles = makeStyles(theme => ({
@@ -95,7 +98,8 @@ const Dashboard = props => {
       },
       {
         headers: { authentication }
-      });
+      }
+    );
   }
 
   async function handleToggleOcupacaoListItem(occup) {
@@ -107,15 +111,16 @@ const Dashboard = props => {
       },
       {
         headers: { authentication }
-      });
+      }
+    );
   }
 
   return (
     <div className={classes.root} style={{ paddingBottom: '100px' }}>
       <Grid container spacing={4}>
-        <Grid item lg={12} md={12} xl={12} xs={12}>
+        {/* <Grid item lg={12} md={12} xl={12} xs={12}>
           <PpmXDevice />
-        </Grid>
+        </Grid> */}
         <Grid item lg={12} md={12} xl={12} xs={12}>
           <PpmXEnvironment />
         </Grid>
@@ -160,11 +165,16 @@ const Dashboard = props => {
         <div style={{ width: '300px' }}>
           <List>
             {infladores.map(inf => (
-              <ListItem button onClick={() => handleToggleInfladoresListItem(inf)} key={inf._id}>
+              <ListItem
+                button
+                onClick={() => handleToggleInfladoresListItem(inf)}
+                key={inf._id}>
                 <ListItemIcon>
                   <Avatar
                     className={inf.value ? 'rotation' : ''}
-                    style={{ backgroundColor: inf.value ? '#24a024' : '#908f8fad' }}>
+                    style={{
+                      backgroundColor: inf.value ? '#24a024' : '#908f8fad'
+                    }}>
                     <ToysIcon />
                   </Avatar>
                 </ListItemIcon>
@@ -186,10 +196,15 @@ const Dashboard = props => {
         <div style={{ width: '300px' }}>
           <List>
             {ocupacao.map(occup => (
-              <ListItem button onClick={() => handleToggleOcupacaoListItem(occup)} key={occup._id}>
+              <ListItem
+                button
+                onClick={() => handleToggleOcupacaoListItem(occup)}
+                key={occup._id}>
                 <ListItemIcon>
                   <Avatar
-                    style={{ backgroundColor: occup.value ? '#24a024' : '#908f8fad' }}>
+                    style={{
+                      backgroundColor: occup.value ? '#24a024' : '#908f8fad'
+                    }}>
                     {occup.value ? <MeetingOnIcon /> : <MeetingOffIcon />}
                   </Avatar>
                 </ListItemIcon>
