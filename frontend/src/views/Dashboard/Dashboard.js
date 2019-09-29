@@ -3,16 +3,18 @@ import {
   Fab,
   Badge,
   List,
+  Zoom,
   ListItemIcon,
   ListItemText,
   Avatar,
-  ListItem
+  ListItem,
+  Tooltip
 } from '@material-ui/core';
 import Drawer from '@material-ui/core/Drawer';
 import { makeStyles } from '@material-ui/styles';
 import React, { useEffect, useState } from 'react';
 import axios from './../../http';
-import socket from './../../socket';
+import Socket from './../../socket';
 import { ToysOutlined as ToysIcon } from '@material-ui/icons';
 import { MeetingRoom as MeetingOnIcon } from '@material-ui/icons';
 import { MeetingRoomOutlined as MeetingOffIcon } from '@material-ui/icons';
@@ -68,7 +70,7 @@ const Dashboard = props => {
     getOcupacao();
   }, []);
 
-  socket.on('updateActuator', infSocketed => {
+  Socket.on('updateActuator', infSocketed => {
     let _infladores = infladores;
     let infIndex = _infladores.findIndex(i => i._id === infSocketed._id);
 
@@ -76,7 +78,7 @@ const Dashboard = props => {
     setInfladores(_infladores);
   });
 
-  socket.on('updateLocation', occupSocketed => {
+  Socket.on('updateLocation', occupSocketed => {
     let _ocupacao = ocupacao;
     let occupIndex = _ocupacao.findIndex(i => i._id === occupSocketed._id);
 
@@ -135,18 +137,22 @@ const Dashboard = props => {
             badgeContent={infladores.filter(i => i.value).length}
             color="error"
             onClick={() => setDrawOne(true)}>
-            <Fab size="small" color="secondary" >
-              <ToysIcon className={infladores.filter(i => i.value).length ? 'rotation' : ''} />
-            </Fab>
+            <Tooltip TransitionComponent={Zoom} title="Infladores" placement="left">
+              <Fab size="small" color="secondary" >
+                <ToysIcon className={infladores.filter(i => i.value).length ? 'rotation' : ''} />
+              </Fab>
+            </Tooltip>
           </Badge>
           <Badge
             className={classes.margin}
             badgeContent={ocupacao.filter(i => i.value).length}
             color="error"
             onClick={() => setDrawTwo(true)}>
-            <Fab size="small" color="secondary">
-              {ocupacao.filter(i => i.value).length ? <MeetingOnIcon /> : <MeetingOffIcon />}
-            </Fab>
+            <Tooltip TransitionComponent={Zoom} title="Ocupação dos Ambientes" placement="left">
+              <Fab size="small" color="secondary">
+                {ocupacao.filter(i => i.value).length ? <MeetingOnIcon /> : <MeetingOffIcon />}
+              </Fab>
+            </Tooltip>
           </Badge>
         </div>
       </div>
@@ -201,7 +207,7 @@ const Dashboard = props => {
           </List>
         </div>
       </Drawer>
-    </div>
+    </div >
   );
 };
 
