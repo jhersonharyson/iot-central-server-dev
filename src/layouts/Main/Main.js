@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import clsx from 'clsx';
-import { makeStyles, useTheme } from '@material-ui/styles';
-import { useMediaQuery } from '@material-ui/core';
-import Snackbar from '@material-ui/core/Snackbar';
-import IconButton from '@material-ui/core/IconButton';
+import { Typography, useMediaQuery } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
+import Dialog from '@material-ui/core/Dialog';
+import IconButton from '@material-ui/core/IconButton';
+import Snackbar from '@material-ui/core/Snackbar';
 import CloseIcon from '@material-ui/icons/Close';
+import { makeStyles, useTheme } from '@material-ui/styles';
+import clsx from 'clsx';
+import PropTypes from 'prop-types';
+import React, { useState } from 'react';
 import Socket from '../../socket';
 import { Sidebar, Topbar } from './components';
 
@@ -39,11 +40,17 @@ const Main = props => {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarFeedback, setSnackbarFeedback] = useState(null);
 
+  let interval = null;
+
+  React.useEffect(() => {
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
+
   const handleSidebarOpen = () => {
     setOpenSidebar(true);
   };
-
-  //setTimeout(() => setOpenSnackbar(true), 10000);
 
   const handleSidebarClose = () => {
     setOpenSidebar(false);
@@ -53,6 +60,7 @@ const Main = props => {
   Socket.on('postEvent', data => {
     setSnackbarFeedback(data.description);
     setOpenSnackbar(true);
+    beep(100, 500, 500, 4, 1000);
     // browsers limit the number of concurrent audio contexts, so you better re-use'em
   });
 
@@ -69,12 +77,51 @@ const Main = props => {
         variant={isDesktop ? 'persistent' : 'temporary'}
       />
       <main className={classes.content}>{children}</main>
-      {openSnackbar && beep(50, 500, 500, 3, 1000)}
-      <Snack
+
+      <Dialog
         open={openSnackbar}
-        onClose={() => setOpenSnackbar(false)}
-        message={snackbarFeedback}
-      />
+        disableBackdropClick
+        onClose={() => {
+          clearInterval(interval);
+          setOpenSnackbar(false);
+        }}
+        aria-labelledby="responsive-dialog-title">
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+          <div style={{ padding: '15px', width: '300px' }}>
+            <Typography variant="h4" style={{ alignSelf: 'flex-start' }}>
+              ALERTA
+            </Typography>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                padding: '25px'
+              }}>
+              <CloseIcon style={{ fontSize: '96px', color: 'red' }} />
+            </div>
+            <Typography>{`${snackbarFeedback ||
+              'aasd asda sd adsa da sda sdas da dsas da da adasd'}`}</Typography>
+            <Button
+              fullWidth
+              variant="outlined"
+              style={{ marginTop: '15px' }}
+              onClick={() => {
+                clearInterval(interval);
+                setOpenSnackbar(false);
+              }}
+              color="primary"
+              autoFocus>
+              FECHAR
+            </Button>
+          </div>
+        </div>
+      </Dialog>
     </div>
   );
 };
