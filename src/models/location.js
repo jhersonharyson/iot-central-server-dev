@@ -6,6 +6,16 @@ const locations = new Schema({
   description: String,
   img_url: String,
   device: [{ type: Schema.Types.ObjectId, ref: "device" }],
+  value: Boolean,
+  occupation: [{
+    time: { type: Date, default: Date.now },
+    value: Boolean
+  }],
+  status: {
+    type: Number,
+    enum: [1, -1],
+    default: 1
+  },
   createAt: {
     type: Date,
     default: Date.now

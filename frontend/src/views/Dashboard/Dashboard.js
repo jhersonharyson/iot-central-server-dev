@@ -1,16 +1,26 @@
-import { Grid } from '@material-ui/core';
-import Drawer from '@material-ui/core/Drawer';
-import { makeStyles } from '@material-ui/styles';
-import React from 'react';
 import {
-  Budget,
-  PpmXDevice,
+  Avatar,
+  Badge,
+  Fab,
+  Grid,
+  List,
+  Zoom,
+  ListItemIcon,
+  ListItemText,
+  ListItem,
+  Tooltip
+} from '@material-ui/core';
+
+import { makeStyles } from '@material-ui/styles';
+import React, { useEffect, useState } from 'react';
+
+import {
   PpmXEnvironment,
   TasksProgress,
-  TotalProfit,
   TotalUsers,
-  UsersByDevice
+  BarraLateral
 } from './components';
+import './styles.css';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -22,48 +32,19 @@ const Dashboard = props => {
   const classes = useStyles();
 
   return (
-    <div className={classes.root}>
-      <Grid container spacing={4}>
-        <Grid item lg={12} md={12} xl={12} xs={12}>
-          <PpmXDevice />
-        </Grid>
+    <div className={classes.root} style={{ paddingBottom: '100px' }}>
+      <Grid container spacing={3}>
         <Grid item lg={12} md={12} xl={12} xs={12}>
           <PpmXEnvironment />
         </Grid>
-        {/*<Grid item lg={3} sm={6} xl={3} xs={12}>
-          <Budget />
-        </Grid>
-        <Grid item lg={3} sm={6} xl={3} xs={12}>
-          <TotalUsers />
-        </Grid>*/}
         <Grid item lg={3} sm={6} xl={3} xs={12}>
           <TasksProgress />
         </Grid>
-        {/*<Grid item lg={3} sm={6} xl={3} xs={12}>
-          <TotalProfit />
-        </Grid>*/}
-        {/* <Grid
-          item
-          lg={4}
-          md={6}
-          xl={3}
-          xs={12}
-        >
-          <LatestProducts />
+        <Grid item lg={3} sm={6} xl={3} xs={12}>
+          <TotalUsers />
         </Grid>
-        <Grid
-          item
-          lg={8}
-          md={12}
-          xl={9}
-          xs={12}
-        >
-          <LatestOrders />
-        </Grid> */}
       </Grid>
-      <Drawer anchor="right" open={false} onClose={props.drawerOnClose}>
-        <div style={{ width: '300px' }}></div>
-      </Drawer>
+      <BarraLateral />
     </div>
   );
 };

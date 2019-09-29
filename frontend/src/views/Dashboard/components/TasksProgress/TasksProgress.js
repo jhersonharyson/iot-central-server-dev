@@ -159,7 +159,6 @@ const TasksProgress = props => {
           </Grid>
         </Grid>
         <Grid className={classes.gridFormControl} container justify="space-between">
-          <InputLabel htmlFor="evento-intervalo">Ocorrências nas ultimas</InputLabel>
           <FormControl>
             <Select
               open={open}
@@ -167,18 +166,15 @@ const TasksProgress = props => {
               onOpen={handleOpen}
               value={openValue}
               onChange={handleChange}
-              inputProps={{
-                id: "evento-intervalo"
-              }}
             >
-              <MenuItem value={12}>12 horas</MenuItem>
-              <MenuItem value={24}>24 horas</MenuItem>
-              <MenuItem value={48}>48 horas</MenuItem>
+              <MenuItem value={12}>Últimas 12 horas</MenuItem>
+              <MenuItem value={24}>Últimas 24 horas</MenuItem>
+              <MenuItem value={48}>Últimas 48 horas</MenuItem>
               <MenuItem value={'Personalizado'}>Personalizado</MenuItem>
             </Select>
           </FormControl>
           <Dialog disableBackdropClick disableEscapeKeyDown open={picker.open} onClose={handlePickerClose}>
-            <DialogTitle>Digite o intervalo personalizado para busca dos Eventos</DialogTitle>
+            <DialogTitle>Digite o intervalo personalizado</DialogTitle>
             <DialogContent>
               <MuiPickersUtilsProvider utils={DateFnsUtils} locale={ptBRLocale}>
                 <Grid container justify="space-around">

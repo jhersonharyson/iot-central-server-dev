@@ -80,11 +80,24 @@ class DeviceRegistration extends Component {
 
   handleChange = name => event => {
     if (name == 'environment') {
+      const location = this.state.locations.find(
+        x => x._id == event.target.value
+      );
+      let img_url = '';
+
+      if (location && location.img_url != null && location.img_url != '') {
+        img_url = location.img_url;
+      }
+
+      console.log({ e: event.target.value, img_url });
+
       this.setState({
         ...this.state,
         [name]: event.target.value,
-        position: false
+        position: false,
+        img_url: img_url != '' && img_url != null ? img_url : ''
       });
+      return;
     }
     this.setState({ ...this.state, [name]: event.target.value });
   };
@@ -230,7 +243,7 @@ class DeviceRegistration extends Component {
               })}
             </Select>
             <br />
-            {this.state.environment != 0 && (
+            {this.state.environment != 0 && this.state.img_url.length > 20 && (
               <img
                 draggable={false}
                 onClick={event => {
@@ -241,8 +254,7 @@ class DeviceRegistration extends Component {
                     }
                   });
                 }}
-                ref={this.imageRef}
-                src="https://imagens-revista-pro.vivadecora.com.br/uploads/2019/05/Planta-baixa-com-cobertura.png"
+                src={this.state.img_url}
               />
             )}
             {this.state.environment != 0 && this.state.position['y'] && (
