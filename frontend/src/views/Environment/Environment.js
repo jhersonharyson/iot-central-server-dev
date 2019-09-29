@@ -13,7 +13,7 @@ import PropTypes from 'prop-types';
 import React, { useState } from 'react';
 import { withRouter } from 'react-router-dom';
 
-import { EnvironmentRegistration } from './components';
+import { EnvironmentRegistration, ListTable } from './components';
 
 const schema = {
   email: {
@@ -218,6 +218,9 @@ const Environment = props => {
               </Paper>
               <div style={{ marginTop: '25px' }}>
                 <Typography variant="h5">Lista de ambientes</Typography>
+                <div style={{ padding: '15px', paddingTop: '25px' }}>
+                  <ListTable />
+                </div>
               </div>
             </>
           )}

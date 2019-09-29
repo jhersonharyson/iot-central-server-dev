@@ -23,21 +23,36 @@ export async function getAllLocations(req, res) {
 export async function postLocationWithFile(req, res) {
   const { name, description } = req.body;
 
-  //if (!name) res.send("error");
-
   console.log(req.file.filename);
   res.send("ok");
-
-  // await Location.create({
-  //   name,
-  //   description
-  // });
 }
 
 export async function postLocation(req, res) {
   const { name, description, img_url } = req.body;
   if (!name || name == "" || name.length < 3 || name.length > 80)
     return res.status(400).send(NAMED_ISINVALID);
+  if (!description || description == "")
+    return res.status(400).send(DESCRIPTION_ISEMPTY);
+
+  try {
+    const location = await Location.create({
+      name,
+      description,
+      img_url
+    });
+    console.log(location);
+    res.send(location);
+  } catch (e) {
+    return res.status(400).send(UNEXPECTED_ERROR);
+  }
+}
+
+export async function updateLocation(req, res) {
+  const { name, description, img_url } = req.body;
+  if (name) {
+    if (name.length < 3 || name.length > 80)
+      return res.status(400).send(NAMED_ISINVALID);
+  }
   if (!description || description == "")
     return res.status(400).send(DESCRIPTION_ISEMPTY);
 
