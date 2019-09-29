@@ -245,6 +245,11 @@ class DeviceRegistration extends Component {
             <br />
             {this.state.environment != 0 && this.state.img_url.length > 20 && (
               <img
+                style={{
+                  width: 'auto',
+                  height: 'auto',
+                  backgroundSize: 'cover'
+                }}
                 draggable={false}
                 onClick={event => {
                   this.setState({

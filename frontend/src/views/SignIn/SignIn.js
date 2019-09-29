@@ -282,13 +282,6 @@ const SignIn = props => {
                   size={50}
                   thickness={20}
                 />
-
-                <Typography color="textSecondary" variant="body1">
-                  Esqueceu a senha?{' '}
-                  <Link component={RouterLink} to="/sign-up" variant="h6">
-                    Recuperar
-                  </Link>
-                </Typography>
               </form>
             </div>
           </div>
