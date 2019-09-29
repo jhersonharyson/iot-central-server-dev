@@ -24,7 +24,7 @@ export async function getActuator(req, res, next) {
 	res.send(
 		await Actuator
 			.find(type ? { type } : {})
-			.sort([["createAt", "descending"]])
+			.sort([["createAt"]])
 	);
 }
 

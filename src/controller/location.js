@@ -75,11 +75,35 @@ export async function updateLocation(req, res) {
 
   try {
     await location.save();
+    req.io.emit('updateLocation', location);
     console.log(location);
     res.send(location);
   } catch (e) {
     return res.status(400).send(UNEXPECTED_ERROR);
   }
+}
+
+export async function getOccupation(req, res) {
+  const locations = await Location.find({ status: { $eq: 1 } }, '_id name value occupation');
+  res.send(locations);
+}
+
+export async function updateOccupation(req, res) {
+  try {
+    const loc = await Location.findOneAndUpdate({ _id: req.params.id }, { useAndModify: true });
+    const { value } = req.body;
+    loc.value = value;
+    loc.occupation.push({ value });
+    await loc.save();
+
+    const { _id, name, occupation } = loc;
+
+    req.io.emit('updateLocation', { _id, name, occupation, value });
+    res.send({ _id, name, occupation, value });
+  } catch (err) {
+    res.send({ error: err.message });
+    console.log(err);
+  };
 }
 
 export async function deleteLocation(req, res) {

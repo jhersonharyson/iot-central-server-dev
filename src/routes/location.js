@@ -13,6 +13,8 @@ router.post(
 );
 router.post("/location", require(CONTROLLER_PATH).postLocation);
 router.put("/location", require(CONTROLLER_PATH).updateLocation);
+router.get("/location/occupation", require(CONTROLLER_PATH).getOccupation);
+router.put("/location/:id/occupation", require(CONTROLLER_PATH).updateOccupation);
 router.delete("/location", require(CONTROLLER_PATH).deleteLocation);
 
 export default router;

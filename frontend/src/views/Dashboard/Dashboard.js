@@ -14,7 +14,8 @@ import React, { useEffect, useState } from 'react';
 import axios from './../../http';
 import socket from './../../socket';
 import { ToysOutlined as ToysIcon } from '@material-ui/icons';
-import { MeetingRoomOutlined as MeetingIcon } from '@material-ui/icons';
+import { MeetingRoom as MeetingOnIcon } from '@material-ui/icons';
+import { MeetingRoomOutlined as MeetingOffIcon } from '@material-ui/icons';
 
 import {
   Budget,
@@ -55,6 +56,18 @@ const Dashboard = props => {
     getInfladores();
   }, []);
 
+  useEffect(() => {
+    async function getOcupacao() {
+      let authentication = await localStorage.getItem('authentication');
+      let response = await axios.get('location/occupation', {
+        headers: { authentication }
+      });
+      setOcupacao(response.data);
+    }
+
+    getOcupacao();
+  }, []);
+
   socket.on('updateActuator', infSocketed => {
     let _infladores = infladores;
     let infIndex = _infladores.findIndex(i => i._id === infSocketed._id);
@@ -62,6 +75,38 @@ const Dashboard = props => {
     _infladores.splice(infIndex, 1, infSocketed);
     setInfladores(_infladores);
   });
+
+  socket.on('updateLocation', occupSocketed => {
+    let _ocupacao = ocupacao;
+    let occupIndex = _ocupacao.findIndex(i => i._id === occupSocketed._id);
+
+    _ocupacao.splice(occupIndex, 1, occupSocketed);
+    setOcupacao(_ocupacao);
+  });
+
+  async function handleToggleInfladoresListItem(inf) {
+    let authentication = await localStorage.getItem('authentication');
+    await axios.put(
+      `actuators/${inf._id}`,
+      {
+        value: !inf.value
+      },
+      {
+        headers: { authentication }
+      });
+  }
+
+  async function handleToggleOcupacaoListItem(occup) {
+    let authentication = await localStorage.getItem('authentication');
+    await axios.put(
+      `location/${occup._id}/occupation`,
+      {
+        value: !occup.value
+      },
+      {
+        headers: { authentication }
+      });
+  }
 
   return (
     <div className={classes.root} style={{ paddingBottom: '100px' }}>
@@ -90,8 +135,8 @@ const Dashboard = props => {
             badgeContent={infladores.filter(i => i.value).length}
             color="error"
             onClick={() => setDrawOne(true)}>
-            <Fab size="small" color="secondary">
-              <ToysIcon />
+            <Fab size="small" color="secondary" >
+              <ToysIcon className={infladores.filter(i => i.value).length ? 'rotation' : ''} />
             </Fab>
           </Badge>
           <Badge
@@ -100,7 +145,7 @@ const Dashboard = props => {
             color="error"
             onClick={() => setDrawTwo(true)}>
             <Fab size="small" color="secondary">
-              <MeetingIcon />
+              {ocupacao.filter(i => i.value).length ? <MeetingOnIcon /> : <MeetingOffIcon />}
             </Fab>
           </Badge>
         </div>
@@ -109,15 +154,11 @@ const Dashboard = props => {
         <div style={{ width: '300px' }}>
           <List>
             {infladores.map(inf => (
-              <ListItem>
+              <ListItem button onClick={() => handleToggleInfladoresListItem(inf)} key={inf._id}>
                 <ListItemIcon>
                   <Avatar
-                    className={inf.value && 'rotation'}
-                    style={{
-                      backgroundColor: inf.value ? '#24a024' : '#908f8fad',
-                      transition: '1s',
-                      transform: 'rto'
-                    }}>
+                    className={inf.value ? 'rotation' : ''}
+                    style={{ backgroundColor: inf.value ? '#24a024' : '#908f8fad' }}>
                     <ToysIcon />
                   </Avatar>
                 </ListItemIcon>
@@ -136,7 +177,29 @@ const Dashboard = props => {
         </div>
       </Drawer>
       <Drawer anchor="right" open={drawTwo} onClose={() => setDrawTwo(false)}>
-        <div style={{ width: '300px' }}>asdasdasd Two</div>
+        <div style={{ width: '300px' }}>
+          <List>
+            {ocupacao.map(occup => (
+              <ListItem button onClick={() => handleToggleOcupacaoListItem(occup)} key={occup._id}>
+                <ListItemIcon>
+                  <Avatar
+                    style={{ backgroundColor: occup.value ? '#24a024' : '#908f8fad' }}>
+                    {occup.value ? <MeetingOnIcon /> : <MeetingOffIcon />}
+                  </Avatar>
+                </ListItemIcon>
+                <ListItemText
+                  primary={occup.name}
+                  secondary={
+                    'Atualizado em ' +
+                    new Date(
+                      Math.max(...occup.occupation.map(x => Date.parse(x.time)))
+                    ).toLocaleString()
+                  }
+                />
+              </ListItem>
+            ))}
+          </List>
+        </div>
       </Drawer>
     </div>
   );
