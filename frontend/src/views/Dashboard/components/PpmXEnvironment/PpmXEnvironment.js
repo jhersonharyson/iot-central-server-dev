@@ -160,7 +160,10 @@ const PpmXEnvironment = props => {
           </div>
         </CardContent>
       </Card>
-      <Detail open={detail.active} handleToggle={handleToggle} title="Ambiente">
+      <Detail
+        open={detail.active}
+        handleToggle={handleToggle}
+        title={detail.active && detail.data.name}>
         <PpmXDevice data={detail.data} />
       </Detail>
     </>

@@ -20,7 +20,7 @@ const useStyles = makeStyles(() => ({
 
 const PpmXDevice = props => {
   //Style const
-  const { className, data, ...rest } = props;
+  const { className, data: ambiente, ...rest } = props;
   const classes = useStyles();
 
   const [devices, setDevice] = useState([]);
