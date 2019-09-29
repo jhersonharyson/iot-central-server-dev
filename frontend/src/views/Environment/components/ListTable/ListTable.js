@@ -1,3 +1,4 @@
+import React, { forwardRef } from 'react';
 import {
   Button,
   CircularProgress,
@@ -7,7 +8,10 @@ import {
   Fab,
   Typography
 } from '@material-ui/core';
+import ReactCrop from 'react-image-crop';
+
 import AddBox from '@material-ui/icons/AddBox';
+import CropIcon from '@material-ui/icons/Crop';
 import ImageIcon from '@material-ui/icons/Image';
 import ArrowUpward from '@material-ui/icons/ArrowUpward';
 import Check from '@material-ui/icons/Check';
@@ -27,7 +31,6 @@ import Search from '@material-ui/icons/Search';
 import ViewColumn from '@material-ui/icons/ViewColumn';
 import MaterialTable from 'material-table';
 import PropTypes from 'prop-types';
-import React, { forwardRef } from 'react';
 import axios from '../../../../http';
 
 const tableIcons = {
@@ -99,6 +102,7 @@ export default class ListTable extends React.Component {
     return (
       <>
         <SimpleDialog
+          update={this.populate}
           selectedValue={this.state.selectedValue}
           open={this.state.dialog}
           onClose={this.handleClose}
@@ -252,78 +256,236 @@ export default class ListTable extends React.Component {
   }
 }
 
-function SimpleDialog(props) {
-  let imageRef = React.createRef();
+class SimpleDialog extends React.Component {
+  constructor(props) {
+    super(props);
 
-  const [position, setPosition] = React.useState({
-    x: 0,
-    y: 0
-  });
+    this.state = {
+      name: '',
+      desc: '',
+      img: '',
+      marked: false,
+      src: null,
+      cropped: '',
+      crop: {
+        // unit: '%',
+        width: 250,
+        aspect: 4 / 4
+      },
+      confirmCrop: false,
+      feedback: false
+    };
 
-  const [cropped, setCropped] = React.useState('');
-  const [confirmCrop, setConfirmCrop] = React.useState(false);
-  const [src, setSrc] = React.useState(null);
+    this.imageRef = React.createRef();
+  }
 
-  const { onClose, selectedValue, open } = props;
-
-  const handleClose = () => {
-    onClose();
+  handleClose = () => {
+    this.props.onClose();
   };
 
-  const onSelectFile = e => {
-    setCropped('');
-    setConfirmCrop(false);
+  onSelectFile = e => {
+    this.setState({ cropped: '' });
+    this.setState({ confirmCrop: false });
 
     if (e.target.files && e.target.files.length > 0) {
       const reader = new FileReader();
-      reader.addEventListener('load', () => setSrc(reader.result));
+      reader.addEventListener('load', () =>
+        this.setState({ src: reader.result })
+      );
       reader.readAsDataURL(e.target.files[0]);
     }
   };
+  render() {
+    const { onClose, selectedValue, open, update } = this.props;
+    const { crop, cropped, confirmCrop, position, src } = this.state;
+    return (
+      <Dialog
+        onClose={this.handleClose}
+        aria-labelledby="simple-dialog-title"
+        open={open}>
+        <DialogTitle id="simple-dialog-title">Planta</DialogTitle>
+        <DialogContent>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              paddingLeft: '15px',
+              paddingRight: '15px'
+            }}>
+            {!src && (
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <img
+                  style={{ margin: 'auto', marginBottom: '15px' }}
+                  draggable={false}
+                  src={selectedValue.img_url}
+                />
+              </div>
+            )}
 
-  return (
-    <Dialog
-      onClose={handleClose}
-      aria-labelledby="simple-dialog-title"
-      open={open}>
-      <DialogTitle id="simple-dialog-title">Planta</DialogTitle>
-      <DialogContent>
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <img
-            style={{ margin: 'auto' }}
-            draggable={false}
-            ref={imageRef}
-            src={selectedValue.img_url}
-          />
-        </div>
+            <Typography variant="h6" style={{ marginBottom: '15px' }}>
+              Upload de nova planta
+            </Typography>
+            <input type="file" onChange={this.onSelectFile} />
 
-        <Typography variant="h4" style={{ marginBottom: '15px' }}>
-          Upload de nova planta
-        </Typography>
-        <input type="file" onChange={onSelectFile} />
-      </DialogContent>
-      <Button onClick={() => onClose()}>FECHAR</Button>
-      <Button
-        onClick={async () => {
-          try {
-            const headers = {
-              authentication: localStorage.getItem('authentication')
-            };
-            const response = await axios.put(
-              `devices/${selectedValue.mac}`,
-              { ...selectedValue, x: position.x, y: position.y },
-              { headers }
-            );
-            console.log(response.data);
-          } catch (e) {
-            //
-          }
-          setTimeout(onClose, 600);
-        }}>
-        POSICIONAR
-      </Button>
-    </Dialog>
+            {src && (
+              <>
+                {!this.state.confirmCrop ? (
+                  <>
+                    <Typography variant="h6" style={{ marginTop: '15px' }}>
+                      Recorte
+                    </Typography>
+                    <ReactCrop
+                      src={src}
+                      crop={this.state.crop}
+                      onImageLoaded={ref => (this.imageRef = ref)}
+                      onChange={async newCrop => {
+                        this.setState({ crop: newCrop });
+                        const base = getCroppedImg(
+                          this.imageRef,
+                          crop,
+                          'newFile.jpeg'
+                        );
+                        this.setState({
+                          cropped: base
+                        });
+                      }}
+                      width={300}
+                      style={{ alignSelf: 'center', marginBottom: '15px' }}
+                      maxHeight={1000}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <Typography
+                      variant="h4"
+                      style={{ marginTop: '15px', alignSelf: 'flex-start' }}>
+                      {' '}
+                      Pré visualisação{' '}
+                    </Typography>
+                    {this.state.cropped.length > 20 && (
+                      <div
+                        className="ResultBlock"
+                        style={{
+                          border: '3px solid gray',
+                          borderRadius: '10px',
+                          alignSelf: 'center'
+                        }}>
+                        <img
+                          style={{
+                            height: '300px',
+                            width: '300px',
+                            borderRadius: '10px'
+                          }}
+                          src={cropped}
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
+              </>
+            )}
+          </div>
+        </DialogContent>
+        {this.state.cropped.length > 20 && !this.state.confirmCrop && (
+          <Button
+            color="secondary"
+            variant="outlined"
+            style={{ marginLeft: '15px', marginRight: '15px' }}
+            onClick={() => this.setState({ confirmCrop: true })}>
+            <CropIcon /> CONFIRMAR RECORTE
+          </Button>
+        )}
+        <Button onClick={() => this.props.onClose()}>FECHAR</Button>
+        <Button
+          variant="outlined"
+          disabled={!confirmCrop}
+          onClick={async () => {
+            try {
+              const headers = {
+                authentication: localStorage.getItem('authentication')
+              };
+              const response = await axios.put(
+                `location`,
+                {
+                  _id: selectedValue._id,
+                  name: selectedValue.name,
+                  description: selectedValue.description,
+                  location: selectedValue.location,
+                  img_url: cropped
+                },
+                {
+                  headers
+                }
+              );
+              if (response.data.location) {
+              }
+              console.log(response.data.status);
+              setTimeout(this.populate, 2000);
+              this.setState({
+                name: '',
+                desc: '',
+                img: '',
+                marked: false,
+                src: null,
+                cropped: '',
+                crop: {
+                  // unit: '%',
+                  width: 250,
+                  aspect: 4 / 4
+                },
+                confirmCrop: false,
+                feedback: false
+              });
+            } catch (e) {
+              //
+            }
+
+            update();
+            onClose();
+          }}>
+          TROCAR IMAGEM
+        </Button>
+      </Dialog>
+    );
+  }
+}
+
+function getCroppedImg(image, crop, fileName) {
+  const canvas = document.createElement('canvas');
+  const scaleX = image.naturalWidth / image.width;
+  const scaleY = image.naturalHeight / image.height;
+  canvas.width = crop.width;
+  canvas.height = crop.height;
+  const ctx = canvas.getContext('2d');
+
+  ctx.drawImage(
+    image,
+    crop.x * scaleX,
+    crop.y * scaleY,
+    crop.width * scaleX,
+    crop.height * scaleY,
+    0,
+    0,
+    crop.width,
+    crop.height
   );
+
+  // As Base64 string
+  const base64Image = canvas.toDataURL('image/jpeg');
+  return base64Image;
+  // As a blob
+  // return new Promise((resolve, reject) => {
+  //   canvas.toBlob(
+  //     blob => {
+  //       blob.name = fileName; // eslint-disable-line no-param-reassign
+  //       window.URL.revokeObjectURL(this.fileUrl);
+  //       this.fileUrl = window.URL.createObjectURL(blob);
+  //       resolve(this.fileUrl);
+  //     },
+  //     'image/jpeg',
+  //     1
+  //   );
+  // });
 }
 
 SimpleDialog.propTypes = {
