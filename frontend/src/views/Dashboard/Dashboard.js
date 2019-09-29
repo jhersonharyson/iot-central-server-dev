@@ -1,4 +1,13 @@
-import { Grid, Fab, Badge, List, ListItemIcon, ListItemText, Avatar, ListItem } from '@material-ui/core';
+import {
+  Grid,
+  Fab,
+  Badge,
+  List,
+  ListItemIcon,
+  ListItemText,
+  Avatar,
+  ListItem
+} from '@material-ui/core';
 import Drawer from '@material-ui/core/Drawer';
 import { makeStyles } from '@material-ui/styles';
 import React, { useEffect, useState } from 'react';
@@ -16,6 +25,8 @@ import {
   TotalUsers,
   UsersByDevice
 } from './components';
+
+import './styles.css';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -35,7 +46,9 @@ const Dashboard = props => {
   useEffect(() => {
     async function getInfladores() {
       let authentication = await localStorage.getItem('authentication');
-      let response = await axios.get('actuators', { headers: { authentication } });
+      let response = await axios.get('actuators', {
+        headers: { authentication }
+      });
       setInfladores(response.data);
     }
 
@@ -77,9 +90,7 @@ const Dashboard = props => {
             badgeContent={infladores.filter(i => i.value).length}
             color="error"
             onClick={() => setDrawOne(true)}>
-            <Fab
-              size="small"
-              color="secondary">
+            <Fab size="small" color="secondary">
               <ToysIcon />
             </Fab>
           </Badge>
@@ -88,9 +99,7 @@ const Dashboard = props => {
             badgeContent={ocupacao.filter(i => i.value).length}
             color="error"
             onClick={() => setDrawTwo(true)}>
-            <Fab
-              size="small"
-              color="secondary">
+            <Fab size="small" color="secondary">
               <MeetingIcon />
             </Fab>
           </Badge>
@@ -99,19 +108,30 @@ const Dashboard = props => {
       <Drawer anchor="right" open={drawOne} onClose={() => setDrawOne(false)}>
         <div style={{ width: '300px' }}>
           <List>
-            {infladores.map(inf =>
+            {infladores.map(inf => (
               <ListItem>
                 <ListItemIcon>
-                  <Avatar>
+                  <Avatar
+                    className={inf.value && 'rotation'}
+                    style={{
+                      backgroundColor: inf.value ? '#24a024' : '#908f8fad',
+                      transition: '1s',
+                      transform: 'rto'
+                    }}>
                     <ToysIcon />
                   </Avatar>
                 </ListItemIcon>
                 <ListItemText
                   primary={inf.description}
-                  secondary={'Atualizado em ' + new Date(Math.max(...inf.updateAt.map(x => x.time))).toLocaleString()}
+                  secondary={
+                    'Atualizado em ' +
+                    new Date(
+                      Math.max(...inf.updateAt.map(x => Date.parse(x.time)))
+                    ).toLocaleString()
+                  }
                 />
               </ListItem>
-            )}
+            ))}
           </List>
         </div>
       </Drawer>
