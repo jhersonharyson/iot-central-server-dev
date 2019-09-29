@@ -56,6 +56,7 @@ export default class ListTable extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      locations: [],
       selectedValue: {},
       dialog: false,
       isLoading: true,
@@ -109,11 +110,11 @@ export default class ListTable extends React.Component {
       let {
         data: { locations }
       } = response;
-      console.info(locations);
       let lookup = {};
       for (let i = 0; i < locations.length; i++) {
         lookup[`${locations[i]._id}`] = locations[i].name;
       }
+
       console.log(lookup);
       this.setState({
         table: {
@@ -197,11 +198,19 @@ export default class ListTable extends React.Component {
               icon: 'my_location',
               tooltip: 'posicionar',
               onClick: (event, rowData) => {
+                document.body.scrollTop = 0; // For Safari
+                document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+
+                const { img_url } = this.state.locations.find(
+                  x => x._id == rowData.location
+                );
+                console.log(img_url);
                 this.setState({
                   dialog: true,
 
                   selectedValue: {
-                    ...rowData
+                    ...rowData,
+                    img_url
                   }
                 });
               }
@@ -338,9 +347,12 @@ function SimpleDialog(props) {
       <DialogContent>
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <img
-            style={{ margin: 'auto' }}
+            style={{ margin: 'auto', width: '300px' }}
             draggable={false}
             onClick={event => {
+              event.persist();
+              console.log(event);
+
               console.log({
                 y: event.pageY,
                 x: event.pageX
@@ -351,7 +363,7 @@ function SimpleDialog(props) {
               });
             }}
             ref={imageRef}
-            src="https://imagens-revista-pro.vivadecora.com.br/uploads/2019/05/Planta-baixa-com-cobertura.png"
+            src={selectedValue.img_url}
           />
         </div>
         <div

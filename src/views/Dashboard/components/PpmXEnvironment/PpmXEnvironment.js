@@ -1,28 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
-import clsx from 'clsx';
-import axios from '../../../../http';
-import PropTypes from 'prop-types';
-import { Line, Bar } from 'react-chartjs-2';
+import React, { useEffect, useState } from 'react';
+import { Card, CardContent, CardHeader, Divider } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
+import clsx from 'clsx';
 import ReactEcharts from 'echarts-for-react';
-import data from './data.json';
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  CardActions,
-  Divider,
-  Button,
-  Menu,
-  MenuItem
-} from '@material-ui/core';
-import Socket from '../../../../socket';
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
-import ArrowRightIcon from '@material-ui/icons/ArrowRight';
-
-import { makeDeviceDataset, options } from './chart';
-import { dataG, optionsG } from './chart';
-import { Types } from './index';
+import PropTypes from 'prop-types';
+import Detail from '../Detail';
+import axios from '../../../../http';
+import { PpmXDevice } from '..';
 
 const useStyles = makeStyles(() => ({
   root: {},
@@ -39,6 +23,16 @@ const PpmXEnvironment = props => {
   const { className, ...rest } = props;
   const classes = useStyles();
   const [devices, setDevice] = useState([]);
+  const [detail, setDetail] = React.useState({
+    active: false,
+    data: null
+  });
+  const handleToggle = () => {
+    setDetail({
+      active: !detail.active,
+      data: null
+    });
+  };
 
   useEffect(() => {
     async function getDevices() {
@@ -68,22 +62,25 @@ const PpmXEnvironment = props => {
         {
           yAxis: 400,
           lineStyle: {
-            color: "#61f205"
+            color: '#61f205'
           }
-        }, {
+        },
+        {
           yAxis: 1000,
           lineStyle: {
-            color: "#f4ea07"
+            color: '#f4ea07'
           }
-        }, {
+        },
+        {
           yAxis: 2000,
           lineStyle: {
-            color: "#fb7607"
+            color: '#fb7607'
           }
-        }, {
+        },
+        {
           yAxis: 5000,
           lineStyle: {
-            color: "#fb0505"
+            color: '#fb0505'
           }
         }
       ]
@@ -97,24 +94,29 @@ const PpmXEnvironment = props => {
         }
       },
       legend: {
-        data: ['ABC', 'DEF']
-      },
-      grid: {
-        left: '3%',
-        right: '4%',
-        bottom: '3%',
-        containLabel: true
+        data: ['Média', 'Máxima']
       },
       xAxis: {
         type: 'category',
-        data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日', '周五', '周六', '周日'],
+        data: [
+          'Sala 01',
+          'Sala 02',
+          'Sala 03',
+          'Sala 04',
+          'Sala 05',
+          'Sala 06',
+          'Sala 07',
+          'Sala 08',
+          'Sala 09',
+          'Sala 10'
+        ]
       },
       yAxis: {
         type: 'value'
       },
       series: [
         {
-          name: 'ABC',
+          name: 'Média',
           type: 'bar',
           stack: '0',
           itemStyle: {
@@ -124,7 +126,7 @@ const PpmXEnvironment = props => {
           data: [320, 302, 301, 334, 390, 330, 320, 389, 342, 312]
         },
         {
-          name: 'DEF',
+          name: 'Máxima',
           type: 'bar',
           stack: '0',
           itemStyle: {
@@ -135,25 +137,36 @@ const PpmXEnvironment = props => {
         }
       ]
     };
-  }
+  };
 
   return (
-    <Card {...rest} className={clsx(classes.root, className)}>
-      <CardHeader
-        title="CO² por Ambiente"
-        subheader="Atualizado em "
-      />
-      <Divider />
-      <CardContent>
-        <div className={classes.chartContainer}>
-          <ReactEcharts
-            option={getOption()}
-            onEvents={{
-              click: e => alert('ir para o detalhe')
-            }} />
-        </div>
-      </CardContent>
-    </Card>
+    <>
+      <Card {...rest} className={clsx(classes.root, className)}>
+        <CardHeader title="CO² por Ambiente" />
+        <Divider />
+        <CardContent>
+          <div className={classes.chartContainer}>
+            <ReactEcharts
+              option={getOption()}
+              onEvents={{
+                click: e => {
+                  setDetail({
+                    active: true,
+                    data: e
+                  });
+                }
+              }}
+            />
+          </div>
+        </CardContent>
+      </Card>
+      <Detail
+        open={detail.active}
+        handleToggle={handleToggle}
+        title={detail.active && detail.data.name}>
+        <PpmXDevice data={detail.data} style={{ margin: '20px' }} />
+      </Detail>
+    </>
   );
 };
 
