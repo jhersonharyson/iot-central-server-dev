@@ -12,5 +12,7 @@ router.post(
   require(CONTROLLER_PATH).postLocation
 );
 router.post("/location", require(CONTROLLER_PATH).postLocation);
+router.put("/location", require(CONTROLLER_PATH).updateLocation);
+router.delete("/location", require(CONTROLLER_PATH).deleteLocation);
 
 export default router;

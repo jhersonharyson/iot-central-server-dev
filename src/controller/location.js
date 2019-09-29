@@ -13,7 +13,7 @@ import { UNEXPECTED_ERROR } from "../exceptions/serverException";
 import Location from "../models/location";
 
 export async function getAllLocations(req, res) {
-  const locations = await Location.find({}).populate({
+  const locations = await Location.find({ status: { $ne: -1 } }).populate({
     path: "device",
     select: "-sensorData"
   });
@@ -48,23 +48,53 @@ export async function postLocation(req, res) {
 }
 
 export async function updateLocation(req, res) {
-  const { name, description, img_url } = req.body;
+  const { name, description, img_url, _id } = req.body;
+
+  const location = await Location.findOneAndUpdate(
+    { _id: _id },
+    { useFindAndModify: true }
+  );
+
+  if (!location) {
+    return res.status(400).send(LOCATION_ISINVALID);
+  }
+
   if (name) {
     if (name.length < 3 || name.length > 80)
       return res.status(400).send(NAMED_ISINVALID);
+    location.name = name;
   }
-  if (!description || description == "")
-    return res.status(400).send(DESCRIPTION_ISEMPTY);
+
+  if (description) {
+    location.description = description;
+  }
+
+  if (img_url) {
+    location.img_url = img_url;
+  }
 
   try {
-    const location = await Location.create({
-      name,
-      description,
-      img_url
-    });
+    await location.save();
     console.log(location);
     res.send(location);
   } catch (e) {
     return res.status(400).send(UNEXPECTED_ERROR);
   }
+}
+
+export async function deleteLocation(req, res) {
+  const { location } = req.body;
+  if (!(await Location.findById(location))) {
+    return res.send(LOCATION_ISINVALID);
+  }
+
+  await Location.updateOne(
+    { _id: location },
+    {
+      $set: { status: -1 }
+    }
+  );
+
+  req.io.emit("deleteLocation", location);
+  res.send({ status: "deletado", location: location });
 }

@@ -4,7 +4,8 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-  Fab
+  Fab,
+  Typography
 } from '@material-ui/core';
 import AddBox from '@material-ui/icons/AddBox';
 import ImageIcon from '@material-ui/icons/Image';
@@ -197,8 +198,9 @@ export default class ListTable extends React.Component {
                       authentication: localStorage.getItem('authentication')
                     };
                     const response = await axios.put(
-                      `devices/${oldData.mac}`,
+                      `location`,
                       {
+                        _id: oldData._id,
                         name: newData.name,
                         description: newData.description,
                         location: newData.location
@@ -226,10 +228,12 @@ export default class ListTable extends React.Component {
                     const headers = {
                       authentication: localStorage.getItem('authentication')
                     };
-                    const response = await axios.delete(
-                      `devices/${oldData.mac}`,
-                      { headers }
-                    );
+                    const response = await axios.delete(`location`, {
+                      headers,
+                      data: { location: oldData._id }
+                    });
+                    if (response.data.location) {
+                    }
                     console.log(response.data.status);
                     resolve();
                     const data = [...this.state.table.data];
@@ -250,10 +254,15 @@ export default class ListTable extends React.Component {
 
 function SimpleDialog(props) {
   let imageRef = React.createRef();
+
   const [position, setPosition] = React.useState({
     x: 0,
     y: 0
   });
+
+  const [cropped, setCropped] = React.useState('');
+  const [confirmCrop, setConfirmCrop] = React.useState(false);
+  const [src, setSrc] = React.useState(null);
 
   const { onClose, selectedValue, open } = props;
 
@@ -261,8 +270,15 @@ function SimpleDialog(props) {
     onClose();
   };
 
-  const handleListItemClick = value => {
-    onClose(value);
+  const onSelectFile = e => {
+    setCropped('');
+    setConfirmCrop(false);
+
+    if (e.target.files && e.target.files.length > 0) {
+      const reader = new FileReader();
+      reader.addEventListener('load', () => setSrc(reader.result));
+      reader.readAsDataURL(e.target.files[0]);
+    }
   };
 
   return (
@@ -270,9 +286,7 @@ function SimpleDialog(props) {
       onClose={handleClose}
       aria-labelledby="simple-dialog-title"
       open={open}>
-      <DialogTitle id="simple-dialog-title">
-        Posicionamento do dispositivo
-      </DialogTitle>
+      <DialogTitle id="simple-dialog-title">Planta</DialogTitle>
       <DialogContent>
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <img
@@ -283,7 +297,10 @@ function SimpleDialog(props) {
           />
         </div>
 
-        {/* onClick={() => handleListItemClick(email)} */}
+        <Typography variant="h4" style={{ marginBottom: '15px' }}>
+          Upload de nova planta
+        </Typography>
+        <input type="file" onChange={onSelectFile} />
       </DialogContent>
       <Button onClick={() => onClose()}>FECHAR</Button>
       <Button
