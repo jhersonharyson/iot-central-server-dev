@@ -49,11 +49,11 @@ const sensors = new Schema({
   let sensorsR = undefined;
   let devicesR = undefined;
 
-  await Promise.all([
-    Location.find({}).then(loc => (locationsR = loc)),
-    Sensor.find({}).then(sen => (sensorsR = sen)),
-    Device.find({ status: 1 }).then(dev => (devicesR = dev))
-  ]);
+  // await Promise.all([
+  //   Location.find({}).then(loc => (locationsR = loc)),
+  //   Sensor.find({}).then(sen => (sensorsR = sen)),
+  //   Device.find({ status: 1 }).then(dev => (devicesR = dev))
+  // ]);
 
   // locationsR.forEach(loc => {
   // loc.device.forEach(async dev => {
@@ -66,7 +66,13 @@ const sensors = new Schema({
       }
     }
   ]);
-  console.log(l);
-  // });
-  // });
+
+  loc = await Promise.all(
+    l.map(async data => {
+      const { name } = await Location.findById(data._id, "name -_id");
+      return { ...data, location_name: name };
+    })
+  );
+
+  console.log(loc);
 })();
