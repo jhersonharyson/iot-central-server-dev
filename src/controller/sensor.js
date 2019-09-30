@@ -4,12 +4,15 @@ import Location from "../models/location";
 import Sensor from "../models/sensor";
 import Event from "../models/event";
 import { jwtBuilder } from "../security/jwtBuilder";
-import moment from 'moment';
+import moment from "moment";
 const constants = global.constants;
 
 export async function postSensor(req, res) {
   try {
-    const { userId: mac, body: { sensorData } } = req;
+    const {
+      userId: mac,
+      body: { sensorData }
+    } = req;
 
     const device = await isExist(mac);
     if (!device) {
@@ -20,27 +23,34 @@ export async function postSensor(req, res) {
     if (mac) {
       try {
         await Promise.all(
-          sensorData.map(async function (arr) {
+          sensorData.map(async function(arr) {
+            const incident = await verify_event(arr);
+            console.log(incident);
+            if (incident.description) {
+              req.io.emit("postEvent", incident);
+            }
             let { type, value } = arr;
-
-            const sensor = new Sensor({ deviceId, type, value, location, position });
+            const sensor = new Sensor({
+              deviceId,
+              type,
+              value,
+              location,
+              position
+            });
             await sensor.save();
 
-            device
-              .sensorData
-              .push(sensor._id);
+            device.sensorData.push(sensor._id);
             await device.save();
           })
         );
 
-        let sensorsByDevice = await Device
-          .find()
-          .select('_id')
-          .where('location')
+        let sensorsByDevice = await Device.find()
+          .select("_id")
+          .where("location")
           .equals(device.location)
           .populate({
-            path: 'sensorData',
-            select: 'value -_id',
+            path: "sensorData",
+            select: "value -_id",
             options: {
               limit: 1,
               sort: {
@@ -50,44 +60,38 @@ export async function postSensor(req, res) {
           });
 
         let maxSensorValue = -1;
-        let sumSensorValue = sensorsByDevice
-          .reduce((sumSensorByDevice, sensorByDevice) => {
+        let sumSensorValue = sensorsByDevice.reduce(
+          (sumSensorByDevice, sensorByDevice) => {
             let sensorByDeviceValue = sensorByDevice.sensorData[0].value;
 
             if (sensorByDeviceValue > maxSensorValue)
               maxSensorValue = sensorByDeviceValue;
 
-            return sumSensorByDevice += sensorByDeviceValue;
-          }, 0);
-
-        req.io.emit(
-          'redrawLocationGraphic',
-          {
-            location: (await Location.findById(device.location, 'name')).name,
-            avg: Math.floor(sensorsByDevice.length ? sumSensorValue / sensorsByDevice.length : 0),
-            max: maxSensorValue
-          }
+            return (sumSensorByDevice += sensorByDeviceValue);
+          },
+          0
         );
+
+        req.io.emit("redrawLocationGraphic", {
+          location: (await Location.findById(device.location, "name")).name,
+          avg: Math.floor(
+            sensorsByDevice.length ? sumSensorValue / sensorsByDevice.length : 0
+          ),
+          max: maxSensorValue
+        });
       } catch (e) {
-        return res
-          .status(400)
-          .send({ error: e });
+        return res.status(400).send({ error: e });
       }
 
-      //req.io.emit("postSensor", sensorData);
       res.send({
         status: "ok",
         token: jwtBuilder({ id: deviceId })
       });
     } else {
-      return res
-        .status(401)
-        .send(MAC_ISINVALID);
+      return res.status(401).send(MAC_ISINVALID);
     }
   } catch (e) {
-    res
-      .status(500)
-      .send({ error: e });
+    res.status(500).send({ error: e });
   }
 }
 
@@ -128,10 +132,9 @@ export async function isExist(mac) {
 }
 
 export async function getAllSensors(req, res) {
-  const sensors = await Sensor
-    .find()
-    .where('createAt')
-    .gte(moment().subtract(1, 'day'));
+  const sensors = await Sensor.find()
+    .where("createAt")
+    .gte(moment().subtract(1, "day"));
 
   res.send(sensors);
 }
@@ -148,7 +151,7 @@ const verify_event = async sensor => {
           type: s.type,
           description: `${new Date().toLocaleString()} - Nível de ${
             s.type
-            } em ${s.value} ppm`,
+          } em ${s.value} ppm`,
           sensorData: [s._id]
         });
         console.log("create");
@@ -167,8 +170,8 @@ const verify_event = async sensor => {
         incident.sensorData.push(s._id);
         incident.description = `${new Date().toLocaleString()} - Nível de ${
           s.type
-          } em ${s.value} ppm`;
-        incident.save();
+        } em ${s.value} ppm`;
+        await incident.save();
         return incident;
       } else {
         try {
@@ -176,7 +179,7 @@ const verify_event = async sensor => {
             type: s.type,
             description: `${new Date().toLocaleString()} - Nível de ${
               s.type
-              } em ${s.value} ppm`,
+            } em ${s.value} ppm`,
             sensorData: [s._id]
           });
           console.log("create");

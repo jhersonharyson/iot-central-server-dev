@@ -221,8 +221,12 @@ class EnviromentRegistration extends Component {
                 ) : (
                   <>
                     <Typography
-                      variant="h4"
-                      style={{ marginTop: '15px', alignSelf: 'flex-start' }}>
+                      variant="h5"
+                      style={{
+                        marginTop: '15px',
+                        marginBottom: '5px',
+                        alignSelf: 'flex-start'
+                      }}>
                       {' '}
                       Pré visualisação{' '}
                     </Typography>
@@ -230,15 +234,17 @@ class EnviromentRegistration extends Component {
                       <div
                         className="ResultBlock"
                         style={{
-                          border: '3px solid gray',
-                          borderRadius: '10px',
+                          border: '1.5px solid gray',
+                          borderRadius: '5px',
                           alignSelf: 'center'
                         }}>
                         <img
                           style={{
                             height: '300px',
                             width: '300px',
-                            borderRadius: '10px'
+                            borderRadius: '5px',
+                            margin: '0px',
+                            marginBottom: '-3px'
                           }}
                           src={cropped}
                         />
@@ -250,7 +256,12 @@ class EnviromentRegistration extends Component {
             )}
           </div>
         </form>
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            marginTop: '15px'
+          }}>
           <Button onClick={this.props.goBack}>
             <BackIcon />
             VOLTAR
