@@ -1,13 +1,14 @@
-import { Typography, useMediaQuery } from '@material-ui/core';
+import React, { useState } from 'react';
+import PropTypes from 'prop-types';
+import clsx from 'clsx';
+import { makeStyles, useTheme } from '@material-ui/styles';
+import { useMediaQuery, Typography } from '@material-ui/core';
+import Snackbar from '@material-ui/core/Snackbar';
+import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
-import IconButton from '@material-ui/core/IconButton';
-import Snackbar from '@material-ui/core/Snackbar';
 import CloseIcon from '@material-ui/icons/Close';
-import { makeStyles, useTheme } from '@material-ui/styles';
-import clsx from 'clsx';
-import PropTypes from 'prop-types';
-import React, { useState } from 'react';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import Socket from '../../socket';
 import { Sidebar, Topbar } from './components';
 
