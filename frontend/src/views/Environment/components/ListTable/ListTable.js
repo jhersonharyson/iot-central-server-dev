@@ -357,8 +357,12 @@ class SimpleDialog extends React.Component {
                 ) : (
                   <>
                     <Typography
-                      variant="h4"
-                      style={{ marginTop: '15px', alignSelf: 'flex-start' }}>
+                      variant="h5"
+                      style={{
+                        marginTop: '15px',
+                        marginBottom: '5px',
+                        alignSelf: 'flex-start'
+                      }}>
                       {' '}
                       Pré visualisação{' '}
                     </Typography>
@@ -366,15 +370,17 @@ class SimpleDialog extends React.Component {
                       <div
                         className="ResultBlock"
                         style={{
-                          border: '3px solid gray',
-                          borderRadius: '10px',
-                          alignSelf: 'center'
+                          border: '1.5px solid gray',
+                          borderRadius: '5px',
+                          alignSelf: 'center',
+                          paddingBottom: 0
                         }}>
                         <img
                           style={{
                             height: '300px',
                             width: '300px',
-                            borderRadius: '10px'
+                            borderRadius: '5px',
+                            marginBottom: '-3px'
                           }}
                           src={cropped}
                         />
@@ -390,61 +396,80 @@ class SimpleDialog extends React.Component {
           <Button
             color="secondary"
             variant="outlined"
-            style={{ marginLeft: '15px', marginRight: '15px' }}
+            style={{
+              marginLeft: '15px',
+              marginRight: '15px',
+              marginTop: '15px'
+            }}
             onClick={() => this.setState({ confirmCrop: true })}>
             <CropIcon /> CONFIRMAR RECORTE
           </Button>
         )}
-        <Button onClick={() => this.props.onClose()}>FECHAR</Button>
-        <Button
-          variant="outlined"
-          disabled={!confirmCrop}
-          onClick={async () => {
-            try {
-              const headers = {
-                authentication: localStorage.getItem('authentication')
-              };
-              const response = await axios.put(
-                `location`,
-                {
-                  _id: selectedValue._id,
-                  name: selectedValue.name,
-                  description: selectedValue.description,
-                  location: selectedValue.location,
-                  img_url: cropped
-                },
-                {
-                  headers
-                }
-              );
-              if (response.data.location) {
-              }
-              console.log(response.data.status);
-              setTimeout(this.populate, 2000);
-              this.setState({
-                name: '',
-                desc: '',
-                img: '',
-                marked: false,
-                src: null,
-                cropped: '',
-                crop: {
-                  // unit: '%',
-                  width: 250,
-                  aspect: 4 / 4
-                },
-                confirmCrop: false,
-                feedback: false
-              });
-            } catch (e) {
-              //
-            }
-
-            update();
-            onClose();
+        <div
+          style={{
+            margin: '15px',
+            marginTop: '5px',
+            display: 'flex',
+            flexDirection: 'column'
           }}>
-          TROCAR IMAGEM
-        </Button>
+          <div
+            style={{ display: 'flex', flexDirection: 'column', margin: '5px' }}>
+            <Button
+              style={{ marginBottom: '5px' }}
+              onClick={() => this.props.onClose()}>
+              FECHAR
+            </Button>
+            <Button
+              variant="outlined"
+              disabled={!confirmCrop}
+              onClick={async () => {
+                try {
+                  const headers = {
+                    authentication: localStorage.getItem('authentication')
+                  };
+                  const response = await axios.put(
+                    `location`,
+                    {
+                      _id: selectedValue._id,
+                      name: selectedValue.name,
+                      description: selectedValue.description,
+                      location: selectedValue.location,
+                      img_url: cropped
+                    },
+                    {
+                      headers
+                    }
+                  );
+                  if (response.data.location) {
+                  }
+                  console.log(response.data.status);
+                  setTimeout(this.populate, 2000);
+                  this.setState({
+                    name: '',
+                    desc: '',
+                    img: '',
+                    marked: false,
+                    src: null,
+                    cropped: '',
+                    crop: {
+                      // unit: '%',
+                      width: 250,
+                      aspect: 4 / 4
+                    },
+                    confirmCrop: false,
+                    feedback: false
+                  });
+                } catch (e) {
+                  //
+                }
+
+                update();
+                onClose();
+              }}>
+              TROCAR IMAGEM
+            </Button>
+          </div>
+        </div>
       </Dialog>
     );
   }

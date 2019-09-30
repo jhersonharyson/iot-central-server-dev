@@ -329,6 +329,10 @@ function SimpleDialog(props) {
   const { onClose, selectedValue, open } = props;
 
   const handleClose = () => {
+    setPosition({
+      x: 0,
+      y: 0
+    });
     onClose();
   };
 
@@ -377,26 +381,36 @@ function SimpleDialog(props) {
 
         {/* onClick={() => handleListItemClick(email)} */}
       </DialogContent>
-      <Button onClick={() => onClose()}>FECHAR</Button>
-      <Button
-        onClick={async () => {
-          try {
-            const headers = {
-              authentication: localStorage.getItem('authentication')
-            };
-            const response = await axios.put(
-              `devices/${selectedValue.mac}`,
-              { ...selectedValue, x: position.x, y: position.y },
-              { headers }
-            );
-            console.log(response.data);
-          } catch (e) {
-            //
-          }
-          setTimeout(onClose, 600);
-        }}>
-        POSICIONAR
-      </Button>
+      <div style={{ margin: '15px', display: 'flex', flexDirection: 'column' }}>
+        <Button style={{ marginBottom: '5px' }} onClick={() => onClose()}>
+          FECHAR
+        </Button>
+        <Button
+          variant="outlined"
+          disabled={position.x == 0 && position.y == 0}
+          onClick={async () => {
+            try {
+              const headers = {
+                authentication: localStorage.getItem('authentication')
+              };
+              const response = await axios.put(
+                `devices/${selectedValue.mac}`,
+                { ...selectedValue, x: position.x, y: position.y },
+                { headers }
+              );
+              console.log(response.data);
+              setPosition({
+                x: 0,
+                y: 0
+              });
+            } catch (e) {
+              //
+            }
+            setTimeout(onClose, 600);
+          }}>
+          POSICIONAR
+        </Button>
+      </div>
     </Dialog>
   );
 }

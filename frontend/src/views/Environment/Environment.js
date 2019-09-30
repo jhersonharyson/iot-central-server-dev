@@ -129,7 +129,7 @@ const useStyles = makeStyles(theme => ({
     margin: theme.spacing(2, 0)
   },
   fab: {
-    position: 'absolute',
+    position: 'fixed',
     bottom: '15px',
     right: '15px'
   }
@@ -199,25 +199,8 @@ const Environment = props => {
             <EnvironmentRegistration goBack={toggleRegistration} />
           ) : (
             <>
-              <Paper
-                className={classes.root}
-                style={{
-                  paddingLeft: '15px',
-                  paddingRight: '15px',
-                  display: 'flex'
-                }}>
-                <InputBase
-                  style={{ display: 'flex', flex: 1 }}
-                  className={classes.input}
-                  placeholder="Pesquisar ambientes"
-                  inputProps={{ 'aria-label': 'Pesquisar ambientes' }}
-                />
-                <IconButton className={classes.iconButton} aria-label="search">
-                  <SearchIcon />
-                </IconButton>
-              </Paper>
-              <div style={{ marginTop: '25px' }}>
-                <Typography variant="h5">Lista de ambientes</Typography>
+              <div style={{ marginTop: '15px' }}>
+                <Typography variant="h4">Lista de ambientes</Typography>
                 <div style={{ padding: '15px', paddingTop: '25px' }}>
                   <ListTable />
                 </div>

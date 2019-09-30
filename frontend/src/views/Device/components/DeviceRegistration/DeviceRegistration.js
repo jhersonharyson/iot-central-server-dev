@@ -244,23 +244,25 @@ class DeviceRegistration extends Component {
             </Select>
             <br />
             {this.state.environment != 0 && this.state.img_url.length > 20 && (
-              <img
-                style={{
-                  width: 'auto',
-                  height: 'auto',
-                  backgroundSize: 'cover'
-                }}
-                draggable={false}
-                onClick={event => {
-                  this.setState({
-                    position: {
-                      y: event.pageY,
-                      x: event.pageX
-                    }
-                  });
-                }}
-                src={this.state.img_url}
-              />
+              <div>
+                <img
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    backgroundSize: 'cover'
+                  }}
+                  draggable={false}
+                  onClick={event => {
+                    this.setState({
+                      position: {
+                        y: event.pageY,
+                        x: event.pageX
+                      }
+                    });
+                  }}
+                  src={this.state.img_url}
+                />
+              </div>
             )}
             {this.state.environment != 0 && this.state.position['y'] && (
               <div
