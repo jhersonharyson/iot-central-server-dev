@@ -54,7 +54,7 @@ export async function getDevice(req, res, next) {
   if (mac) filter.mac = mac;
 
   res.send(
-    await Device.find({})
+    await Device.find(filter)
       .populate("sensorData")
       .populate("location")
   );
@@ -113,13 +113,13 @@ export async function deleteDevice(req, res, next) {
 }
 
 export async function updateDevice(req, res, next) {
-  const up = await isExist(req.params.mac);
+  let up = await isExist(req.params.mac);
   if (!up) {
     return res.send(MAC_ISNOTFOUND);
   }
 
-  const { name, description, location, x, y } = req.body;
-
+  const { name, description, location, position: {x,y} } = req.body;
+  
   if (!name || name == "" || name.length < 3 || name.length > 80)
     return res.status(400).send(NAMED_ISINVALID);
   if (!(await Location.findById(location)))
@@ -140,7 +140,8 @@ export async function updateDevice(req, res, next) {
   if (description === "" || description != undefined || description != null) {
     device.description = description;
   }
-  if (x && y) {
+
+  if (x > -1 && y > -1) {
     device.position = { x, y };
   }
   if (location) {
@@ -165,7 +166,8 @@ export async function updateDevice(req, res, next) {
     }
   }
 
-  await device.save();
+  console.log(device.position);
+  up = await device.save();
 
   req.io.emit("updateDevice", up);
   res.send(up);
