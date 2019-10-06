@@ -143,8 +143,8 @@ export default function BarraLateral() {
                 {ocupacao.filter(i => i.value).length ? (
                   <MeetingOnIcon />
                 ) : (
-                  <MeetingOffIcon />
-                )}
+                    <MeetingOffIcon />
+                  )}
               </Fab>
             </Tooltip>
           </Badge>
@@ -173,10 +173,12 @@ export default function BarraLateral() {
                 <ListItemText
                   primary={inf.description}
                   secondary={
-                    'Atualizado em ' +
-                    new Date(
-                      Math.max(...inf.updateAt.map(x => Date.parse(x.time)))
-                    ).toLocaleString()
+                    inf.updateAt ?
+                      'Atualizado em ' +
+                      new Date(
+                        Math.max(...inf.updateAt.map(x => Date.parse(x.time)))
+                      ).toLocaleString() :
+                      ''
                   }
                 />
               </ListItem>
@@ -208,10 +210,12 @@ export default function BarraLateral() {
                 <ListItemText
                   primary={occup.name}
                   secondary={
-                    'Atualizado em ' +
-                    new Date(
-                      Math.max(...occup.occupation.map(x => Date.parse(x.time)))
-                    ).toLocaleString()
+                    occup.occupation ?
+                      'Atualizado em ' +
+                      new Date(
+                        Math.max(...occup.occupation.map(x => Date.parse(x.time)))
+                      ).toLocaleString() :
+                      ''
                   }
                 />
               </ListItem>
