@@ -9,7 +9,9 @@ import {
   Device as DeviceView,
   Environment as EnvironmentView,
   SignIn as SignInView,
-  NotFound as NotFoundView
+  NotFound as NotFoundView,
+  UserList as UserListView,
+  User as UserView
 } from './views';
 
 const Routes = () => {
@@ -34,7 +36,14 @@ const Routes = () => {
         layout={MainLayout}
         path="/environments"
       />
-      {/* <RouteWithLayout
+      <RouteWithLayout
+        component={UserView}
+        exact
+        layout={MainLayout}
+        path="/users"
+      />
+      {/*
+       <RouteWithLayout
         component={UserListView}
         exact
         layout={MainLayout}
