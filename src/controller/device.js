@@ -171,6 +171,19 @@ export async function updateDevice(req, res, next) {
   res.send(up);
 }
 
+export async function dashboardDevice(req, res) {
+  return await Device
+    .find({})
+    .aggregate([
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+}
+
 export async function test(req, res, next) {
   const r = req.params.delete;
   if (r) {
