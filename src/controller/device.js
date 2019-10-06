@@ -172,16 +172,22 @@ export async function updateDevice(req, res, next) {
 }
 
 export async function dashboardDevice(req, res) {
-  return await Device
-    .find({})
-    .aggregate([
-      {
-        $group: {
-          _id: "$status",
-          count: { $sum: 1 }
+  return res.json(
+    await Device
+      .aggregate([
+        {
+          $match: {
+            status: { $gte: 0 }
+          }
+        },
+        {
+          $group: {
+            _id: "$status",
+            count: { $sum: 1 }
+          }
         }
-      }
-    ]);
+      ])
+  );
 }
 
 export async function test(req, res, next) {

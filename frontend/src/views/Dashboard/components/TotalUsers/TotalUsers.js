@@ -50,7 +50,7 @@ const TotalUsers = props => {
   const { className, ...rest } = props;
   const classes = useStyles();
 
-  const [counters, setCounters] = React.useState([]);
+  const [counters, setCounters] = React.useState({});
   React.useEffect(() => {
     async function getDevices() {
       const headers = {
@@ -61,9 +61,7 @@ const TotalUsers = props => {
       setCounters(
         response
           .data
-          .reduce((statusCollection, status) => ({
-            ...statusCollection, [status._id]: status.count
-          }), {})
+          .reduce((counters, status) => ({ ...counters, [status._id]: status.count }), {})
       );
     }
 
@@ -100,8 +98,8 @@ const TotalUsers = props => {
           </Typography>
 
           <Typography className={classes.caption} variant="body2">
-            {counters.reduce((a, b) => a + b, 0)}{' '}
-            {counters.reduce((a, b) => a + b, 0) > 1
+            {counters[0] + counters[1]}{' '}
+            {counters[0] + counters[1] > 1
               ? 'dispositivos'
               : 'dispositivo'}{' '}
             no total
