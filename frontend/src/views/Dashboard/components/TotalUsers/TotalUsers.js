@@ -56,14 +56,15 @@ const TotalUsers = props => {
       const headers = {
         authentication: await localStorage.getItem('authentication')
       };
-      const response = await axios.get('devices', { headers });
 
-      if (response.data[0]) {
-        setCounters([
-          response.data.filter(device => device.status === 0).length,
-          response.data.filter(device => device.status === 1).length
-        ]);
-      }
+      const response = await axios.get('dashboard/devices', { headers });
+      setCounters(
+        response
+          .data
+          .reduce((statusCollection, status) => ({
+            ...statusCollection, [status._id]: status.count
+          }), {})
+      );
     }
 
     getDevices();
