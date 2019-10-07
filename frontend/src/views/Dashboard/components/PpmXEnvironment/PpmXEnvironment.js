@@ -7,6 +7,7 @@ import PropTypes from 'prop-types';
 import Detail from '../Detail';
 import axios from '../../../../http';
 import { PpmXDevice } from '..';
+import ListTable from './ListTable/ListTable';
 
 const useStyles = makeStyles(() => ({
   root: {},
@@ -164,7 +165,10 @@ const PpmXEnvironment = props => {
         open={detail.active}
         handleToggle={handleToggle}
         title={detail.active && detail.data.name}>
-        <PpmXDevice data={detail.data} style={{ margin: '20px' }} />
+        <>
+          <PpmXDevice data={detail.data} style={{ margin: '20px' }} />
+          <ListTable />
+        </>
       </Detail>
     </>
   );
