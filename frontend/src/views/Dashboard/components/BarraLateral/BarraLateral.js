@@ -15,7 +15,9 @@ import {
 import {
   MeetingRoom as MeetingOnIcon,
   MeetingRoomOutlined as MeetingOffIcon,
-  ToysOutlined as ToysIcon
+  ToysOutlined as ToysIcon,
+  OfflineBoltOutlined as OfflineBoltOffIcon,
+  OfflineBolt as OfflineBoltOnIcon
 } from '@material-ui/icons';
 import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
@@ -37,14 +39,16 @@ export default function BarraLateral() {
 
   const [drawOne, setDrawOne] = React.useState(false);
   const [drawTwo, setDrawTwo] = React.useState(false);
+  const [drawThree, setDrawThree] = React.useState(false);
 
   const [infladores, setInfladores] = useState([]);
   const [ocupacao, setOcupacao] = useState([]);
+  const [geradores, setGeradores] = useState([]);
 
   useEffect(() => {
     async function getInfladores() {
       let authentication = await localStorage.getItem('authentication');
-      let response = await axios.get('actuators', {
+      let response = await axios.get('actuators/INFLATOR', {
         headers: { authentication }
       });
       setInfladores(response.data);
@@ -65,12 +69,32 @@ export default function BarraLateral() {
     getOcupacao();
   }, []);
 
-  Socket.on('updateActuator', infSocketed => {
+  useEffect(() => {
+    async function getGeradores() {
+      let authentication = await localStorage.getItem('authentication');
+      let response = await axios.get('actuators/GENERATOR', {
+        headers: { authentication }
+      });
+      setGeradores(response.data);
+    }
+
+    getGeradores();
+  }, []);
+
+  Socket.on('updateActuatorInflator', infSocketed => {
     let _infladores = infladores;
     let infIndex = _infladores.findIndex(i => i._id === infSocketed._id);
 
     _infladores.splice(infIndex, 1, infSocketed);
     setInfladores(_infladores);
+  });
+
+  Socket.on('updateActuatorGenerator', gerSocketed => {
+    let _geradores = geradores;
+    let gerIndex = _geradores.findIndex(i => i._id === gerSocketed._id);
+
+    _geradores.splice(gerIndex, 1, gerSocketed);
+    setGeradores(_geradores);
   });
 
   Socket.on('updateLocation', occupSocketed => {
@@ -87,6 +111,19 @@ export default function BarraLateral() {
       `actuators/${inf._id}`,
       {
         value: !inf.value
+      },
+      {
+        headers: { authentication }
+      }
+    );
+  }
+
+  async function handleToggleGeradoresListItem(ger) {
+    let authentication = await localStorage.getItem('authentication');
+    await axios.put(
+      `actuators/${ger._id}`,
+      {
+        value: !ger.value
       },
       {
         headers: { authentication }
@@ -132,6 +169,25 @@ export default function BarraLateral() {
           </Badge>
           <Badge
             className={classes.margin}
+            style={{ marginBottom: '15px' }}
+            badgeContent={geradores.filter(i => i.value).length}
+            color="error"
+            onClick={() => setDrawThree(true)}>
+            <Tooltip
+              TransitionComponent={Zoom}
+              title="geradores"
+              placement="left">
+              <Fab size="small" color="secondary">
+                {geradores.filter(i => i.value).length ? (
+                  <OfflineBoltOnIcon />
+                ) : (
+                  <OfflineBoltOffIcon />
+                )}
+              </Fab>
+            </Tooltip>
+          </Badge>
+          <Badge
+            className={classes.margin}
             badgeContent={ocupacao.filter(i => i.value).length}
             color="error"
             onClick={() => setDrawTwo(true)}>
@@ -143,8 +199,8 @@ export default function BarraLateral() {
                 {ocupacao.filter(i => i.value).length ? (
                   <MeetingOnIcon />
                 ) : (
-                    <MeetingOffIcon />
-                  )}
+                  <MeetingOffIcon />
+                )}
               </Fab>
             </Tooltip>
           </Badge>
@@ -173,12 +229,12 @@ export default function BarraLateral() {
                 <ListItemText
                   primary={inf.description}
                   secondary={
-                    inf.updateAt ?
-                      'Atualizado em ' +
-                      new Date(
-                        Math.max(...inf.updateAt.map(x => Date.parse(x.time)))
-                      ).toLocaleString() :
-                      ''
+                    inf.updateAt
+                      ? 'Atualizado em ' +
+                        new Date(
+                          Math.max(...inf.updateAt.map(x => Date.parse(x.time)))
+                        ).toLocaleString()
+                      : ''
                   }
                 />
               </ListItem>
@@ -210,12 +266,53 @@ export default function BarraLateral() {
                 <ListItemText
                   primary={occup.name}
                   secondary={
-                    occup.occupation ?
-                      'Atualizado em ' +
-                      new Date(
-                        Math.max(...occup.occupation.map(x => Date.parse(x.time)))
-                      ).toLocaleString() :
-                      ''
+                    occup.occupation
+                      ? 'Atualizado em ' +
+                        new Date(
+                          Math.max(
+                            ...occup.occupation.map(x => Date.parse(x.time))
+                          )
+                        ).toLocaleString()
+                      : ''
+                  }
+                />
+              </ListItem>
+            ))}
+          </List>
+        </div>
+      </Drawer>
+      <Drawer
+        anchor="right"
+        open={drawThree}
+        onClose={() => setDrawThree(false)}>
+        <div style={{ width: '300px' }}>
+          <List
+            subheader={
+              <ListSubheader component="div">Geradores</ListSubheader>
+            }>
+            {geradores.map(ger => (
+              <ListItem
+                button
+                onClick={() => handleToggleGeradoresListItem(ger)}
+                key={ger._id}>
+                <ListItemIcon>
+                  <Avatar
+                    className={ger.value ? 'rotation' : ''}
+                    style={{
+                      backgroundColor: ger.value ? '#24a024' : '#908f8fad'
+                    }}>
+                    <ToysIcon />
+                  </Avatar>
+                </ListItemIcon>
+                <ListItemText
+                  primary={ger.description}
+                  secondary={
+                    ger.updateAt
+                      ? 'Atualizado em ' +
+                        new Date(
+                          Math.max(...ger.updateAt.map(x => Date.parse(x.time)))
+                        ).toLocaleString()
+                      : ''
                   }
                 />
               </ListItem>
