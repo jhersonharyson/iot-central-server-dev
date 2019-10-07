@@ -63,7 +63,6 @@ export async function postSensor(req, res) {
         let sumSensorValue = sensorsByDevice.reduce(
           (sumSensorByDevice, sensorByDevice) => {
             if (!sensorByDevice.sensorData[0]) return (sumSensorByDevice += 0);
-
             let sensorByDeviceValue = sensorByDevice.sensorData[0].value;
 
             if (sensorByDeviceValue > maxSensorValue)
