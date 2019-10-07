@@ -50,20 +50,19 @@ const TotalUsers = props => {
   const { className, ...rest } = props;
   const classes = useStyles();
 
-  const [counters, setCounters] = React.useState([]);
+  const [counters, setCounters] = React.useState({});
   React.useEffect(() => {
     async function getDevices() {
       const headers = {
         authentication: await localStorage.getItem('authentication')
       };
-      const response = await axios.get('devices', { headers });
 
-      if (response.data[0]) {
-        setCounters([
-          response.data.filter(device => device.status === 0).length,
-          response.data.filter(device => device.status === 1).length
-        ]);
-      }
+      const response = await axios.get('dashboard/devices', { headers });
+      setCounters(
+        response
+          .data
+          .reduce((counters, status) => ({ ...counters, [status._id]: status.count }), {})
+      );
     }
 
     getDevices();
@@ -99,8 +98,8 @@ const TotalUsers = props => {
           </Typography>
 
           <Typography className={classes.caption} variant="body2">
-            {counters.reduce((a, b) => a + b, 0)}{' '}
-            {counters.reduce((a, b) => a + b, 0) > 1
+            {counters[0] + counters[1]}{' '}
+            {counters[0] + counters[1] > 1
               ? 'dispositivos'
               : 'dispositivo'}{' '}
             no total

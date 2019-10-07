@@ -5,6 +5,7 @@ import {
   DialogContent,
   DialogTitle,
   Fab,
+  TextField,
   Typography,
   Snackbar
 } from '@material-ui/core';
@@ -29,6 +30,8 @@ import MaterialTable from 'material-table';
 import PropTypes from 'prop-types';
 import React, { forwardRef } from 'react';
 import axios from '../../../../http';
+
+import './styles.css';
 
 const tableIcons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -58,83 +61,40 @@ export default class ListTable extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      dialogCharging: undefined,
       snackbar: false,
-
-      locations: [],
       selectedValue: {},
       dialog: false,
       isLoading: true,
       table: {
         columns: [
           { title: 'Nome', field: 'name' },
-          { title: 'Descrição', field: 'description' },
-          { title: 'MAC', field: 'mac', editable: 'never' },
-          {
-            title: 'Status',
-            field: 'status',
-            editable: 'never',
-            filtering: false,
-            lookup: {
-              1: (
-                <span
-                  style={{
-                    backgroundColor: '#4caf50',
-                    padding: '4px',
-                    borderRadius: '5px',
-                    color: '#fff'
-                  }}>
-                  online
-                </span>
-              ),
-              0: (
-                <span
-                  style={{
-                    backgroundColor: '#ca3232',
-                    padding: '4px',
-                    borderRadius: '5px',
-                    color: '#fff'
-                  }}>
-                  offline
-                </span>
-              )
-            }
-          }
+          { title: 'Email', field: 'email', editable: 'never' },
+          { title: 'Senha', field: 'password', editable: 'never' }
         ],
         data: []
       }
     };
+    this.message = 'Erro ao atualizar';
   }
   componentWillMount = async () => {
     try {
-      let authentication = localStorage.getItem('authentication');
-      let response = await axios.get('locations', {
-        headers: { authentication }
-      });
-
-      let {
-        data: { locations }
-      } = response;
       let lookup = {};
-      for (let i = 0; i < locations.length; i++) {
-        lookup[`${locations[i]._id}`] = locations[i].name;
-      }
+
+      lookup['GENIN'] = 'JUNIOR';
+      lookup['CHUNIN'] = 'PLENO';
+      lookup['JOUNIN'] = 'SENIOR';
 
       console.log(lookup);
       this.setState({
         table: {
           columns: [
             ...this.state.table.columns,
-            { title: 'Ambiente', field: 'location', lookup: { ...lookup } }
+            { title: 'Perfil', field: 'profile', lookup: { ...lookup } }
           ],
           data: []
         }
       });
 
-      this.setState({
-        locations: locations
-      });
-      console.log(this.state.locations);
       this.populate();
     } catch (e) {
       this.message = 'Erro ao tentar conectar com o servidor.';
@@ -145,13 +105,15 @@ export default class ListTable extends React.Component {
     const headers = {
       authentication: localStorage.getItem('authentication')
     };
-    axios.get('devices/all', { headers }).then(response => {
+    axios.get('users', { headers }).then(response => {
       console.log(response.data);
       if (response.data) {
+        const { users } = response.data;
+        users.forEach(user => (user.password = '******'));
         this.setState({
           table: {
             ...this.state.table,
-            data: response.data
+            data: users
           }
         });
       }
@@ -200,41 +162,19 @@ export default class ListTable extends React.Component {
           }
           actions={[
             {
-              icon: 'my_location',
-              tooltip: 'posicionar',
+              icon: 'lock',
+              tooltip: 'redefinir senha',
               onClick: (event, rowData) => {
                 document.body.scrollTop = 0; // For Safari
                 document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
 
-                const { img_url } = this.state.locations.find(
-                  x => x._id == rowData.location
-                );
-                console.log(img_url);
                 this.setState({
                   dialog: true,
 
                   selectedValue: {
-                    ...rowData,
-                    img_url
+                    ...rowData
                   }
                 });
-              }
-            },
-            {
-              icon: 'battery_charging_full',
-              tooltip: 'indicar troca de bateria',
-              onClick: (event, rowData) => {
-                this.setState({ snackbar: true });
-                setTimeout(() => {
-                  this.setState({
-                    dialogCharging: {
-                      name: rowData.name,
-                      location: this.state.locations.find(
-                        x => x._id == rowData.location
-                      )
-                    }
-                  });
-                }, 20000);
               }
             }
           ]}
@@ -289,12 +229,13 @@ export default class ListTable extends React.Component {
                     const headers = {
                       authentication: localStorage.getItem('authentication')
                     };
+                    console.log(newData);
                     const response = await axios.put(
-                      `devices/${oldData.mac}`,
+                      `user/${oldData._id}`,
                       {
                         name: newData.name,
-                        description: newData.description,
-                        location: newData.location
+                        email: newData.email,
+                        profile: newData.profile
                       },
                       {
                         headers
@@ -308,7 +249,15 @@ export default class ListTable extends React.Component {
                     data[data.indexOf(oldData)] = newData;
                     this.setState({ table: { ...this.state.table, data } });
                     setTimeout(this.populate, 2000);
-                  } catch (e) {}
+                  } catch (e) {
+                    console.log(e.response);
+                    this.message =
+                      e.response.data.error.indexOf('name') >= 0
+                        ? 'O nome deve conter entre 3 e 80 caracteres.'
+                        : 'O email informado não é válido.';
+                    resolve();
+                    this.setState({ snackbar: true, isLoading: false });
+                  }
                 }, 600);
               }),
             onRowDelete: oldData =>
@@ -319,10 +268,9 @@ export default class ListTable extends React.Component {
                     const headers = {
                       authentication: localStorage.getItem('authentication')
                     };
-                    const response = await axios.delete(
-                      `devices/${oldData.mac}`,
-                      { headers }
-                    );
+                    const response = await axios.delete(`user/${oldData._id}`, {
+                      headers
+                    });
                     console.log(response.data.status);
                     resolve();
                     const data = [...this.state.table.data];
@@ -336,41 +284,6 @@ export default class ListTable extends React.Component {
               })
           }}
         />
-        <Dialog
-          onClose={() => {
-            this.setState({ dialogCharging: undefined });
-          }}
-          aria-labelledby="simple-dialog-title"
-          open={this.state.dialogCharging != undefined}>
-          <DialogTitle id="simple-dialog-title">
-            Alerta nível de bateria
-          </DialogTitle>
-          <DialogContent>
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                margin: '15px'
-              }}>
-              <Typography
-                variant="h5"
-                style={{ marginBottom: '15px' }}>{`O dispositivo ${
-                this.state.dialogCharging ? this.state.dialogCharging.name : ''
-              } alocado em ${
-                this.state.dialogCharging
-                  ? this.state.dialogCharging.location.name
-                  : ''
-              }, nescessita de troca de bateria.`}</Typography>
-
-              {this.state.dialogCharging && (
-                <img
-                  style={{ margin: 'auto', width: '300px' }}
-                  src={this.state.dialogCharging.location.img_url}></img>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
         <Snackbar
           anchorOrigin={{
             vertical: 'bottom',
@@ -382,9 +295,7 @@ export default class ListTable extends React.Component {
           ContentProps={{
             'aria-describedby': 'message-id'
           }}
-          message={
-            <span id="message-id">Troca de bateria informada com sucesso</span>
-          }
+          message={<span id="message-id">{this.message}</span>}
         />
       </>
     );
@@ -392,19 +303,12 @@ export default class ListTable extends React.Component {
 }
 
 function SimpleDialog(props) {
-  let imageRef = React.createRef();
-  const [position, setPosition] = React.useState({
-    x: 0,
-    y: 0
-  });
+  const [password1, setPasswors1] = React.useState(undefined);
+  const [password2, setPasswors2] = React.useState(undefined);
 
   const { onClose, selectedValue, open } = props;
 
   const handleClose = () => {
-    setPosition({
-      x: 0,
-      y: 0
-    });
     onClose();
   };
 
@@ -418,37 +322,43 @@ function SimpleDialog(props) {
       aria-labelledby="simple-dialog-title"
       open={open}>
       <DialogTitle id="simple-dialog-title">
-        Posicionamento do dispositivo
+        Redefinir senha de {selectedValue.name}
       </DialogTitle>
       <DialogContent>
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <img
-            style={{ margin: 'auto', width: '300px' }}
-            draggable={false}
-            onClick={event => {
-              event.persist();
-              console.log(event);
-
-              console.log({
-                y: event.pageY,
-                x: event.pageX
-              });
-              setPosition({
-                y: event.pageY,
-                x: event.pageX
-              });
-            }}
-            ref={imageRef}
-            src={selectedValue.img_url}
-          />
-        </div>
         <div
           style={{
-            position: 'fixed',
-            top: position.y + 'px',
-            left: position.x + 'px'
+            display: 'flex',
+            justifyContent: 'center',
+            flexDirection: 'column'
           }}>
-          <MyLocationIcon style={{ color: '#000' }} />
+          <div>
+            <Typography>Nova senha</Typography>
+            <TextField
+              type="password"
+              onChange={event => setPasswors1(event.target.value)}
+              error={
+                password1 && (password1.length > 6 || password1.length < 3)
+              }
+              helperText={
+                password1 && (password1.length > 6 || password1.length < 3)
+                  ? 'A senha deve conter de 3 a 6 dígitos.'
+                  : ''
+              }
+            />
+          </div>
+          <div style={{ marginTop: '15px' }}>
+            <Typography>Confirmar senha</Typography>
+            <TextField
+              type="password"
+              onChange={event => setPasswors2(event.target.value)}
+              error={password1 != password2 && password2 != undefined}
+              helperText={
+                password1 != password2 && password2 != undefined
+                  ? 'As senha são diferentes.'
+                  : ''
+              }
+            />
+          </div>
         </div>
 
         {/* onClick={() => handleListItemClick(email)} */}
@@ -458,29 +368,31 @@ function SimpleDialog(props) {
           FECHAR
         </Button>
         <Button
+          disabled={
+            (password1 && (password1.length > 6 || password1.length < 3)) ||
+            (password1 != password2 && password2 != undefined) ||
+            password2 == undefined ||
+            password1 == undefined
+          }
           variant="outlined"
-          disabled={position.x == 0 && position.y == 0}
           onClick={async () => {
             try {
               const headers = {
                 authentication: localStorage.getItem('authentication')
               };
+              console.log(selectedValue);
               const response = await axios.put(
-                `devices/${selectedValue.mac}`,
-                { ...selectedValue, x: position.x, y: position.y },
+                `user/${selectedValue._id}`,
+                { ...selectedValue, password: password1 },
                 { headers }
               );
               console.log(response.data);
-              setPosition({
-                x: 0,
-                y: 0
-              });
             } catch (e) {
               //
             }
             setTimeout(onClose, 600);
           }}>
-          POSICIONAR
+          REDEFINIR
         </Button>
       </div>
     </Dialog>
