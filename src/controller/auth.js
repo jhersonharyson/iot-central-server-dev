@@ -7,8 +7,8 @@ import {
   USER_NOTFOUND,
   ACCOUNT_ISINVALID
 } from "../exceptions/userException";
-import { 
-  MAC_ISINVALID, 
+import {
+  MAC_ISINVALID,
   MAC_ISNOTFOUND
 } from "../exceptions/deviceException";
 
@@ -117,18 +117,20 @@ export async function loginDevice(req, res) {
   try {
     if (req.params.mac && req.params.mac.length == 17) {
       const mac = req.params.mac;
-      const device = await Device.findOne({ mac: mac, status: {$ne: -1} });
+      const device = await Device.findOne({ mac: mac, status: { $ne: -1 } });
 
-       //console.log(device);
+      //console.log(device);
 
       if (!device) return res.status(301).send(MAC_ISNOTFOUND);
 
-      await Device.updateOne({mac: mac}, 
-        {$set : { status: 1 }
-      });
+      await Device.updateOne({ mac: mac },
+        {
+          $set: { status: 1 }
+        });
       const token = jwtBuilder({ id: req.params.mac });
       const resp = {
-        token
+        token,
+        status: 'ok'
       };
       return res.status(200).send(resp);
     }

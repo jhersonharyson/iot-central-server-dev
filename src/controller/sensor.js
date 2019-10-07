@@ -23,7 +23,7 @@ export async function postSensor(req, res) {
     if (mac) {
       try {
         await Promise.all(
-          sensorData.map(async function(arr) {
+          sensorData.map(async function (arr) {
             const incident = await verify_event(arr);
             console.log(incident);
             if (incident && incident.description) {
@@ -86,7 +86,7 @@ export async function postSensor(req, res) {
 
       res.send({
         status: "ok",
-        token: jwtBuilder({ id: deviceId })
+        token: jwtBuilder({ id: mac })
       });
     } else {
       return res.status(401).send(MAC_ISINVALID);
@@ -152,7 +152,7 @@ const verify_event = async sensor => {
           type: s.type,
           description: `${new Date().toLocaleString()} - Nível de ${
             s.type
-          } em ${s.value} ppm`,
+            } em ${s.value} ppm`,
           sensorData: [s._id]
         });
         console.log("create");
@@ -171,7 +171,7 @@ const verify_event = async sensor => {
         incident.sensorData.push(s._id);
         incident.description = `${new Date().toLocaleString()} - Nível de ${
           s.type
-        } em ${s.value} ppm`;
+          } em ${s.value} ppm`;
         await incident.save();
         return incident;
       } else {
@@ -180,7 +180,7 @@ const verify_event = async sensor => {
             type: s.type,
             description: `${new Date().toLocaleString()} - Nível de ${
               s.type
-            } em ${s.value} ppm`,
+              } em ${s.value} ppm`,
             sensorData: [s._id]
           });
           console.log("create");

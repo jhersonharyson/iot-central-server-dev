@@ -6,6 +6,7 @@ import ReactEcharts from 'echarts-for-react';
 import PropTypes from 'prop-types';
 import Detail from '../Detail';
 import axios from '../../../../http';
+import Socket from '../../../../socket';
 import { PpmXDevice } from '..';
 import ListTable from './ListTable/ListTable';
 
@@ -23,11 +24,13 @@ const PpmXEnvironment = props => {
   //Style const
   const { className, ...rest } = props;
   const classes = useStyles();
-  const [devices, setDevice] = useState([]);
+  const [locations, setLocations] = useState([]);
+  const [devices, setDevices] = useState({});
   const [detail, setDetail] = React.useState({
     active: false,
     data: null
   });
+
   const handleToggle = () => {
     setDetail({
       active: !detail.active,
@@ -36,25 +39,36 @@ const PpmXEnvironment = props => {
   };
 
   useEffect(() => {
-    async function getDevices() {
-      let authentication = await localStorage.getItem('authentication');
-      let response = await axios.get('sensors', {
+
+    async function getLocation() {
+      let authentication = localStorage.getItem('authentication');
+      let response = await axios.get('dashboard/location', {
         headers: { authentication }
       });
 
-      let dev = response.data;
-      console.log(dev);
-      if (dev) {
-        //await setDevice();
-      }
+      setLocations(response.data);
+      const loc = locations;
+      response
+        .data
+        .map(async location => {
+          let authentication = localStorage.getItem('authentication');
+          let res = await axios.get(`location/${location._id}/devices`, {
+            headers: { authentication }
+          });
+          loc.push({ ...res.data, ...location })
+          console.log(loc)
+          setLocations(loc);
+        })
+
     }
 
-    getDevices();
-    //Socket.on('postDevice', () => getDevices());
-    //Socket.on('deleteDevice', () => getDevices());
-    //Socket.on('postSensor', () => setTimeout(getDevices, 3000));
-    //Socket.on('postEvent', getDevices);
+    getLocation();
   }, []);
+
+  // Socket.on('postDevice', () => getDevices());
+  // Socket.on('deleteDevice', () => getDevices());
+  // Socket.on('postSensor', getDevices());
+  // Socket.on('postEvent', getDevices());
 
   const getOption = () => {
     let markLine = {
@@ -63,13 +77,13 @@ const PpmXEnvironment = props => {
         {
           yAxis: 400,
           lineStyle: {
-            color: '#61f205'
+            color: '#63F900'
           }
         },
         {
           yAxis: 1000,
           lineStyle: {
-            color: '#f4ea07'
+            color: '#E5DA00'
           }
         },
         {
@@ -99,18 +113,7 @@ const PpmXEnvironment = props => {
       },
       xAxis: {
         type: 'category',
-        data: [
-          'Sala 01',
-          'Sala 02',
-          'Sala 03',
-          'Sala 04',
-          'Sala 05',
-          'Sala 06',
-          'Sala 07',
-          'Sala 08',
-          'Sala 09',
-          'Sala 10'
-        ]
+        data: locations.map(location => location.name)
       },
       yAxis: {
         type: 'value'
@@ -124,7 +127,7 @@ const PpmXEnvironment = props => {
             color: '#053F66'
           },
           markLine,
-          data: [320, 302, 301, 334, 390, 330, 320, 389, 342, 312]
+          data: locations.map(location => location.avg)
         },
         {
           name: 'Máxima',
@@ -134,7 +137,7 @@ const PpmXEnvironment = props => {
             color: ''
           },
           markLine,
-          data: [120, 132, 101, 134, 90, 600, 10, 66, 43, 21]
+          data: locations.map(location => location.max)
         }
       ]
     };
@@ -148,6 +151,7 @@ const PpmXEnvironment = props => {
         <CardContent>
           <div className={classes.chartContainer}>
             <ReactEcharts
+
               option={getOption()}
               onEvents={{
                 click: e => {
