@@ -26,7 +26,7 @@ export async function postSensor(req, res) {
           sensorData.map(async function(arr) {
             const incident = await verify_event(arr);
             console.log(incident);
-            if (incident.description) {
+            if (incident && incident.description) {
               req.io.emit("postEvent", incident);
             }
             let { type, value } = arr;
@@ -44,7 +44,7 @@ export async function postSensor(req, res) {
           })
         );
 
-        let sensorsByDevice = await Device.find()
+        let sensorsByDevice = await Device.find({})
           .select("_id")
           .where("location")
           .equals(device.location)
@@ -62,6 +62,8 @@ export async function postSensor(req, res) {
         let maxSensorValue = -1;
         let sumSensorValue = sensorsByDevice.reduce(
           (sumSensorByDevice, sensorByDevice) => {
+            if (!sensorByDevice.sensorData[0]) return (sumSensorByDevice += 0);
+
             let sensorByDeviceValue = sensorByDevice.sensorData[0].value;
 
             if (sensorByDeviceValue > maxSensorValue)
