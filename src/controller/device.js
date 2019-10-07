@@ -118,8 +118,13 @@ export async function updateDevice(req, res, next) {
     return res.send(MAC_ISNOTFOUND);
   }
 
-  const { name, description, location, position: {x,y} } = req.body;
-  
+  const {
+    name,
+    description,
+    location,
+    position: { x, y }
+  } = req.body;
+
   if (!name || name == "" || name.length < 3 || name.length > 80)
     return res.status(400).send(NAMED_ISINVALID);
   if (!(await Location.findById(location)))
@@ -166,7 +171,6 @@ export async function updateDevice(req, res, next) {
     }
   }
 
-  console.log(device.position);
   up = await device.save();
 
   req.io.emit("updateDevice", up);
@@ -175,20 +179,19 @@ export async function updateDevice(req, res, next) {
 
 export async function dashboardDevice(req, res) {
   return res.json(
-    await Device
-      .aggregate([
-        {
-          $match: {
-            status: { $gte: 0 }
-          }
-        },
-        {
-          $group: {
-            _id: "$status",
-            count: { $sum: 1 }
-          }
+    await Device.aggregate([
+      {
+        $match: {
+          status: { $gte: 0 }
         }
-      ])
+      },
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 }
+        }
+      }
+    ])
   );
 }
 
