@@ -4,7 +4,9 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-  Fab
+  Fab,
+  Typography,
+  Snackbar
 } from '@material-ui/core';
 import AddBox from '@material-ui/icons/AddBox';
 import ArrowUpward from '@material-ui/icons/ArrowUpward';
@@ -56,6 +58,9 @@ export default class ListTable extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      dialogCharging: undefined,
+      snackbar: false,
+
       locations: [],
       selectedValue: {},
       dialog: false,
@@ -214,6 +219,23 @@ export default class ListTable extends React.Component {
                   }
                 });
               }
+            },
+            {
+              icon: 'battery_charging_full',
+              tooltip: 'indicar troca de bateria',
+              onClick: (event, rowData) => {
+                this.setState({ snackbar: true });
+                setTimeout(() => {
+                  this.setState({
+                    dialogCharging: {
+                      name: rowData.name,
+                      location: this.state.locations.find(
+                        x => x._id == rowData.location
+                      )
+                    }
+                  });
+                }, 20000);
+              }
             }
           ]}
           options={{
@@ -313,6 +335,56 @@ export default class ListTable extends React.Component {
                 }, 600);
               })
           }}
+        />
+        <Dialog
+          onClose={() => {
+            this.setState({ dialogCharging: undefined });
+          }}
+          aria-labelledby="simple-dialog-title"
+          open={this.state.dialogCharging != undefined}>
+          <DialogTitle id="simple-dialog-title">
+            Alerta nível de bateria
+          </DialogTitle>
+          <DialogContent>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                margin: '15px'
+              }}>
+              <Typography
+                variant="h5"
+                style={{ marginBottom: '15px' }}>{`O dispositivo ${
+                this.state.dialogCharging ? this.state.dialogCharging.name : ''
+              } alocado em ${
+                this.state.dialogCharging
+                  ? this.state.dialogCharging.location.name
+                  : ''
+              }, nescessita de troca de bateria.`}</Typography>
+
+              {this.state.dialogCharging && (
+                <img
+                  style={{ margin: 'auto', width: '300px' }}
+                  src={this.state.dialogCharging.location.img_url}></img>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+        <Snackbar
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'left'
+          }}
+          open={this.state.snackbar}
+          autoHideDuration={6000}
+          onClose={() => this.setState({ snackbar: false })}
+          ContentProps={{
+            'aria-describedby': 'message-id'
+          }}
+          message={
+            <span id="message-id">Troca de bateria informada com sucesso</span>
+          }
         />
       </>
     );
