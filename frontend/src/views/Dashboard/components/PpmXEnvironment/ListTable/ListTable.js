@@ -65,9 +65,9 @@ export default class ListTable extends React.Component {
       isLoading: true,
       table: {
         columns: [
-          { title: 'Nome', field: 'name' },
-          { title: 'Email', field: 'email', editable: 'never' },
-          { title: 'Senha', field: 'password', editable: 'never' }
+          { title: 'Dispositivo', field: 'name' },
+          { title: 'Valor', field: 'value' },
+          { title: 'Data/Hora', field: 'time' }
         ],
         data: []
       }
@@ -76,23 +76,6 @@ export default class ListTable extends React.Component {
   }
   componentWillMount = async () => {
     try {
-      let lookup = {};
-
-      lookup['GENIN'] = 'JUNIOR';
-      lookup['CHUNIN'] = 'PLENO';
-      lookup['JOUNIN'] = 'SENIOR';
-
-      console.log(lookup);
-      this.setState({
-        table: {
-          columns: [
-            ...this.state.table.columns,
-            { title: 'Perfil', field: 'profile', lookup: { ...lookup } }
-          ],
-          data: []
-        }
-      });
-
       this.populate();
     } catch (e) {
       this.message = 'Erro ao tentar conectar com o servidor.';
@@ -100,24 +83,17 @@ export default class ListTable extends React.Component {
   };
 
   populate = async () => {
-    const headers = {
-      authentication: localStorage.getItem('authentication')
-    };
-    axios.get('users', { headers }).then(response => {
-      console.log(response.data);
-      if (response.data) {
-        const { users } = response.data;
-        users.forEach(user => (user.password = '******'));
-        this.setState({
-          table: {
-            ...this.state.table,
-            data: users
-          }
-        });
+    let devices = this.props.data_loc[0].devices;
+    console.log(devices);
+    this.setState({
+      table: {
+        ...this.state.table,
+        data: []
       }
-      this.setState({ isLoading: false });
     });
+    this.setState({ isLoading: false });
   };
+
   handleClose = () => {
     this.setState({ dialog: false });
   };
@@ -147,15 +123,15 @@ export default class ListTable extends React.Component {
               {this.state.isLoading ? (
                 <CircularProgress color="secondary" size="small" />
               ) : (
-                <Fab
-                  color="secondary"
-                  aria-label="atualizar"
-                  size="small"
-                  variant="extended">
-                  <RefreshIcon />
-                  <span style={{ marginRight: '5px' }}>ATUALIZAR</span>
-                </Fab>
-              )}
+                  <Fab
+                    color="secondary"
+                    aria-label="atualizar"
+                    size="small"
+                    variant="extended">
+                    <RefreshIcon />
+                    <span style={{ marginRight: '5px' }}>ATUALIZAR</span>
+                  </Fab>
+                )}
             </div>
           }
           options={{

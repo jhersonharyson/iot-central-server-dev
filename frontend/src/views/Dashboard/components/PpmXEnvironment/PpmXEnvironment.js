@@ -25,7 +25,6 @@ const PpmXEnvironment = props => {
   const { className, ...rest } = props;
   const classes = useStyles();
   const [locations, setLocations] = useState([]);
-  const [devices, setDevices] = useState({});
   const [detail, setDetail] = React.useState({
     active: false,
     data: null
@@ -39,36 +38,30 @@ const PpmXEnvironment = props => {
   };
 
   useEffect(() => {
-
     async function getLocation() {
       let authentication = localStorage.getItem('authentication');
       let response = await axios.get('dashboard/location', {
         headers: { authentication }
       });
 
-      setLocations(response.data);
-      const loc = locations;
-      response
-        .data
-        .map(async location => {
-          let authentication = localStorage.getItem('authentication');
-          let res = await axios.get(`location/${location._id}/devices`, {
-            headers: { authentication }
-          });
-          loc.push({ ...res.data, ...location })
-          console.log(loc)
-          setLocations(loc);
-        })
+      const result = await Promise
+        .all(
+          response.data
+            .map(async location => {
+              let authentication = localStorage.getItem('authentication');
+              let res = await axios.get(`location/${location._id}/devices`, {
+                headers: { authentication }
+              });
+              return { ...res.data, ...location };
+            })
+        )
 
+      setLocations(result);
     }
 
     getLocation();
   }, []);
 
-  // Socket.on('postDevice', () => getDevices());
-  // Socket.on('deleteDevice', () => getDevices());
-  // Socket.on('postSensor', getDevices());
-  // Socket.on('postEvent', getDevices());
 
   const getOption = () => {
     let markLine = {
@@ -143,6 +136,7 @@ const PpmXEnvironment = props => {
     };
   };
 
+
   return (
     <>
       <Card {...rest} className={clsx(classes.root, className)}>
@@ -150,14 +144,18 @@ const PpmXEnvironment = props => {
         <Divider />
         <CardContent>
           <div className={classes.chartContainer}>
-            <ReactEcharts
 
+
+            <ReactEcharts
+              lazyUpdate={true}
+
+              showLoading={!locations.length}
               option={getOption()}
               onEvents={{
                 click: e => {
                   setDetail({
                     active: true,
-                    data: e
+                    data: e,
                   });
                 }
               }}
@@ -170,8 +168,8 @@ const PpmXEnvironment = props => {
         handleToggle={handleToggle}
         title={detail.active && detail.data.name}>
         <>
-          <PpmXDevice data={detail.data} style={{ margin: '20px' }} />
-          <ListTable />
+          <PpmXDevice data_loc={[...locations]} data={detail.data} style={{ margin: '20px' }} />
+          <ListTable data_loc={[...locations]} data={detail.data} />
         </>
       </Detail>
     </>
