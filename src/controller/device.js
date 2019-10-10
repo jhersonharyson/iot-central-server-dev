@@ -24,8 +24,6 @@ export async function postDevice(req, res) {
   if (!name || name == "" || name.length < 3 || name.length > 80)
     return res.status(400).send(NAMED_ISINVALID);
 
-  if (!description) return res.status(400).send(DESCRIPTION_ISEMPTY);
-
   if (!location || location == "" || !(await Location.findById(location)))
     return res.status(400).send(LOCATION_ISINVALID);
 
@@ -36,7 +34,7 @@ export async function postDevice(req, res) {
     const device = await new Device({
       mac,
       name,
-      description,
+      description: description || null,
       location,
       position
     }).save();
