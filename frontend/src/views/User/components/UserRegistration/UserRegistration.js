@@ -58,10 +58,9 @@ const schema = {
 };
 
 const UserRegistration = props => {
-  let message = '';
-
   const { history } = props;
   const [feedback, setFeedback] = useState(false);
+  const [message, setMessage] = useState('');
   const [formState, setFormState] = useState({
     isValid: false,
     values: {},
@@ -112,7 +111,7 @@ const UserRegistration = props => {
 
   const submit = async (name, email, password, profile) => {
     const headers = {
-      authentication: await localStorage.getItem('authentication')
+      authentication: localStorage.getItem('authentication')
     };
 
     console.log(headers.authentication);
@@ -133,9 +132,15 @@ const UserRegistration = props => {
         data: { user }
       } = response;
 
-      message = 'Usuário cadastrado com sucesso!';
+      setMessage('Usuário cadastrado com sucesso!');
+      setFormState({
+        isValid: false,
+        values: {},
+        touched: {},
+        errors: {}
+      });
     } catch (e) {
-      message = 'Erro ao tentar cadastrar o usuário!';
+      setMessage('Erro ao tentar cadastrar o usuário!');
     } finally {
       setFeedback(true);
     }
