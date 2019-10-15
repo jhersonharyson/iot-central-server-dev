@@ -164,10 +164,12 @@ class DeviceRegistration extends Component {
         }
       );
       const {
-        data: { locations }
+        data: { error }
       } = response;
-      this.setState({ locations });
-      this.message = 'Dispositivo adicionado com sucesso!';
+      if (error == 'the mac exist.')
+        this.message =
+          'Já existe um dispositivo cadastrado com o MAC indicado!';
+      else this.message = 'Dispositivo adicionado com sucesso!';
     } catch (e) {
       this.message = 'Erro ao tentar salvar o dispositivo!';
     } finally {
