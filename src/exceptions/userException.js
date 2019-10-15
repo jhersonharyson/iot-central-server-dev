@@ -11,3 +11,6 @@ export const PASSWORD_LARGE = buildException("the password is too large.");
 export const EMAIL_ISINVALID = buildException("the email is invalid.");
 export const USER_NOTFOUND = buildException("the user is not found.");
 export const ACCOUNT_ISINVALID = buildException("the account is invalid.");
+export const ACCOUNT_ALREADY_EXISTS = buildException(
+  "the account already exists."
+);

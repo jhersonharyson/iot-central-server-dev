@@ -129,16 +129,19 @@ const UserRegistration = props => {
         }
       );
       const {
-        data: { user }
+        data: { error }
       } = response;
 
-      setMessage('Usuário cadastrado com sucesso!');
-      setFormState({
-        isValid: false,
-        values: {},
-        touched: {},
-        errors: {}
-      });
+      if (error) setMessage('Já existe um usuário com o email informado!');
+      else {
+        setMessage('Usuário cadastrado com sucesso!');
+        setFormState({
+          isValid: false,
+          values: {},
+          touched: {},
+          errors: {}
+        });
+      }
     } catch (e) {
       setMessage('Erro ao tentar cadastrar o usuário!');
     } finally {
@@ -177,6 +180,7 @@ const UserRegistration = props => {
                   : null
               }
               label="Nome"
+              required
               name="name"
               onChange={handleChange}
               type="text"
@@ -185,6 +189,7 @@ const UserRegistration = props => {
               variant="outlined"
             />
             <TextField
+              required
               error={hasError('email')}
               fullWidth
               helperText={hasError('email') ? formState.errors.email[0] : null}
@@ -197,6 +202,7 @@ const UserRegistration = props => {
               variant="outlined"
             />
             <TextField
+              required
               error={hasError('password')}
               fullWidth
               helperText={
@@ -213,6 +219,7 @@ const UserRegistration = props => {
               variant="outlined"
             />
             <TextField
+              required
               error={hasError('confirmpassword')}
               fullWidth
               helperText={
@@ -240,6 +247,7 @@ const UserRegistration = props => {
               paddingLeft: '15px'
             }}>
             <Select
+              required
               inputProps={{
                 name: 'profile',
                 id: 'outlined-env'

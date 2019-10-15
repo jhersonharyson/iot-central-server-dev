@@ -87,26 +87,31 @@ class EnviromentRegistration extends Component {
       );
 
       if (response.data) {
-        this.message = 'Dispositivo adicionado com sucesso!';
+        if (response.data.error)
+          this.message =
+            'Já existe um Ambiente com nome e descrição indicados!';
+        else {
+          this.message = 'Ambiente adicionado com sucesso!';
+          this.setState({
+            name: '',
+            desc: '',
+            img: '',
+            marked: false,
+            src: null,
+            cropped: '',
+            crop: {
+              // unit: '%',
+              width: 250,
+              aspect: 4 / 4
+            },
+            confirmCrop: false
+          });
+        }
       }
     } catch (e) {
-      this.message = 'Erro ao tentar salvar o dispositivo!';
+      this.message = 'Erro ao tentar salvar o Ambiente!';
     } finally {
-      this.setState({
-        name: '',
-        desc: '',
-        img: '',
-        marked: false,
-        src: null,
-        cropped: '',
-        crop: {
-          // unit: '%',
-          width: 250,
-          aspect: 4 / 4
-        },
-        confirmCrop: false,
-        feedback: true
-      });
+      this.setState({ feedback: true });
     }
   };
 

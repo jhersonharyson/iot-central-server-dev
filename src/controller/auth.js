@@ -5,7 +5,8 @@ import {
   NAME_ISINVALID,
   PASSWORD_ISINVALID,
   USER_NOTFOUND,
-  ACCOUNT_ISINVALID
+  ACCOUNT_ISINVALID,
+  ACCOUNT_ALREADY_EXISTS
 } from "../exceptions/userException";
 import { MAC_ISINVALID, MAC_ISNOTFOUND } from "../exceptions/deviceException";
 
@@ -90,6 +91,10 @@ export async function signup(req, res) {
     return res.status(400).jwt(PASSWORD_ISINVALID);
 
   if (!email || email == "") return res.status(400).jwt(EMAIL_ISINVALID);
+
+  const alreadyExists = await User.find({ email });
+
+  if (alreadyExists) return res.status(200).send(ACCOUNT_ALREADY_EXISTS);
 
   try {
     const user = await new User({
