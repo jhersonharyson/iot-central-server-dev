@@ -92,7 +92,6 @@ class EnviromentRegistration extends Component {
     } catch (e) {
       this.message = 'Erro ao tentar salvar o dispositivo!';
     } finally {
-      this.setState({ feedback: true });
       this.setState({
         name: '',
         desc: '',
@@ -106,7 +105,7 @@ class EnviromentRegistration extends Component {
           aspect: 4 / 4
         },
         confirmCrop: false,
-        feedback: false
+        feedback: true
       });
     }
   };
@@ -266,10 +265,7 @@ class EnviromentRegistration extends Component {
             <BackIcon />
             VOLTAR
           </Button>
-          <Button
-            onClick={this.props.goBack}
-            color="primary"
-            onClick={this.doSubmit}>
+          <Button color="primary" onClick={this.doSubmit}>
             <SaveIcon />
             SALVAR
           </Button>
