@@ -7,10 +7,7 @@ import {
   USER_NOTFOUND,
   ACCOUNT_ISINVALID
 } from "../exceptions/userException";
-import {
-  MAC_ISINVALID,
-  MAC_ISNOTFOUND
-} from "../exceptions/deviceException";
+import { MAC_ISINVALID, MAC_ISNOTFOUND } from "../exceptions/deviceException";
 
 import User from "../models/user";
 import Device from "../models/device";
@@ -85,7 +82,7 @@ export function signin(req, res) {
 
 // build a user
 export async function signup(req, res) {
-  const { name, password, email } = req.body;
+  const { name, password, email, profile } = req.body;
   if (!name || name == "" || name.length < 3 || name.length > 80)
     return res.status(400).jwt(NAME_ISINVALID);
 
@@ -98,7 +95,9 @@ export async function signup(req, res) {
     const user = await new User({
       name,
       email,
-      password
+      password,
+      profile:
+        ["JOUNIN", "CHUNIN", "GENIN"].indexOf(profile) >= 0 ? profile : "GENIN"
     }).save();
 
     return res.status(201).json(user);
@@ -123,14 +122,16 @@ export async function loginDevice(req, res) {
 
       if (!device) return res.status(301).send(MAC_ISNOTFOUND);
 
-      await Device.updateOne({ mac: mac },
+      await Device.updateOne(
+        { mac: mac },
         {
           $set: { status: 1 }
-        });
+        }
+      );
       const token = jwtBuilder({ id: req.params.mac });
       const resp = {
         token,
-        status: 'ok'
+        status: "ok"
       };
       return res.status(200).send(resp);
     }
