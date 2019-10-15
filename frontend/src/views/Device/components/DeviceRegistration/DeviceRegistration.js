@@ -79,6 +79,18 @@ class DeviceRegistration extends Component {
   };
 
   handleChange = name => event => {
+    if (name == 'mac') {
+      console.log(this.state.mac.length, event.target.value.length);
+      const two_dots = [2, 5, 8, 11, 14];
+      if (event.target.value.length > 17) return;
+
+      if (
+        two_dots.indexOf(event.target.value.length) >= 0 &&
+        this.state.mac.length < event.target.value.length
+      ) {
+        event.target.value += ':';
+      }
+    }
     if (name == 'environment') {
       const location = this.state.locations.find(
         x => x._id == event.target.value
@@ -131,7 +143,10 @@ class DeviceRegistration extends Component {
       return;
     }
     //doPost
-    this.submit(mac, name, desc, environment, position);
+    this.submit(mac, name, desc, environment, {
+      x: position.xr,
+      y: position.yr
+    });
   };
 
   submit = async (mac, name, description, location, position) => {
@@ -253,10 +268,20 @@ class DeviceRegistration extends Component {
                   }}
                   draggable={false}
                   onClick={event => {
+                    const x =
+                      event.pageX -
+                      event.target.getBoundingClientRect().left +
+                      window.scrollX;
+                    const y =
+                      event.pageY -
+                      event.target.getBoundingClientRect().top +
+                      window.scrollY;
                     this.setState({
                       position: {
                         y: event.pageY,
-                        x: event.pageX
+                        x: event.pageX,
+                        xr: x,
+                        yr: y
                       }
                     });
                   }}

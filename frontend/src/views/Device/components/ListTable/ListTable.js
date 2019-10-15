@@ -162,6 +162,13 @@ export default class ListTable extends React.Component {
     this.setState({ dialog: false });
   };
 
+  handleUpdateAfterClose = () => {
+    this.setState({ isLoading: true });
+    this.componentWillMount();
+    setTimeout(() => this.setState({ isLoading: false }), 1000);
+    this.handleClose();
+  };
+
   render() {
     return (
       <>
@@ -169,6 +176,7 @@ export default class ListTable extends React.Component {
           selectedValue={this.state.selectedValue}
           open={this.state.dialog}
           onClose={this.handleClose}
+          handleUpdateAfterClose={this.handleUpdateAfterClose}
         />
         <MaterialTable
           isLoading={this.state.isLoading}
@@ -391,100 +399,169 @@ export default class ListTable extends React.Component {
   }
 }
 
-function SimpleDialog(props) {
-  let imageRef = React.createRef();
-  const [position, setPosition] = React.useState({
-    x: 0,
-    y: 0
-  });
-
-  const { onClose, selectedValue, open } = props;
-
-  const handleClose = () => {
-    setPosition({
-      x: 0,
-      y: 0
-    });
-    onClose();
-  };
-
-  const handleListItemClick = value => {
-    onClose(value);
-  };
-
-  return (
-    <Dialog
-      onClose={handleClose}
-      aria-labelledby="simple-dialog-title"
-      open={open}>
-      <DialogTitle id="simple-dialog-title">
-        Posicionamento do dispositivo
-      </DialogTitle>
-      <DialogContent>
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <img
-            style={{ margin: 'auto', width: '300px' }}
-            draggable={false}
-            onClick={event => {
-              event.persist();
-              console.log(event);
-
-              console.log({
-                y: event.pageY,
-                x: event.pageX
-              });
-              setPosition({
-                y: event.pageY,
-                x: event.pageX
-              });
-            }}
-            ref={imageRef}
-            src={selectedValue.img_url}
-          />
-        </div>
-        <div
-          style={{
-            position: 'fixed',
-            top: position.y + 'px',
-            left: position.x + 'px'
-          }}>
-          <MyLocationIcon style={{ color: '#000' }} />
-        </div>
-
-        {/* onClick={() => handleListItemClick(email)} */}
-      </DialogContent>
-      <div style={{ margin: '15px', display: 'flex', flexDirection: 'column' }}>
-        <Button style={{ marginBottom: '5px' }} onClick={() => onClose()}>
-          FECHAR
-        </Button>
-        <Button
-          variant="outlined"
-          disabled={position.x == 0 && position.y == 0}
-          onClick={async () => {
-            try {
-              const headers = {
-                authentication: localStorage.getItem('authentication')
-              };
-              const response = await axios.put(
-                `devices/${selectedValue.mac}`,
-                { ...selectedValue, x: position.x, y: position.y },
-                { headers }
-              );
-              console.log(response.data);
-              setPosition({
-                x: 0,
-                y: 0
-              });
-            } catch (e) {
-              //
+class SimpleDialog extends React.Component {
+  constructor(props) {
+    super(props);
+    this.imageRef = React.createRef();
+    this.state = {
+      position: {
+        x: 0,
+        y: 0
+      }
+    };
+  }
+  componentDidMount() {}
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.selectedValue && nextProps.selectedValue.position) {
+      setTimeout(() => {
+        if (this.imageRef.current) {
+          console.info(
+            JSON.stringify(this.imageRef.current.getBoundingClientRect())
+          );
+          this.setState({
+            position: {
+              x:
+                nextProps.selectedValue.position.x +
+                this.imageRef.current.getBoundingClientRect().x,
+              y:
+                nextProps.selectedValue.position.y +
+                this.imageRef.current.getBoundingClientRect().y
             }
-            setTimeout(onClose, 600);
-          }}>
-          POSICIONAR
-        </Button>
-      </div>
-    </Dialog>
-  );
+          });
+        }
+      }, 100);
+    }
+    if (nextProps.position) {
+      this.setState({
+        position: {
+          x: nextProps.position ? nextProps.position.x : 0,
+          y: nextProps.position ? nextProps.position.y : 0
+        }
+      });
+    }
+    console.log({
+      x: nextProps.position ? nextProps.position.x : 0,
+      y: nextProps.position ? nextProps.position.y : 0
+    });
+
+    console.log({
+      x: this.state.position ? this.state.position.x : 0,
+      y: this.state.position ? this.state.position.y : 0
+    });
+  }
+
+  handleClose = () => {
+    // setPosition({
+    //   x: 0,
+    //   y: 0
+    // });
+    this.props.onClose();
+  };
+
+  handleListItemClick = value => {
+    this.props.onClose(value);
+  };
+  render() {
+    const { handleUpdateAfterClose, onClose, selectedValue, open } = this.props;
+    return (
+      <Dialog
+        onClose={this.handleClose}
+        aria-labelledby="simple-dialog-title"
+        open={open}>
+        <DialogTitle id="simple-dialog-title">
+          Posicionamento do dispositivo
+        </DialogTitle>
+        <DialogContent>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <img
+              style={{ margin: 'auto', width: '300px' }}
+              draggable={false}
+              onClick={event => {
+                const x =
+                  event.pageX -
+                  event.target.getBoundingClientRect().left +
+                  window.scrollX;
+                const y =
+                  event.pageY -
+                  event.target.getBoundingClientRect().top +
+                  window.scrollY;
+                console.log(x, y);
+                console.log(this.imageRef.current.getBoundingClientRect());
+
+                this.setState({
+                  position: {
+                    y: event.pageY,
+                    x: event.pageX,
+                    xr: x,
+                    yr: y
+                  }
+                });
+              }}
+              ref={this.imageRef}
+              src={selectedValue.img_url}
+            />
+          </div>
+          <div
+            style={{
+              position: 'fixed',
+              top:
+                selectedValue.position && this.state.position.y == 0
+                  ? selectedValue.position.y +
+                    (!!this.imageRef.current
+                      ? this.imageRef.current.getBoundingClientRect().top
+                      : 0) +
+                    'px'
+                  : this.state.position.y,
+              left:
+                selectedValue.position && this.state.position.x == 0
+                  ? selectedValue.position.x +
+                    (!!this.imageRef.current
+                      ? this.imageRef.current.getBoundingClientRect().left
+                      : 0) +
+                    'px'
+                  : this.state.position.x
+            }}>
+            <MyLocationIcon style={{ color: '#000' }} />
+          </div>
+
+          {/* onClick={() => handleListItemClick(email)} */}
+        </DialogContent>
+        <div
+          style={{ margin: '15px', display: 'flex', flexDirection: 'column' }}>
+          <Button style={{ marginBottom: '5px' }} onClick={() => onClose()}>
+            FECHAR
+          </Button>
+          <Button
+            variant="outlined"
+            disabled={this.state.position.x == 0 && this.state.position.y == 0}
+            onClick={async () => {
+              try {
+                const headers = {
+                  authentication: localStorage.getItem('authentication')
+                };
+                const response = await axios.put(
+                  `devices/${selectedValue.mac}`,
+                  {
+                    ...selectedValue,
+                    position: {
+                      x: this.state.position.xr,
+                      y: this.state.position.yr
+                    }
+                  },
+                  { headers }
+                );
+                console.log(response.data);
+              } catch (e) {
+                //
+              }
+              setTimeout(handleUpdateAfterClose, 600);
+            }}>
+            POSICIONAR
+          </Button>
+        </div>
+      </Dialog>
+    );
+  }
 }
 
 SimpleDialog.propTypes = {
