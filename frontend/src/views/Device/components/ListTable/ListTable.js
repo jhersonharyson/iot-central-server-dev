@@ -121,10 +121,14 @@ export default class ListTable extends React.Component {
       }
 
       console.log(lookup);
+      const columnsWithoutRepetion = this.state.table.columns.filter(
+        column => column.title != 'Ambiente'
+      );
+
       this.setState({
         table: {
           columns: [
-            ...this.state.table.columns,
+            ...columnsWithoutRepetion,
             { title: 'Ambiente', field: 'location', lookup: { ...lookup } }
           ],
           data: []
