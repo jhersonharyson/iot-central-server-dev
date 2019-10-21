@@ -210,46 +210,48 @@ export default class ListTable extends React.Component {
               )}
             </div>
           }
-          actions={[
-            {
-              icon: 'my_location',
-              tooltip: 'posicionar',
-              onClick: (event, rowData) => {
-                document.body.scrollTop = 0; // For Safari
-                document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+          actions={
+            this.props.profile && [
+              {
+                icon: 'my_location',
+                tooltip: 'posicionar',
+                onClick: (event, rowData) => {
+                  document.body.scrollTop = 0; // For Safari
+                  document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
 
-                const { img_url } = this.state.locations.find(
-                  x => x._id == rowData.location
-                );
-                console.log(img_url);
-                this.setState({
-                  dialog: true,
-
-                  selectedValue: {
-                    ...rowData,
-                    img_url
-                  }
-                });
-              }
-            },
-            {
-              icon: 'battery_charging_full',
-              tooltip: 'indicar troca de bateria',
-              onClick: (event, rowData) => {
-                this.setState({ snackbar: true });
-                setTimeout(() => {
+                  const { img_url } = this.state.locations.find(
+                    x => x._id == rowData.location
+                  );
+                  console.log(img_url);
                   this.setState({
-                    dialogCharging: {
-                      name: rowData.name,
-                      location: this.state.locations.find(
-                        x => x._id == rowData.location
-                      )
+                    dialog: true,
+
+                    selectedValue: {
+                      ...rowData,
+                      img_url
                     }
                   });
-                }, 20000);
+                }
+              },
+              {
+                icon: 'battery_charging_full',
+                tooltip: 'indicar troca de bateria',
+                onClick: (event, rowData) => {
+                  this.setState({ snackbar: true });
+                  setTimeout(() => {
+                    this.setState({
+                      dialogCharging: {
+                        name: rowData.name,
+                        location: this.state.locations.find(
+                          x => x._id == rowData.location
+                        )
+                      }
+                    });
+                  }, 20000);
+                }
               }
-            }
-          ]}
+            ]
+          }
           options={{
             exportButton: true,
             actionsColumnIndex: -1,
@@ -293,60 +295,62 @@ export default class ListTable extends React.Component {
           icons={tableIcons}
           columns={this.state.table.columns}
           data={this.state.table.data}
-          editable={{
-            onRowUpdate: (newData, oldData) =>
-              new Promise(resolve => {
-                setTimeout(async () => {
-                  try {
-                    const headers = {
-                      authentication: localStorage.getItem('authentication')
-                    };
-                    const response = await axios.put(
-                      `devices/${oldData.mac}`,
-                      {
-                        name: newData.name,
-                        description: newData.description,
-                        location: newData.location
-                      },
-                      {
-                        headers
-                      }
-                    );
+          editable={
+            this.props.profile && {
+              onRowUpdate: (newData, oldData) =>
+                new Promise(resolve => {
+                  setTimeout(async () => {
+                    try {
+                      const headers = {
+                        authentication: localStorage.getItem('authentication')
+                      };
+                      const response = await axios.put(
+                        `devices/${oldData.mac}`,
+                        {
+                          name: newData.name,
+                          description: newData.description,
+                          location: newData.location
+                        },
+                        {
+                          headers
+                        }
+                      );
 
-                    console.log(response.data);
+                      console.log(response.data);
 
-                    resolve();
-                    const data = [...this.state.table.data];
-                    data[data.indexOf(oldData)] = newData;
-                    this.setState({ table: { ...this.state.table, data } });
-                    setTimeout(this.populate, 2000);
-                  } catch (e) {}
-                }, 600);
-              }),
-            onRowDelete: oldData =>
-              new Promise(resolve => {
-                setTimeout(async () => {
-                  // console.log(oldData);
-                  try {
-                    const headers = {
-                      authentication: localStorage.getItem('authentication')
-                    };
-                    const response = await axios.delete(
-                      `devices/${oldData.mac}`,
-                      { headers }
-                    );
-                    console.log(response.data.status);
-                    resolve();
-                    const data = [...this.state.table.data];
-                    data.splice(data.indexOf(oldData), 1);
-                    this.setState({ table: { ...this.state.table, data } });
-                    setTimeout(this.populate, 2000);
-                  } catch (e) {
-                    /////
-                  }
-                }, 600);
-              })
-          }}
+                      resolve();
+                      const data = [...this.state.table.data];
+                      data[data.indexOf(oldData)] = newData;
+                      this.setState({ table: { ...this.state.table, data } });
+                      setTimeout(this.populate, 2000);
+                    } catch (e) {}
+                  }, 600);
+                }),
+              onRowDelete: oldData =>
+                new Promise(resolve => {
+                  setTimeout(async () => {
+                    // console.log(oldData);
+                    try {
+                      const headers = {
+                        authentication: localStorage.getItem('authentication')
+                      };
+                      const response = await axios.delete(
+                        `devices/${oldData.mac}`,
+                        { headers }
+                      );
+                      console.log(response.data.status);
+                      resolve();
+                      const data = [...this.state.table.data];
+                      data.splice(data.indexOf(oldData), 1);
+                      this.setState({ table: { ...this.state.table, data } });
+                      setTimeout(this.populate, 2000);
+                    } catch (e) {
+                      /////
+                    }
+                  }, 600);
+                })
+            }
+          }
         />
         <Dialog
           onClose={() => {
