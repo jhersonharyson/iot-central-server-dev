@@ -85,10 +85,14 @@ export default class ListTable extends React.Component {
       lookup['JOUNIN'] = 'SENIOR';
 
       console.log(lookup);
+      const columnsWithoutRepetion = this.state.table.columns.filter(
+        column => column.title != 'Perfil'
+      );
+
       this.setState({
         table: {
           columns: [
-            ...this.state.table.columns,
+            ...columnsWithoutRepetion,
             { title: 'Perfil', field: 'profile', lookup: { ...lookup } }
           ],
           data: []
@@ -160,24 +164,26 @@ export default class ListTable extends React.Component {
               )}
             </div>
           }
-          actions={[
-            {
-              icon: 'lock',
-              tooltip: 'redefinir senha',
-              onClick: (event, rowData) => {
-                document.body.scrollTop = 0; // For Safari
-                document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+          actions={
+            this.props.profile && [
+              {
+                icon: 'lock',
+                tooltip: 'redefinir senha',
+                onClick: (event, rowData) => {
+                  document.body.scrollTop = 0; // For Safari
+                  document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
 
-                this.setState({
-                  dialog: true,
+                  this.setState({
+                    dialog: true,
 
-                  selectedValue: {
-                    ...rowData
-                  }
-                });
+                    selectedValue: {
+                      ...rowData
+                    }
+                  });
+                }
               }
-            }
-          ]}
+            ]
+          }
           options={{
             exportButton: true,
             actionsColumnIndex: -1,
@@ -221,68 +227,73 @@ export default class ListTable extends React.Component {
           icons={tableIcons}
           columns={this.state.table.columns}
           data={this.state.table.data}
-          editable={{
-            onRowUpdate: (newData, oldData) =>
-              new Promise(resolve => {
-                setTimeout(async () => {
-                  try {
-                    const headers = {
-                      authentication: localStorage.getItem('authentication')
-                    };
-                    console.log(newData);
-                    const response = await axios.put(
-                      `user/${oldData._id}`,
-                      {
-                        name: newData.name,
-                        email: newData.email,
-                        profile: newData.profile
-                      },
-                      {
-                        headers
-                      }
-                    );
+          editable={
+            this.props.profile && {
+              onRowUpdate: (newData, oldData) =>
+                new Promise(resolve => {
+                  setTimeout(async () => {
+                    try {
+                      const headers = {
+                        authentication: localStorage.getItem('authentication')
+                      };
+                      console.log(newData);
+                      const response = await axios.put(
+                        `user/${oldData._id}`,
+                        {
+                          name: newData.name,
+                          email: newData.email,
+                          profile: newData.profile
+                        },
+                        {
+                          headers
+                        }
+                      );
 
-                    console.log(response.data);
+                      console.log(response.data);
 
-                    resolve();
-                    const data = [...this.state.table.data];
-                    data[data.indexOf(oldData)] = newData;
-                    this.setState({ table: { ...this.state.table, data } });
-                    setTimeout(this.populate, 2000);
-                  } catch (e) {
-                    console.log(e.response);
-                    this.message =
-                      e.response.data.error.indexOf('name') >= 0
-                        ? 'O nome deve conter entre 3 e 80 caracteres.'
-                        : 'O email informado não é válido.';
-                    resolve();
-                    this.setState({ snackbar: true, isLoading: false });
-                  }
-                }, 600);
-              }),
-            onRowDelete: oldData =>
-              new Promise(resolve => {
-                setTimeout(async () => {
-                  // console.log(oldData);
-                  try {
-                    const headers = {
-                      authentication: localStorage.getItem('authentication')
-                    };
-                    const response = await axios.delete(`user/${oldData._id}`, {
-                      headers
-                    });
-                    console.log(response.data.status);
-                    resolve();
-                    const data = [...this.state.table.data];
-                    data.splice(data.indexOf(oldData), 1);
-                    this.setState({ table: { ...this.state.table, data } });
-                    setTimeout(this.populate, 2000);
-                  } catch (e) {
-                    /////
-                  }
-                }, 600);
-              })
-          }}
+                      resolve();
+                      const data = [...this.state.table.data];
+                      data[data.indexOf(oldData)] = newData;
+                      this.setState({ table: { ...this.state.table, data } });
+                      setTimeout(this.populate, 2000);
+                    } catch (e) {
+                      console.log(e.response);
+                      this.message =
+                        e.response.data.error.indexOf('name') >= 0
+                          ? 'O nome deve conter entre 3 e 80 caracteres.'
+                          : 'O email informado não é válido.';
+                      resolve();
+                      this.setState({ snackbar: true, isLoading: false });
+                    }
+                  }, 600);
+                }),
+              onRowDelete: oldData =>
+                new Promise(resolve => {
+                  setTimeout(async () => {
+                    // console.log(oldData);
+                    try {
+                      const headers = {
+                        authentication: localStorage.getItem('authentication')
+                      };
+                      const response = await axios.delete(
+                        `user/${oldData._id}`,
+                        {
+                          headers
+                        }
+                      );
+                      console.log(response.data.status);
+                      resolve();
+                      const data = [...this.state.table.data];
+                      data.splice(data.indexOf(oldData), 1);
+                      this.setState({ table: { ...this.state.table, data } });
+                      setTimeout(this.populate, 2000);
+                    } catch (e) {
+                      /////
+                    }
+                  }, 600);
+                })
+            }
+          }
         />
         <Snackbar
           anchorOrigin={{

@@ -65,9 +65,9 @@ export default class ListTable extends React.Component {
       isLoading: true,
       table: {
         columns: [
-          { title: 'Dispositivo', field: 'name' },
+          { title: 'Dispositivo', field: 'deviceName' },
           { title: 'Valor', field: 'value' },
-          { title: 'Data/Hora', field: 'time' }
+          { title: 'Data/Hora', field: 'createAt' }
         ],
         data: []
       }
@@ -83,12 +83,19 @@ export default class ListTable extends React.Component {
   };
 
   populate = async () => {
-    let devices = this.props.data_loc[0].devices;
-    console.log(devices);
+    const { devices } = this.props.data_loc.find(loc => loc.name === this.props.data.name);
     this.setState({
       table: {
         ...this.state.table,
-        data: []
+        data: devices.reduce((all, device) => {
+          return [
+            ...all,
+            ...device.sensorData.map(sensor => ({
+              ...sensor,
+              deviceName: device.name,
+              createAt: new Date(Date.parse(sensor.createAt)).toLocaleString('pt-BR')
+            }))];
+        }, [])
       }
     });
     this.setState({ isLoading: false });

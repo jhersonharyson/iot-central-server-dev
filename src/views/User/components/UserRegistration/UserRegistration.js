@@ -58,10 +58,9 @@ const schema = {
 };
 
 const UserRegistration = props => {
-  let message = '';
-
   const { history } = props;
   const [feedback, setFeedback] = useState(false);
+  const [message, setMessage] = useState('');
   const [formState, setFormState] = useState({
     isValid: false,
     values: {},
@@ -112,7 +111,7 @@ const UserRegistration = props => {
 
   const submit = async (name, email, password, profile) => {
     const headers = {
-      authentication: await localStorage.getItem('authentication')
+      authentication: localStorage.getItem('authentication')
     };
 
     console.log(headers.authentication);
@@ -130,12 +129,21 @@ const UserRegistration = props => {
         }
       );
       const {
-        data: { user }
+        data: { error }
       } = response;
 
-      message = 'Usuário cadastrado com sucesso!';
+      if (error) setMessage('Já existe um usuário com o email informado!');
+      else {
+        setMessage('Usuário cadastrado com sucesso!');
+        setFormState({
+          isValid: false,
+          values: {},
+          touched: {},
+          errors: {}
+        });
+      }
     } catch (e) {
-      message = 'Erro ao tentar cadastrar o usuário!';
+      setMessage('Erro ao tentar cadastrar o usuário!');
     } finally {
       setFeedback(true);
     }
@@ -172,6 +180,7 @@ const UserRegistration = props => {
                   : null
               }
               label="Nome"
+              required
               name="name"
               onChange={handleChange}
               type="text"
@@ -180,6 +189,7 @@ const UserRegistration = props => {
               variant="outlined"
             />
             <TextField
+              required
               error={hasError('email')}
               fullWidth
               helperText={hasError('email') ? formState.errors.email[0] : null}
@@ -192,6 +202,7 @@ const UserRegistration = props => {
               variant="outlined"
             />
             <TextField
+              required
               error={hasError('password')}
               fullWidth
               helperText={
@@ -208,6 +219,7 @@ const UserRegistration = props => {
               variant="outlined"
             />
             <TextField
+              required
               error={hasError('confirmpassword')}
               fullWidth
               helperText={
@@ -235,6 +247,7 @@ const UserRegistration = props => {
               paddingLeft: '15px'
             }}>
             <Select
+              required
               inputProps={{
                 name: 'profile',
                 id: 'outlined-env'
