@@ -8,7 +8,9 @@ import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import CloseIcon from '@material-ui/icons/Close';
+import WarningRoundedIcon from '@material-ui/icons/WarningRounded';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import axios from '../../http';
 import Socket from '../../socket';
 import { Sidebar, Topbar } from './components';
 
@@ -58,10 +60,36 @@ const Main = props => {
   };
 
   const shouldOpenSidebar = isDesktop ? true : openSidebar;
-  Socket.on('postEvent', data => {
-    setSnackbarFeedback(data.description);
-    setOpenSnackbar(true);
-    beep(100, 500, 500, 4, 1000);
+  Socket.on('postEvent', async data => {
+    const headers = {
+      authentication: localStorage.getItem('authentication')
+    };
+
+    console.log(data);
+
+    try {
+      let response = await axios.get(`sensors/${data.sensor._id}`, {
+        headers
+      });
+
+      const {
+        data: { sensor }
+      } = response;
+      console.log(sensor);
+
+      setSnackbarFeedback({
+        location: `${sensor.location.name} - ${sensor.location.description}`.toUpperCase(),
+        device: `${sensor.deviceId.name} - ${sensor.deviceId.mac}`.toUpperCase(),
+        label:
+          sensor.value >= 2000
+            ? sensor.value >= 5000
+              ? 'RISCO DE VIDA'
+              : 'NÍVEL CRÍTICO'
+            : 'NÍVEL ACIMA DO NORMAL'
+      });
+      setOpenSnackbar(true);
+      beep(100, 500, 500, 4, 1000);
+    } catch (e) {}
     // browsers limit the number of concurrent audio contexts, so you better re-use'em
   });
 
@@ -94,7 +122,7 @@ const Main = props => {
             justifyContent: 'center',
             alignItems: 'center'
           }}>
-          <div style={{ padding: '15px', width: '300px' }}>
+          <div style={{ padding: '15px', minWidth: '300px' }}>
             <Typography variant="h4" style={{ alignSelf: 'flex-start' }}>
               ALERTA
             </Typography>
@@ -104,14 +132,33 @@ const Main = props => {
                 justifyContent: 'center',
                 padding: '25px'
               }}>
-              <CloseIcon style={{ fontSize: '96px', color: 'red' }} />
+              <WarningRoundedIcon
+                style={{ fontSize: '96px', color: '#e4ae5ce0' }}
+              />
             </div>
-            <Typography>{`${snackbarFeedback ||
-              'aasd asda sd adsa da sda sdas da dsas da da adasd'}`}</Typography>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}>
+              <Typography
+                variant="h2"
+                style={{ marginBottom: '25px', fontWeight: 'bolder' }}>
+                {snackbarFeedback && snackbarFeedback['label']}
+              </Typography>
+              <Typography variant="h5">
+                {snackbarFeedback && snackbarFeedback['location']}
+              </Typography>
+              <Typography variant="h6">
+                {snackbarFeedback && snackbarFeedback['device']}
+              </Typography>
+            </div>
             <Button
               fullWidth
               variant="outlined"
-              style={{ marginTop: '15px' }}
+              style={{ marginTop: '25px' }}
               onClick={() => {
                 clearInterval(interval);
                 setOpenSnackbar(false);
