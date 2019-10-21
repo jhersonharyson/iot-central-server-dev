@@ -297,11 +297,14 @@ export default function BarraLateral() {
                 key={ger._id}>
                 <ListItemIcon>
                   <Avatar
-                    className={ger.value ? 'rotation' : ''}
                     style={{
                       backgroundColor: ger.value ? '#24a024' : '#908f8fad'
                     }}>
-                    <ToysIcon />
+                    {geradores.filter(i => i.value).length ? (
+                      <OfflineBoltOnIcon />
+                    ) : (
+                      <OfflineBoltOffIcon />
+                    )}
                   </Avatar>
                 </ListItemIcon>
                 <ListItemText

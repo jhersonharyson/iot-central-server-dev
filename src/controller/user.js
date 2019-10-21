@@ -28,7 +28,7 @@ export async function updateUser(req, res, next) {
       return res.status(400).send(NAME_ISINVALID);
     }
 
-  if (profile && ["JOUNIN", "CHUNIN", "GENIN"].indexOf(profile))
+  if (profile && ["JOUNIN", "CHUNIN", "GENIN"].indexOf(profile) >=0)
     user.profile = profile;
 
   if (password)

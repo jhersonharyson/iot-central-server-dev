@@ -5,7 +5,8 @@ import {
   NAMED_ISINVALID,
   DESCRIPTION_ISEMPTY,
   LOCATION_ISINVALID,
-  POSITION_ISINVALID
+  POSITION_ISINVALID,
+  ACCOUNT_ALREADY_EXISTS
 } from "../exceptions/deviceException";
 
 import { UNEXPECTED_ERROR } from "../exceptions/serverException";
@@ -34,6 +35,10 @@ export async function postLocation(req, res) {
     return res.status(400).send(NAMED_ISINVALID);
   if (!description || description == "")
     return res.status(400).send(DESCRIPTION_ISEMPTY);
+
+  const alreadyExists = await Location.find({ name, description });
+  console.log(alreadyExists);
+  if (alreadyExists) return res.status(200).json(ACCOUNT_ALREADY_EXISTS);
 
   try {
     const location = await Location.create({
@@ -76,7 +81,7 @@ export async function updateLocation(req, res) {
 
   try {
     await location.save();
-    req.io.emit('updateLocation', location);
+    req.io.emit("updateLocation", location);
     console.log(location);
     res.send(location);
   } catch (e) {
@@ -85,13 +90,19 @@ export async function updateLocation(req, res) {
 }
 
 export async function getOccupation(req, res) {
-  const locations = await Location.find({ status: { $eq: 1 } }, '_id name value occupation');
+  const locations = await Location.find(
+    { status: { $eq: 1 } },
+    "_id name value occupation"
+  );
   res.send(locations);
 }
 
 export async function updateOccupation(req, res) {
   try {
-    const loc = await Location.findOneAndUpdate({ _id: req.params.id }, { useAndModify: true });
+    const loc = await Location.findOneAndUpdate(
+      { _id: req.params.id },
+      { useAndModify: true }
+    );
     const { value } = req.body;
     loc.value = value;
     loc.occupation.push({ value });
@@ -99,12 +110,12 @@ export async function updateOccupation(req, res) {
 
     const { _id, name, occupation } = loc;
 
-    req.io.emit('updateLocation', { _id, name, occupation, value });
+    req.io.emit("updateLocation", { _id, name, occupation, value });
     res.send({ _id, name, occupation, value });
   } catch (err) {
     res.send({ error: err.message });
     console.log(err);
-  };
+  }
 }
 
 export async function deleteLocation(req, res) {
@@ -126,32 +137,30 @@ export async function deleteLocation(req, res) {
 
 export async function detailDevice(req, res) {
   const { id: location_id } = req.params;
-  const devices = await Device
-    .find(
-      {
-        location: { $eq: location_id },
-        status: { $gte: 0 },
-        position: { $ne: null }
-      },
-      '_id name sensorData'
-    )
+  const devices = await Device.find(
+    {
+      location: { $eq: location_id },
+      status: { $gte: 0 },
+      position: { $ne: null }
+    },
+    "_id name sensorData"
+  )
     .populate({
-      path: 'sensorData',
+      path: "sensorData",
       match: {
         location: { $eq: location_id }
       },
       select: "-_id value createAt",
       options: {
-        sort: { 'createAt': -1 }
+        sort: { createAt: -1 }
       }
     })
-    .sort([
-      ['name', '-1']
-    ])
+    .sort([["name", "-1"]])
     .exec();
 
-  let sensorData = devices
-    .map(device => device.sensorData && device.sensorData[0].value);
+  let sensorData = devices.map(
+    device => device.sensorData && device.sensorData[0].value
+  );
 
   let count = sensorData.length;
   let sum = sensorData.reduce((a, s) => s + a, 0);
@@ -163,7 +172,7 @@ export async function detailDevice(req, res) {
     max,
     avg,
     devices
-  })
+  });
 }
 
 export async function dashboardLocation(req, res) {
@@ -172,7 +181,7 @@ export async function dashboardLocation(req, res) {
       {
         status: { $ne: -1 }
       },
-      '_id name'
+      "_id name"
     )
   );
 }

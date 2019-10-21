@@ -23,12 +23,10 @@ export async function postSensor(req, res) {
     if (mac) {
       try {
         await Promise.all(
-          sensorData.map(async function (arr) {
+          sensorData.map(async function(arr) {
             const incident = await verify_event(arr);
             console.log(incident);
-            if (incident && incident.description) {
-              req.io.emit("postEvent", incident);
-            }
+
             let { type, value } = arr;
             const sensor = new Sensor({
               deviceId,
@@ -38,6 +36,9 @@ export async function postSensor(req, res) {
               position
             });
             await sensor.save();
+            if (incident && incident.description) {
+              req.io.emit("postEvent", { ...incident, sensor });
+            }
 
             device.sensorData.push(sensor._id);
             await device.save();
@@ -97,11 +98,9 @@ export async function postSensor(req, res) {
 }
 
 export async function getSensor(req, res, next) {
-  const mac = req.params.mac;
-
-  res.send(
-    await Sensor.find()
-      .select("-_id")
+  const id = req.params.id;
+  try {
+    const sensor = await Sensor.findById(id)
       .populate({
         path: "deviceId",
         model: "device",
@@ -110,8 +109,11 @@ export async function getSensor(req, res, next) {
       .populate({
         path: "location",
         select: "name description -_id"
-      })
-  );
+      });
+    res.send({ sensor });
+  } catch (e) {
+    res.status(304).send({ error: e });
+  }
 }
 
 export async function test(req, res, next) {
@@ -143,7 +145,7 @@ export async function getAllSensors(req, res) {
 const verify_event = async sensor => {
   const s = sensor;
 
-  if (s.value >= 4000) {
+  if (s.value >= 1000) {
     const e = await Event.find({}).countDocuments();
 
     if (e == 0) {
@@ -152,7 +154,7 @@ const verify_event = async sensor => {
           type: s.type,
           description: `${new Date().toLocaleString()} - Nível de ${
             s.type
-            } em ${s.value} ppm`,
+          } em ${s.value} ppm`,
           sensorData: [s._id]
         });
         console.log("create");
@@ -171,7 +173,7 @@ const verify_event = async sensor => {
         incident.sensorData.push(s._id);
         incident.description = `${new Date().toLocaleString()} - Nível de ${
           s.type
-          } em ${s.value} ppm`;
+        } em ${s.value} ppm`;
         await incident.save();
         return incident;
       } else {
@@ -180,7 +182,7 @@ const verify_event = async sensor => {
             type: s.type,
             description: `${new Date().toLocaleString()} - Nível de ${
               s.type
-              } em ${s.value} ppm`,
+            } em ${s.value} ppm`,
             sensorData: [s._id]
           });
           console.log("create");

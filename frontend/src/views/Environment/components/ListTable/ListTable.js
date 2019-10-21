@@ -135,21 +135,23 @@ export default class ListTable extends React.Component {
               )}
             </div>
           }
-          actions={[
-            {
-              icon: 'image',
-              tooltip: 'planta',
-              onClick: (event, rowData) => {
-                this.setState({
-                  dialog: true,
+          actions={
+            this.props.profile && [
+              {
+                icon: 'image',
+                tooltip: 'planta',
+                onClick: (event, rowData) => {
+                  this.setState({
+                    dialog: true,
 
-                  selectedValue: {
-                    ...rowData
-                  }
-                });
+                    selectedValue: {
+                      ...rowData
+                    }
+                  });
+                }
               }
-            }
-          ]}
+            ]
+          }
           options={{
             exportButton: true,
             actionsColumnIndex: -1,
@@ -193,63 +195,65 @@ export default class ListTable extends React.Component {
           icons={tableIcons}
           columns={this.state.table.columns}
           data={this.state.table.data}
-          editable={{
-            onRowUpdate: (newData, oldData) =>
-              new Promise(resolve => {
-                setTimeout(async () => {
-                  try {
-                    const headers = {
-                      authentication: localStorage.getItem('authentication')
-                    };
-                    const response = await axios.put(
-                      `location`,
-                      {
-                        _id: oldData._id,
-                        name: newData.name,
-                        description: newData.description,
-                        location: newData.location
-                      },
-                      {
-                        headers
+          editable={
+            this.props.profile && {
+              onRowUpdate: (newData, oldData) =>
+                new Promise(resolve => {
+                  setTimeout(async () => {
+                    try {
+                      const headers = {
+                        authentication: localStorage.getItem('authentication')
+                      };
+                      const response = await axios.put(
+                        `location`,
+                        {
+                          _id: oldData._id,
+                          name: newData.name,
+                          description: newData.description,
+                          location: newData.location
+                        },
+                        {
+                          headers
+                        }
+                      );
+
+                      console.log(response.data);
+
+                      resolve();
+                      const data = [...this.state.table.data];
+                      data[data.indexOf(oldData)] = newData;
+                      this.setState({ table: { ...this.state.table, data } });
+                      setTimeout(this.populate, 2000);
+                    } catch (e) {}
+                  }, 600);
+                }),
+              onRowDelete: oldData =>
+                new Promise(resolve => {
+                  setTimeout(async () => {
+                    // console.log(oldData);
+                    try {
+                      const headers = {
+                        authentication: localStorage.getItem('authentication')
+                      };
+                      const response = await axios.delete(`location`, {
+                        headers,
+                        data: { location: oldData._id }
+                      });
+                      if (response.data.location) {
                       }
-                    );
-
-                    console.log(response.data);
-
-                    resolve();
-                    const data = [...this.state.table.data];
-                    data[data.indexOf(oldData)] = newData;
-                    this.setState({ table: { ...this.state.table, data } });
-                    setTimeout(this.populate, 2000);
-                  } catch (e) {}
-                }, 600);
-              }),
-            onRowDelete: oldData =>
-              new Promise(resolve => {
-                setTimeout(async () => {
-                  // console.log(oldData);
-                  try {
-                    const headers = {
-                      authentication: localStorage.getItem('authentication')
-                    };
-                    const response = await axios.delete(`location`, {
-                      headers,
-                      data: { location: oldData._id }
-                    });
-                    if (response.data.location) {
+                      console.log(response.data.status);
+                      resolve();
+                      const data = [...this.state.table.data];
+                      data.splice(data.indexOf(oldData), 1);
+                      this.setState({ table: { ...this.state.table, data } });
+                      setTimeout(this.populate, 2000);
+                    } catch (e) {
+                      /////
                     }
-                    console.log(response.data.status);
-                    resolve();
-                    const data = [...this.state.table.data];
-                    data.splice(data.indexOf(oldData), 1);
-                    this.setState({ table: { ...this.state.table, data } });
-                    setTimeout(this.populate, 2000);
-                  } catch (e) {
-                    /////
-                  }
-                }, 600);
-              })
-          }}
+                  }, 600);
+                })
+            }
+          }
         />
       </>
     );
