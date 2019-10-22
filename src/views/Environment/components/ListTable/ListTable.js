@@ -186,7 +186,7 @@ export default class ListTable extends React.Component {
                 filterTooltip: 'Filtro'
               },
               editRow: {
-                deleteText: 'Você tem certeza que deseja excluir este iten?',
+                deleteText: 'Você tem certeza que deseja excluir este item?',
                 cancelTooltip: 'cancelar',
                 saveTooltip: 'confirmar'
               }
