@@ -97,13 +97,12 @@ class Auth {
       }
       case 'CHUNIN': {
         return !!(
-          ['/environments', '/devices', '/dashboard', '/events'].indexOf(path) +
-          1
+          ['/environments', '/devices', '/dashboard'].indexOf(path) + 1
         );
       }
 
       case 'GENIN': {
-        return !!(['/dashboard', '/events'].indexOf(path) + 1);
+        return !!(['/dashboard'].indexOf(path) + 1);
       }
       default: {
       }
