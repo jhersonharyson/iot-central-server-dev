@@ -11,7 +11,8 @@ import {
   SignIn as SignInView,
   NotFound as NotFoundView,
   UserList as UserListView,
-  User as UserView
+  User as UserView,
+  Event as EventView
 } from './views';
 
 const Routes = () => {
@@ -42,13 +43,13 @@ const Routes = () => {
         layout={MainLayout}
         path="/users"
       />
-      {/*
        <RouteWithLayout
-        component={UserListView}
+        component={EventView}
         exact
         layout={MainLayout}
-        path="/users"
+        path="/events"
       />
+      {/*
       <RouteWithLayout
         component={ProductListView}
         exact
