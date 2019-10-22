@@ -86,18 +86,24 @@ class Auth {
     switch (this.profile) {
       case 'JOUNIN': {
         return !!(
-          ['/users', '/environments', '/devices', '/dashboard'].indexOf(path) +
-          1
+          [
+            '/users',
+            '/environments',
+            '/devices',
+            '/dashboard',
+            '/events'
+          ].indexOf(path) + 1
         );
       }
       case 'CHUNIN': {
         return !!(
-          ['/environments', '/devices', '/dashboard'].indexOf(path) + 1
+          ['/environments', '/devices', '/dashboard', '/events'].indexOf(path) +
+          1
         );
       }
 
       case 'GENIN': {
-        return !!(['/dashboard'].indexOf(path) + 1);
+        return !!(['/dashboard', '/events'].indexOf(path) + 1);
       }
       default: {
       }
