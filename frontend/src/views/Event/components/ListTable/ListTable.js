@@ -8,6 +8,11 @@ import {
   Typography,
   Snackbar
 } from '@material-ui/core';
+
+import ExpansionPanel from '@material-ui/core/ExpansionPanel';
+import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
+import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
+
 import AddBox from '@material-ui/icons/AddBox';
 import ArrowUpward from '@material-ui/icons/ArrowUpward';
 import Check from '@material-ui/icons/Check';
@@ -25,6 +30,7 @@ import Remove from '@material-ui/icons/Remove';
 import SaveAlt from '@material-ui/icons/SaveAlt';
 import Search from '@material-ui/icons/Search';
 import ViewColumn from '@material-ui/icons/ViewColumn';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import MaterialTable from 'material-table';
 import PropTypes from 'prop-types';
 import React, { forwardRef } from 'react';
@@ -67,39 +73,39 @@ export default class ListTable extends React.Component {
       isLoading: true,
       table: {
         columns: [
-          { title: 'Nome', field: 'name' },
+          { title: 'Tipo', field: 'type' },
           { title: 'Descrição', field: 'description' },
-          { title: 'MAC', field: 'mac', editable: 'never' },
-          {
-            title: 'Status',
-            field: 'status',
-            editable: 'never',
-            filtering: false,
-            lookup: {
-              1: (
-                <span
-                  style={{
-                    backgroundColor: '#4caf50',
-                    padding: '4px',
-                    borderRadius: '5px',
-                    color: '#fff'
-                  }}>
-                  online
-                </span>
-              ),
-              0: (
-                <span
-                  style={{
-                    backgroundColor: '#ca3232',
-                    padding: '4px',
-                    borderRadius: '5px',
-                    color: '#fff'
-                  }}>
-                  offline
-                </span>
-              )
-            }
-          }
+          { title: 'Registro', field: 'createAt' }
+          // {
+          //   title: 'Status',
+          //   field: 'status',
+          //   editable: 'never',
+          //   filtering: false,
+          //   lookup: {
+          //     1: (
+          //       <span
+          //         style={{
+          //           backgroundColor: '#4caf50',
+          //           padding: '4px',
+          //           borderRadius: '5px',
+          //           color: '#fff'
+          //         }}>
+          //         online
+          //       </span>
+          //     ),
+          //     0: (
+          //       <span
+          //         style={{
+          //           backgroundColor: '#ca3232',
+          //           padding: '4px',
+          //           borderRadius: '5px',
+          //           color: '#fff'
+          //         }}>
+          //         offline
+          //       </span>
+          //     )
+          //   }
+          // }
         ],
         data: []
       }
@@ -107,38 +113,6 @@ export default class ListTable extends React.Component {
   }
   componentWillMount = async () => {
     try {
-      let authentication = localStorage.getItem('authentication');
-      let response = await axios.get('locations', {
-        headers: { authentication }
-      });
-
-      let {
-        data: { locations }
-      } = response;
-      let lookup = {};
-      for (let i = 0; i < locations.length; i++) {
-        lookup[`${locations[i]._id}`] = locations[i].name;
-      }
-
-      console.log(lookup);
-      const columnsWithoutRepetion = this.state.table.columns.filter(
-        column => column.title != 'Ambiente'
-      );
-
-      this.setState({
-        table: {
-          columns: [
-            ...columnsWithoutRepetion,
-            { title: 'Ambiente', field: 'location', lookup: { ...lookup } }
-          ],
-          data: []
-        }
-      });
-
-      this.setState({
-        locations: locations
-      });
-      console.log(this.state.locations);
       this.populate();
     } catch (e) {
       this.message = 'Erro ao tentar conectar com o servidor.';
@@ -149,13 +123,17 @@ export default class ListTable extends React.Component {
     const headers = {
       authentication: localStorage.getItem('authentication')
     };
-    axios.get('devices/all', { headers }).then(response => {
+    axios.get('events', { headers }).then(response => {
       console.log(response.data);
       if (response.data) {
         this.setState({
           table: {
             ...this.state.table,
-            data: response.data
+            data: response.data.events.map(data => ({
+              ...data,
+              description: ` ${data.description}`.toUpperCase().split(' - ')[1],
+              createAt: new Date(data.createAt).toLocaleString()
+            }))
           }
         });
       }
@@ -210,51 +188,97 @@ export default class ListTable extends React.Component {
               )}
             </div>
           }
-          actions={
-            this.props.profile && [
-              {
-                icon: 'my_location',
-                tooltip: 'posicionar',
-                onClick: (event, rowData) => {
-                  document.body.scrollTop = 0; // For Safari
-                  document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+          detailPanel={rowData => {
+            console.log(rowData);
+            return (
+              <div>
+                {rowData.sensorData &&
+                  rowData.sensorData.map((data, index) => (
+                    <ExpansionPanel key={index}>
+                      <ExpansionPanelSummary
+                        expandIcon={<ExpandMoreIcon />}
+                        aria-controls="panel1a-content"
+                        id="panel1a-header">
+                        <h3 style={{ fontWeight: 'bold' }}>{`REGISTRO`}</h3>
+                        <h4 style={{ fontWeight: 100, marginLeft: '15px' }}>
+                          {new Date(data.createAt).toLocaleString()}
+                        </h4>
+                      </ExpansionPanelSummary>
+                      <ExpansionPanelDetails>
+                        <div style={{ display: 'flex' }}>
+                          <div
+                            style={{
+                              display: 'flex',
+                              flexDirection: 'column'
+                            }}>
+                            <label
+                              style={{
+                                fontWeight: 100
+                              }}>{`LOCALIZAÇÃO`}</label>
+                            <h4>
+                              {` ${data.location &&
+                                data.location.name +
+                                  ' - ' +
+                                  data.location.description} `.toUpperCase()}
+                            </h4>
 
-                  const { img_url } = this.state.locations.find(
-                    x => x._id == rowData.location
-                  );
-                  console.log(img_url);
-                  this.setState({
-                    dialog: true,
+                            <label
+                              style={{
+                                fontWeight: 100
+                              }}>{`DISPOSITIVO`}</label>
+                            <h4>
+                              {` ${data.location &&
+                                data.deviceId.name +
+                                  ' - ' +
+                                  data.deviceId.description} `.toUpperCase()}
+                            </h4>
+                            <label style={{ fontWeight: 100 }}>{`MAC`}</label>
+                            <h4>
+                              {` ${data.location &&
+                                data.deviceId.mac} `.toUpperCase()}
+                            </h4>
+                          </div>
 
-                    selectedValue: {
-                      ...rowData,
-                      img_url
-                    }
-                  });
-                }
-              },
-              {
-                icon: 'battery_charging_full',
-                tooltip: 'indicar troca de bateria',
-                onClick: (event, rowData) => {
-                  this.setState({ snackbar: true });
-                  setTimeout(() => {
-                    this.setState({
-                      dialogCharging: {
-                        name: rowData.name,
-                        location: this.state.locations.find(
-                          x => x._id == rowData.location
-                        )
-                      }
-                    });
-                  }, 20000);
-                }
-              }
-            ]
-          }
+                          <div
+                            style={{
+                              marginLeft: '30px',
+                              display: 'flex',
+                              flexDirection: 'column'
+                            }}>
+                            <label
+                              style={{
+                                fontWeight: 100
+                              }}>{`TIPO`}</label>
+                            <h4>{` ${data && data.type} `.toUpperCase()}</h4>
+
+                            <label
+                              style={{
+                                fontWeight: 100
+                              }}>{`VALOR`}</label>
+                            <h4>{`${data && data.value} PPM`}</h4>
+                            <label
+                              style={{ fontWeight: 100 }}>{`DESCRIÇÃO`}</label>
+                            <h4>
+                              {` ${
+                                data.value >= 2000
+                                  ? data.value >= 5000
+                                    ? 'RISCO DE VIDA'
+                                    : 'NÍVEL CRÍTICO'
+                                  : 'NÍVEL ACIMA DO NORMAL'
+                              } `}
+                            </h4>
+                          </div>
+                        </div>
+                      </ExpansionPanelDetails>
+                    </ExpansionPanel>
+                  ))}
+              </div>
+            );
+          }}
           options={{
             exportButton: true,
             actionsColumnIndex: -1,
+            detailPanelType: 'single',
             exportFileName: 'syccoo-devices',
             rowStyle: { fontSize: '10px' },
             cellStyle: { fontSize: '10px' }
@@ -297,35 +321,6 @@ export default class ListTable extends React.Component {
           data={this.state.table.data}
           editable={
             this.props.profile && {
-              onRowUpdate: (newData, oldData) =>
-                new Promise(resolve => {
-                  setTimeout(async () => {
-                    try {
-                      const headers = {
-                        authentication: localStorage.getItem('authentication')
-                      };
-                      const response = await axios.put(
-                        `devices/${oldData.mac}`,
-                        {
-                          name: newData.name,
-                          description: newData.description,
-                          location: newData.location
-                        },
-                        {
-                          headers
-                        }
-                      );
-
-                      console.log(response.data);
-
-                      resolve();
-                      const data = [...this.state.table.data];
-                      data[data.indexOf(oldData)] = newData;
-                      this.setState({ table: { ...this.state.table, data } });
-                      setTimeout(this.populate, 2000);
-                    } catch (e) {}
-                  }, 600);
-                }),
               onRowDelete: oldData =>
                 new Promise(resolve => {
                   setTimeout(async () => {
@@ -335,7 +330,7 @@ export default class ListTable extends React.Component {
                         authentication: localStorage.getItem('authentication')
                       };
                       const response = await axios.delete(
-                        `devices/${oldData.mac}`,
+                        `events/${oldData._id}`,
                         { headers }
                       );
                       console.log(response.data.status);
@@ -358,9 +353,7 @@ export default class ListTable extends React.Component {
           }}
           aria-labelledby="simple-dialog-title"
           open={this.state.dialogCharging != undefined}>
-          <DialogTitle id="simple-dialog-title">
-            Alerta nível de bateria
-          </DialogTitle>
+          <DialogTitle id="simple-dialog-title">Dados dos sensores</DialogTitle>
           <DialogContent>
             <div
               style={{
@@ -369,21 +362,82 @@ export default class ListTable extends React.Component {
                 alignItems: 'center',
                 margin: '15px'
               }}>
-              <Typography
-                variant="h5"
-                style={{ marginBottom: '15px' }}>{`O dispositivo ${
-                this.state.dialogCharging ? this.state.dialogCharging.name : ''
-              } alocado em ${
-                this.state.dialogCharging
-                  ? this.state.dialogCharging.location.name
-                  : ''
-              }, nescessita de troca de bateria.`}</Typography>
-
-              {this.state.dialogCharging && (
-                <img
-                  style={{ margin: 'auto', width: '300px' }}
-                  src={this.state.dialogCharging.location.img_url}></img>
-              )}
+              <MaterialTable
+                isLoading={this.state.isLoading}
+                title={
+                  <div
+                    onClick={() => {
+                      this.setState({ isLoading: true });
+                      this.componentWillMount();
+                      setTimeout(
+                        () => this.setState({ isLoading: false }),
+                        2500
+                      );
+                    }}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center'
+                    }}>
+                    {this.state.isLoading ? (
+                      <CircularProgress color="secondary" size="small" />
+                    ) : (
+                      <Fab
+                        color="secondary"
+                        aria-label="atualizar"
+                        size="small"
+                        variant="extended">
+                        <RefreshIcon />
+                        <span style={{ marginRight: '5px' }}>ATUALIZAR</span>
+                      </Fab>
+                    )}
+                  </div>
+                }
+                options={{
+                  exportButton: true,
+                  actionsColumnIndex: -1,
+                  exportFileName: 'syccoo-devices',
+                  rowStyle: { fontSize: '10px' },
+                  cellStyle: { fontSize: '10px' }
+                }}
+                localization={{
+                  pagination: {
+                    labelDisplayedRows: '{from}-{to} de {count}',
+                    labelRowsPerPage: '{0} linha(s)',
+                    nextTooltip: 'Próximo página',
+                    lastTooltip: 'Última página',
+                    previousTooltip: 'Página anterio',
+                    firstTooltip: 'Primeira página',
+                    labelRowsSelect: 'linhas'
+                  },
+                  toolbar: {
+                    nRowsSelected: '{0} linha(s) selecionada(s)',
+                    searchTooltip: 'Pesquisar',
+                    searchPlaceholder: 'Pesquisar',
+                    exportTitle: 'Exportar',
+                    exportName: 'Exportar para CSV',
+                    exportAriaLabel: 'devices'
+                  },
+                  header: {
+                    actions: 'Ações'
+                  },
+                  body: {
+                    emptyDataSourceMessage: 'Nenhum dado para mostrar',
+                    filterRow: {
+                      filterTooltip: 'Filtro'
+                    },
+                    editRow: {
+                      deleteText:
+                        'Você tem certeza que deseja excluir este item?',
+                      cancelTooltip: 'cancelar',
+                      saveTooltip: 'confirmar'
+                    }
+                  }
+                }}
+                icons={tableIcons}
+                columns={this.state.table.columns}
+                data={this.state.table.data}
+              />
             </div>
           </DialogContent>
         </Dialog>

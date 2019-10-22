@@ -24,9 +24,6 @@ export async function postSensor(req, res) {
       try {
         await Promise.all(
           sensorData.map(async function(arr) {
-            const incident = await verify_event(arr);
-            console.log(incident);
-
             let { type, value } = arr;
             const sensor = new Sensor({
               deviceId,
@@ -35,7 +32,10 @@ export async function postSensor(req, res) {
               location,
               position
             });
+
             await sensor.save();
+
+            const incident = await verify_event(sensor);
             if (incident && incident.description) {
               req.io.emit("postEvent", { ...incident, sensor });
             }
