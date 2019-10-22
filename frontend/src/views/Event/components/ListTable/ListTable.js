@@ -67,39 +67,39 @@ export default class ListTable extends React.Component {
       isLoading: true,
       table: {
         columns: [
-          { title: 'Nome', field: 'name' },
+          { title: 'Tipo', field: 'type' },
           { title: 'Descrição', field: 'description' },
-          { title: 'MAC', field: 'mac', editable: 'never' },
-          {
-            title: 'Status',
-            field: 'status',
-            editable: 'never',
-            filtering: false,
-            lookup: {
-              1: (
-                <span
-                  style={{
-                    backgroundColor: '#4caf50',
-                    padding: '4px',
-                    borderRadius: '5px',
-                    color: '#fff'
-                  }}>
-                  online
-                </span>
-              ),
-              0: (
-                <span
-                  style={{
-                    backgroundColor: '#ca3232',
-                    padding: '4px',
-                    borderRadius: '5px',
-                    color: '#fff'
-                  }}>
-                  offline
-                </span>
-              )
-            }
-          }
+          { title: 'Registro', field: 'createAt' }
+          // {
+          //   title: 'Status',
+          //   field: 'status',
+          //   editable: 'never',
+          //   filtering: false,
+          //   lookup: {
+          //     1: (
+          //       <span
+          //         style={{
+          //           backgroundColor: '#4caf50',
+          //           padding: '4px',
+          //           borderRadius: '5px',
+          //           color: '#fff'
+          //         }}>
+          //         online
+          //       </span>
+          //     ),
+          //     0: (
+          //       <span
+          //         style={{
+          //           backgroundColor: '#ca3232',
+          //           padding: '4px',
+          //           borderRadius: '5px',
+          //           color: '#fff'
+          //         }}>
+          //         offline
+          //       </span>
+          //     )
+          //   }
+          // }
         ],
         data: []
       }
@@ -107,38 +107,6 @@ export default class ListTable extends React.Component {
   }
   componentWillMount = async () => {
     try {
-      let authentication = localStorage.getItem('authentication');
-      let response = await axios.get('locations', {
-        headers: { authentication }
-      });
-
-      let {
-        data: { locations }
-      } = response;
-      let lookup = {};
-      for (let i = 0; i < locations.length; i++) {
-        lookup[`${locations[i]._id}`] = locations[i].name;
-      }
-
-      console.log(lookup);
-      const columnsWithoutRepetion = this.state.table.columns.filter(
-        column => column.title != 'Ambiente'
-      );
-
-      this.setState({
-        table: {
-          columns: [
-            ...columnsWithoutRepetion,
-            { title: 'Ambiente', field: 'location', lookup: { ...lookup } }
-          ],
-          data: []
-        }
-      });
-
-      this.setState({
-        locations: locations
-      });
-      console.log(this.state.locations);
       this.populate();
     } catch (e) {
       this.message = 'Erro ao tentar conectar com o servidor.';
@@ -149,13 +117,16 @@ export default class ListTable extends React.Component {
     const headers = {
       authentication: localStorage.getItem('authentication')
     };
-    axios.get('devices/all', { headers }).then(response => {
+    axios.get('events', { headers }).then(response => {
       console.log(response.data);
       if (response.data) {
         this.setState({
           table: {
             ...this.state.table,
-            data: response.data
+            data: response.data.events.map(data => ({
+              ...data,
+              createAt: new Date(data.createAt).toLocaleString()
+            }))
           }
         });
       }

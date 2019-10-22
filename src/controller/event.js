@@ -32,3 +32,23 @@ export async function getEvent(req, res, next) {
   const name = req.params.name;
   res.send(await Event.find(name ? { type: name } : {})); //.sort([["data", "descending"]]););
 }
+
+export async function getAllEvents(req, res) {
+  const events = await Event.find({})
+    .populate({
+      path: "sensorData",
+      populate: [
+        {
+          path: "location",
+          select: "-device -img_url -status -occupation"
+        },
+        {
+          path: "deviceId",
+          select: "mac _id name description"
+        }
+      ]
+    })
+    .sort([["createAt", "descending"]]);
+
+  res.send({ events });
+}
