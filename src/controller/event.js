@@ -33,6 +33,12 @@ export async function getEvent(req, res, next) {
   res.send(await Event.find(name ? { type: name } : {})); //.sort([["data", "descending"]]););
 }
 
+export async function removeEvent(req, res) {
+  const id = req.params.id;
+  const event = await Event.findByIdAndDelete(id);
+  res.send({ event, status: "deleted" });
+}
+
 export async function getAllEvents(req, res) {
   const events = await Event.find({})
     .populate({

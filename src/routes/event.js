@@ -14,4 +14,6 @@ router.get("/events", require(CONTROLLER_PATH).getAllEvents);
 
 router.get("/events/:name*?", require(CONTROLLER_PATH).getEvent);
 
+router.delete("/events/:id", require(CONTROLLER_PATH).removeEvent);
+
 export default router;
