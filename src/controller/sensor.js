@@ -74,8 +74,8 @@ export async function postSensor(req, res) {
           .map(location => ({
             _id: location._id,
             name: location.name,
-            sum: location.device.reduce(
-              (sum, device) => sum + device.sensorData[0].value,
+            max: location.device.reduce(
+              (max, device) => max + device.sensorData[0].value,
               0
             ),
             avg: location.device.reduce((avg, device, deviceIndex, devices) => {
