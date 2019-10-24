@@ -45,42 +45,49 @@ export async function postSensor(req, res) {
           })
         );
 
-        let sensorsByDevice = await Device.find({})
-          .select("_id")
-          .where("location")
-          .equals(device.location)
-          .populate({
-            path: "sensorData",
-            select: "value -_id",
-            options: {
-              limit: 1,
-              sort: {
-                createAt: -1
-              }
-            }
-          });
-
-        let maxSensorValue = -1;
-        let sumSensorValue = sensorsByDevice.reduce(
-          (sumSensorByDevice, sensorByDevice) => {
-            if (!sensorByDevice.sensorData[0]) return (sumSensorByDevice += 0);
-            let sensorByDeviceValue = sensorByDevice.sensorData[0].value;
-
-            if (sensorByDeviceValue > maxSensorValue)
-              maxSensorValue = sensorByDeviceValue;
-
-            return (sumSensorByDevice += sensorByDeviceValue);
+        let locationsForUpdate = (await Location.find(
+          {
+            status: { $eq: 1 },
+            _id: location
           },
-          0
-        );
+          "_id name"
+        ).populate({
+          path: "device",
+          match: {
+            status: { $eq: 1 }
+          },
+          select: "_id",
+          populate: {
+            path: "sensorData",
+            select: "value",
+            options: {
+              sort: { createAt: -1 },
+              limit: 1
+            }
+          }
+        }))
+          .filter(
+            location =>
+              location.device.length &&
+              location.device.some(device => device.sensorData.length)
+          )
+          .map(location => ({
+            _id: location._id,
+            name: location.name,
+            sum: location.device.reduce(
+              (sum, device) => sum + device.sensorData[0].value,
+              0
+            ),
+            avg: location.device.reduce((avg, device, deviceIndex, devices) => {
+              if (devices.length === deviceIndex + 1) {
+                return (avg + device.sensorData[0].value) / devices.length;
+              }
 
-        req.io.emit("redrawLocationGraphic", {
-          location: (await Location.findById(device.location, "name")).name,
-          avg: Math.floor(
-            sensorsByDevice.length ? sumSensorValue / sensorsByDevice.length : 0
-          ),
-          max: maxSensorValue
-        });
+              return avg + device.sensorData[0].value;
+            }, 0)
+          }));
+
+        req.io.emit("redrawLocationGraphic", locationsForUpdate);
       } catch (e) {
         return res.status(400).send({ error: e });
       }
