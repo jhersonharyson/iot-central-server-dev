@@ -14,7 +14,8 @@
     "dev": "npm run clean && nodemon ./src/bin/index.js",
     "run": "npm run clean && nodemon --exec babel-node ./src/bin/index.js",
     "start-build": "npm run clean && node ./build/bin/index.js",
-    "start-test": "mocha"
+    "start-test": "mocha",
+    "deploy": "git push && cd frontend && git push"
   },
   "keywords": [],
   "author": "",
