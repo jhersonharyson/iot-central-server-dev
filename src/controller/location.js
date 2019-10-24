@@ -152,36 +152,75 @@ export async function detailDevice(req, res) {
       },
       select: "-_id value createAt",
       options: {
-        sort: { createAt: -1 }
+        sort: { createAt: -1 },
+        limit: 1
       }
     })
     .sort([["name", "-1"]])
     .exec();
 
-  let sensorData = devices.map(
-    device => device.sensorData && device.sensorData[0].value
-  );
+  if (devices.some(device => device.sensorData.length)) {
+    let sensorData = devices
+      .filter(device => device.sensorData.length)
+      .map(device => device.sensorData[0].value);
 
-  let count = sensorData.length;
-  let sum = sensorData.reduce((a, s) => s + a, 0);
-  let avg = count && Math.round(sum / count);
-  let max = Math.max(...sensorData, 0) - avg;
+    let count = sensorData.length;
+    let sum = sensorData.reduce((a, s) => s + a, 0);
+    let avg = count && Math.round(sum / count);
+    let max = Math.max(...sensorData, 0) - avg;
 
-  return res.json({
-    _id: location_id,
-    max,
-    avg,
-    devices
-  });
+    return res.json({
+      _id: location_id,
+      max,
+      avg,
+      devices
+    });
+  }
+
+  return res.json({});
 }
 
 export async function dashboardLocation(req, res) {
-  return res.send(
-    await Location.find(
-      {
-        status: { $ne: -1 }
-      },
-      "_id name"
+  let locations = (await Location.find(
+    {
+      status: { $eq: 1 }
+    },
+    "_id name"
+  ).populate({
+    path: "device",
+    match: {
+      status: { $eq: 1 }
+    },
+    select: "_id",
+    populate: {
+      path: "sensorData",
+      select: "value",
+      options: {
+        sort: { createAt: -1 },
+        limit: 1
+      }
+    }
+  }))
+    .filter(
+      location =>
+        location.device.length &&
+        location.device.some(device => device.sensorData.length)
     )
-  );
+    .map(location => ({
+      _id: location._id,
+      name: location.name,
+      max: location.device.reduce(
+        (max, device) => max + device.sensorData[0].value,
+        0
+      ),
+      avg: location.device.reduce((avg, device, deviceIndex, devices) => {
+        if (devices.length === deviceIndex + 1) {
+          return (avg + device.sensorData[0].value) / devices.length;
+        }
+
+        return avg + device.sensorData[0].value;
+      }, 0)
+    }));
+
+  return res.json(locations);
 }
