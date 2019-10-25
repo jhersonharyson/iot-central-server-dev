@@ -59,9 +59,13 @@ const TotalUsers = props => {
 
       const response = await axios.get('dashboard/devices', { headers });
       setCounters(
-        response
-          .data
-          .reduce((counters, status) => ({ ...counters, [status._id]: status.count }), {})
+        response.data.reduce(
+          (counters, status) => ({
+            ...counters,
+            [status._id]: parseInt(status.count)
+          }),
+          {}
+        )
       );
     }
 
@@ -99,10 +103,8 @@ const TotalUsers = props => {
 
           <Typography className={classes.caption} variant="body2">
             {counters[0] + counters[1]}{' '}
-            {counters[0] + counters[1] > 1
-              ? 'dispositivos'
-              : 'dispositivo'}{' '}
-            no total
+            {counters[0] + counters[1] > 1 ? 'dispositivos' : 'dispositivo'} no
+            total
           </Typography>
         </div>
       </CardContent>
