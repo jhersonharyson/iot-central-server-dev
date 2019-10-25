@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, Divider } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import clsx from 'clsx';
@@ -24,11 +24,13 @@ const PpmXEnvironment = props => {
   //Style const
   const { className, ...rest } = props;
   const classes = useStyles();
-  const [locations, setLocations] = useState([]);
   const [detail, setDetail] = React.useState({
     active: false,
     data: null
   });
+
+  let locations = [];
+  let graphRef = useRef(null);
 
   const handleToggle = () => {
     setDetail({
@@ -44,10 +46,13 @@ const PpmXEnvironment = props => {
         headers: { authentication }
       });
 
-      setLocations(response.data);
+      locations = response.data;
     }
 
     getLocation();
+  }, []);
+
+  useEffect(() => {
     Socket.on('redrawLocationGraphic', locationsForUpdate => {
       console.log('locationsForUpdate: ', locationsForUpdate);
       locationsForUpdate.map(locationForUpdate => {
@@ -57,82 +62,97 @@ const PpmXEnvironment = props => {
         );
 
         newLocations.splice(locationIndex, 1, locationForUpdate);
-        setLocations(newLocations);
+        locations = newLocations;
       });
     });
+
+    return () => {
+      Socket.removeListener('redrawLocationGraphic');
+    };
   }, []);
 
-  const getOption = () => {
-    let markLine = {
-      silent: true,
-      data: [
-        {
-          yAxis: 400,
-          lineStyle: {
-            color: '#4dbd6c'
-          }
-        },
-        {
-          yAxis: 1000,
-          lineStyle: {
-            color: '#E5DA00'
-          }
-        },
-        {
-          yAxis: 2000,
-          lineStyle: {
-            color: '#fb7607'
-          }
-        },
-        {
-          yAxis: 5000,
-          lineStyle: {
-            color: '#fb0505'
-          }
-        }
-      ]
-    };
-
-    return {
-      tooltip: {
-        trigger: 'axis',
-        axisPointer: {
-          type: 'shadow'
-        }
-      },
-      legend: {
-        data: ['Média', 'Máxima']
-      },
-      xAxis: {
-        type: 'category',
-        data: locations.map(location => location.name)
-      },
-      yAxis: {
-        type: 'value'
-      },
+  useEffect(() => {
+    graphRef.setOption({
       series: [
         {
-          name: 'Média',
-          type: 'bar',
-          stack: '0',
-          itemStyle: {
-            color: '#053F66'
-          },
-          markLine,
-          data: locations.map(location => location.avg)
+          data: locations.map(item => item.avg)
         },
         {
-          name: 'Máxima',
-          type: 'bar',
-          stack: '0',
-          itemStyle: {
-            color: ''
-          },
-          markLine,
-          data: locations.map(location => location.max)
+          data: locations.map(item => item.max)
         }
       ]
-    };
+    });
+  }, [locations]);
+
+  let markLine = {
+    silent: true,
+    data: [
+      {
+        yAxis: 400,
+        lineStyle: {
+          color: '#4dbd6c'
+        }
+      },
+      {
+        yAxis: 1000,
+        lineStyle: {
+          color: '#E5DA00'
+        }
+      },
+      {
+        yAxis: 2000,
+        lineStyle: {
+          color: '#fb7607'
+        }
+      },
+      {
+        yAxis: 5000,
+        lineStyle: {
+          color: '#fb0505'
+        }
+      }
+    ]
+  };
+
+  let options = {
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'shadow'
+      }
+    },
+    legend: {
+      data: ['Média', 'Máxima']
+    },
+    xAxis: {
+      type: 'category',
+      data: []
+    },
+    yAxis: {
+      type: 'value'
+    },
+    series: [
+      {
+        name: 'Média',
+        type: 'bar',
+        stack: '0',
+        itemStyle: {
+          color: '#053F66'
+        },
+        markLine,
+        data: []
+      },
+      {
+        name: 'Máxima',
+        type: 'bar',
+        stack: '0',
+        itemStyle: {
+          color: ''
+        },
+        markLine,
+        data: []
+      }
+    ]
   };
 
   return (
@@ -143,9 +163,10 @@ const PpmXEnvironment = props => {
         <CardContent>
           <div className={classes.chartContainer}>
             <ReactEcharts
+              ref={graphRef}
               lazyUpdate={true}
               showLoading={!locations.length}
-              option={getOption()}
+              option={options}
               onEvents={{
                 click: e => {
                   setDetail({
@@ -163,12 +184,12 @@ const PpmXEnvironment = props => {
         handleToggle={handleToggle}
         title={detail.active && detail.data.name}>
         <>
-          <PpmXDevice
+          {/* <PpmXDevice
             data_loc={[...locations]}
             data={detail.data}
             style={{ margin: '20px' }}
           />
-          <ListTable media data_loc={[...locations]} data={detail.data} />
+          <ListTable media data_loc={[...locations]} data={detail.data} /> */}
         </>
       </Detail>
     </>
