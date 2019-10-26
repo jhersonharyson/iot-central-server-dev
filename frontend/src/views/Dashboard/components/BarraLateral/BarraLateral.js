@@ -266,7 +266,9 @@ export default function BarraLateral() {
                 <ListItemText
                   primary={occup.name}
                   secondary={
-                    occup.occupation
+                    !occup.occupation.length
+                      ? ''
+                      : occup.occupation
                       ? 'Atualizado em ' +
                         new Date(
                           Math.max(
