@@ -9,6 +9,3 @@ export const NAMED_ISINVALID = buildException("the name is invalid.");
 export const DESCRIPTION_ISEMPTY = buildException("the description is empty.");
 export const LOCATION_ISINVALID = buildException("the location is invalid.");
 export const POSITION_ISINVALID = buildException("the position is invalid.");
-export const POSITION_ALREADY_EXISTS = buildException(
-  "the position already exists."
-);

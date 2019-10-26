@@ -79,18 +79,6 @@ class DeviceRegistration extends Component {
   };
 
   handleChange = name => event => {
-    if (name == 'mac') {
-      console.log(this.state.mac.length, event.target.value.length);
-      const two_dots = [2, 5, 8, 11, 14];
-      if (event.target.value.length > 17) return;
-
-      if (
-        two_dots.indexOf(event.target.value.length) >= 0 &&
-        this.state.mac.length < event.target.value.length
-      ) {
-        event.target.value += ':';
-      }
-    }
     if (name == 'environment') {
       const location = this.state.locations.find(
         x => x._id == event.target.value
@@ -143,10 +131,7 @@ class DeviceRegistration extends Component {
       return;
     }
     //doPost
-    this.submit(mac, name, desc, environment, {
-      x: position.xr,
-      y: position.yr
-    });
+    this.submit(mac, name, desc, environment, position);
   };
 
   submit = async (mac, name, description, location, position) => {
@@ -164,12 +149,10 @@ class DeviceRegistration extends Component {
         }
       );
       const {
-        data: { error }
+        data: { locations }
       } = response;
-      if (error == 'the mac exist.')
-        this.message =
-          'Já existe um dispositivo cadastrado com o MAC indicado!';
-      else this.message = 'Dispositivo adicionado com sucesso!';
+      this.setState({ locations });
+      this.message = 'Dispositivo adicionado com sucesso!';
     } catch (e) {
       this.message = 'Erro ao tentar salvar o dispositivo!';
     } finally {
@@ -270,20 +253,10 @@ class DeviceRegistration extends Component {
                   }}
                   draggable={false}
                   onClick={event => {
-                    const x =
-                      event.pageX -
-                      event.target.getBoundingClientRect().left +
-                      window.scrollX;
-                    const y =
-                      event.pageY -
-                      event.target.getBoundingClientRect().top +
-                      window.scrollY;
                     this.setState({
                       position: {
                         y: event.pageY,
-                        x: event.pageX,
-                        xr: x,
-                        yr: y
+                        x: event.pageX
                       }
                     });
                   }}

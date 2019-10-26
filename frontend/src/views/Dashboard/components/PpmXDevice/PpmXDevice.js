@@ -3,7 +3,7 @@ import { makeStyles } from '@material-ui/styles';
 import clsx from 'clsx';
 import ReactEcharts from 'echarts-for-react';
 import PropTypes from 'prop-types';
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import data from './data.json';
 import axios from '../../../../http';
@@ -23,24 +23,28 @@ const PpmXDevice = props => {
   const { className, data: ambiente, ...rest } = props;
   const classes = useStyles();
 
-  console.log(props.data_loc, props.data);
-
   const [devices, setDevice] = useState([]);
 
   useEffect(() => {
     async function getDevices() {
-      const loc_filtered = props.data_loc.find(loc => loc.name === props.data.name);
-      setDevice(loc_filtered.devices);
+      let authentication = await localStorage.getItem('authentication');
+      let response = await axios.get('sensors', {
+        headers: { authentication }
+      });
+
+      let dev = response.data;
+      console.log(dev);
+      if (dev) {
+        //await setDevice();
+      }
     }
 
     getDevices();
+    //Socket.on('postDevice', () => getDevices());
+    //Socket.on('deleteDevice', () => getDevices());
+    //Socket.on('postSensor', () => setTimeout(getDevices, 3000));
+    //Socket.on('postEvent', getDevices);
   }, []);
-
-  const sensoresData = useMemo(() => {
-    return devices.reduce((all, device) => {
-      return [...all, ...device.sensorData.map(sensor => ({ ...sensor, deviceName: device.name }))];
-    }, []);
-  }, [devices]);
 
   const getOption = () => {
     let markLine = {
@@ -77,7 +81,24 @@ const PpmXDevice = props => {
       itemStyle: {
         opacity: 0.1
       },
-      data: []
+      data: [
+        [
+          {
+            xAxis: '2000-06-05'
+          },
+          {
+            xAxis: '2007-02-12'
+          }
+        ],
+        [
+          {
+            xAxis: '2011-06-07'
+          },
+          {
+            xAxis: '2012-03-14'
+          }
+        ]
+      ]
     };
 
     return {
@@ -107,17 +128,34 @@ const PpmXDevice = props => {
         }
       ],
       legend: {
-        data: devices.map(device => device.name)
+        data: ['Dispositivo 01', 'Dispositivo 02', 'Dispositivo 03']
       },
-      series:
-        devices.map(device => ({
-          name: device.name,
+      series: [
+        {
+          name: 'Dispositivo 01',
           type: 'line',
           smooth: true,
-          data: device.sensorData.map(sensor => sensor.value),
+          data: data.map(item => item[1] * 15),
           markLine,
           markArea
-        }))
+        },
+        {
+          name: 'Dispositivo 02',
+          type: 'line',
+          smooth: true,
+          data: data.map(item => item[1] * 11),
+          markLine,
+          markArea
+        },
+        {
+          name: 'Dispositivo 03',
+          type: 'line',
+          smooth: true,
+          data: data.map(item => item[1] * 6),
+          markLine,
+          markArea
+        }
+      ]
     };
   };
 

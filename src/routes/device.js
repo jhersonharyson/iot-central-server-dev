@@ -4,8 +4,6 @@ import { basename } from "path";
 const CONTROLLER_PATH = "../controller/" + basename(__filename);
 
 router.post("/devices", require(CONTROLLER_PATH).postDevice);
-router.get("/dashboard/devices", require(CONTROLLER_PATH).dashboardDevice);
-
 
 router.get("/devices/all*?", require(CONTROLLER_PATH).getAllDevices);
 

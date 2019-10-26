@@ -87,31 +87,27 @@ class EnviromentRegistration extends Component {
       );
 
       if (response.data) {
-        if (response.data.error)
-          this.message =
-            'Já existe um Ambiente com nome e descrição indicados!';
-        else {
-          this.message = 'Ambiente adicionado com sucesso!';
-          this.setState({
-            name: '',
-            desc: '',
-            img: '',
-            marked: false,
-            src: null,
-            cropped: '',
-            crop: {
-              // unit: '%',
-              width: 250,
-              aspect: 4 / 4
-            },
-            confirmCrop: false
-          });
-        }
+        this.message = 'Dispositivo adicionado com sucesso!';
       }
     } catch (e) {
-      this.message = 'Erro ao tentar salvar o Ambiente!';
+      this.message = 'Erro ao tentar salvar o dispositivo!';
     } finally {
       this.setState({ feedback: true });
+      this.setState({
+        name: '',
+        desc: '',
+        img: '',
+        marked: false,
+        src: null,
+        cropped: '',
+        crop: {
+          // unit: '%',
+          width: 250,
+          aspect: 4 / 4
+        },
+        confirmCrop: false,
+        feedback: false
+      });
     }
   };
 
@@ -270,7 +266,10 @@ class EnviromentRegistration extends Component {
             <BackIcon />
             VOLTAR
           </Button>
-          <Button color="primary" onClick={this.doSubmit}>
+          <Button
+            onClick={this.props.goBack}
+            color="primary"
+            onClick={this.doSubmit}>
             <SaveIcon />
             SALVAR
           </Button>

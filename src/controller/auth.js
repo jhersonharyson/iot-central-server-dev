@@ -5,10 +5,12 @@ import {
   NAME_ISINVALID,
   PASSWORD_ISINVALID,
   USER_NOTFOUND,
-  ACCOUNT_ISINVALID,
-  ACCOUNT_ALREADY_EXISTS
+  ACCOUNT_ISINVALID
 } from "../exceptions/userException";
-import { MAC_ISINVALID, MAC_ISNOTFOUND } from "../exceptions/deviceException";
+import {
+  MAC_ISINVALID,
+  MAC_ISNOTFOUND
+} from "../exceptions/deviceException";
 
 import User from "../models/user";
 import Device from "../models/device";
@@ -83,7 +85,7 @@ export function signin(req, res) {
 
 // build a user
 export async function signup(req, res) {
-  const { name, password, email, profile } = req.body;
+  const { name, password, email } = req.body;
   if (!name || name == "" || name.length < 3 || name.length > 80)
     return res.status(400).jwt(NAME_ISINVALID);
 
@@ -92,17 +94,11 @@ export async function signup(req, res) {
 
   if (!email || email == "") return res.status(400).jwt(EMAIL_ISINVALID);
 
-  const alreadyExists = await User.find({ email });
-
-  if (alreadyExists) return res.status(200).send(ACCOUNT_ALREADY_EXISTS);
-
   try {
     const user = await new User({
       name,
       email,
-      password,
-      profile:
-        ["JOUNIN", "CHUNIN", "GENIN"].indexOf(profile) >= 0 ? profile : "GENIN"
+      password
     }).save();
 
     return res.status(201).json(user);
@@ -121,22 +117,18 @@ export async function loginDevice(req, res) {
   try {
     if (req.params.mac && req.params.mac.length == 17) {
       const mac = req.params.mac;
-      const device = await Device.findOne({ mac: mac, status: { $ne: -1 } });
+      const device = await Device.findOne({ mac: mac, status: {$ne: -1} });
 
-      //console.log(device);
+       //console.log(device);
 
       if (!device) return res.status(301).send(MAC_ISNOTFOUND);
 
-      await Device.updateOne(
-        { mac: mac },
-        {
-          $set: { status: 1 }
-        }
-      );
+      await Device.updateOne({mac: mac},
+        {$set : { status: 1 }
+      });
       const token = jwtBuilder({ id: req.params.mac });
       const resp = {
-        token,
-        status: "ok"
+        token
       };
       return res.status(200).send(resp);
     }

@@ -15,8 +15,6 @@ import { withRouter } from 'react-router-dom';
 
 import { EnvironmentRegistration, ListTable } from './components';
 
-import { auth } from '../../auth';
-
 const schema = {
   email: {
     presence: { allowEmpty: false, message: 'é obrigatório' },
@@ -204,14 +202,14 @@ const Environment = props => {
               <div style={{ marginTop: '15px' }}>
                 <Typography variant="h4">Lista de ambientes</Typography>
                 <div style={{ padding: '15px', paddingTop: '25px' }}>
-                  <ListTable profile={auth.hasAuthorization()} />
+                  <ListTable />
                 </div>
               </div>
             </>
           )}
         </CardContent>
       </Card>
-      {!registration && auth.hasAuthorization() && (
+      {!registration && (
         <Fab
           aria-label="add"
           className={classes.fab}

@@ -24,6 +24,8 @@ export async function postDevice(req, res) {
   if (!name || name == "" || name.length < 3 || name.length > 80)
     return res.status(400).send(NAMED_ISINVALID);
 
+  if (!description) return res.status(400).send(DESCRIPTION_ISEMPTY);
+
   if (!location || location == "" || !(await Location.findById(location)))
     return res.status(400).send(LOCATION_ISINVALID);
 
@@ -34,7 +36,7 @@ export async function postDevice(req, res) {
     const device = await new Device({
       mac,
       name,
-      description: description || null,
+      description,
       location,
       position
     }).save();
@@ -52,7 +54,7 @@ export async function getDevice(req, res, next) {
   if (mac) filter.mac = mac;
 
   res.send(
-    await Device.find(filter)
+    await Device.find({})
       .populate("sensorData")
       .populate("location")
   );
@@ -111,17 +113,12 @@ export async function deleteDevice(req, res, next) {
 }
 
 export async function updateDevice(req, res, next) {
-  let up = await isExist(req.params.mac);
+  const up = await isExist(req.params.mac);
   if (!up) {
     return res.send(MAC_ISNOTFOUND);
   }
 
-  const {
-    name,
-    description,
-    location,
-    position: { x, y }
-  } = req.body;
+  const { name, description, location, x, y } = req.body;
 
   if (!name || name == "" || name.length < 3 || name.length > 80)
     return res.status(400).send(NAMED_ISINVALID);
@@ -143,8 +140,7 @@ export async function updateDevice(req, res, next) {
   if (description === "" || description != undefined || description != null) {
     device.description = description;
   }
-
-  if (x > -1 && y > -1) {
+  if (x && y) {
     device.position = { x, y };
   }
   if (location) {
@@ -169,28 +165,10 @@ export async function updateDevice(req, res, next) {
     }
   }
 
-  up = await device.save();
+  await device.save();
 
   req.io.emit("updateDevice", up);
   res.send(up);
-}
-
-export async function dashboardDevice(req, res) {
-  return res.json(
-    await Device.aggregate([
-      {
-        $match: {
-          status: { $gte: 0 }
-        }
-      },
-      {
-        $group: {
-          _id: "$status",
-          count: { $sum: 1 }
-        }
-      }
-    ])
-  );
 }
 
 export async function test(req, res, next) {

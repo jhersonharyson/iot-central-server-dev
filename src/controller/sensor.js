@@ -26,7 +26,9 @@ export async function postSensor(req, res) {
           sensorData.map(async function(arr) {
             const incident = await verify_event(arr);
             console.log(incident);
-
+            if (incident.description) {
+              req.io.emit("postEvent", incident);
+            }
             let { type, value } = arr;
             const sensor = new Sensor({
               deviceId,
@@ -36,16 +38,13 @@ export async function postSensor(req, res) {
               position
             });
             await sensor.save();
-            if (incident && incident.description) {
-              req.io.emit("postEvent", { ...incident, sensor });
-            }
 
             device.sensorData.push(sensor._id);
             await device.save();
           })
         );
 
-        let sensorsByDevice = await Device.find({})
+        let sensorsByDevice = await Device.find()
           .select("_id")
           .where("location")
           .equals(device.location)
@@ -63,7 +62,6 @@ export async function postSensor(req, res) {
         let maxSensorValue = -1;
         let sumSensorValue = sensorsByDevice.reduce(
           (sumSensorByDevice, sensorByDevice) => {
-            if (!sensorByDevice.sensorData[0]) return (sumSensorByDevice += 0);
             let sensorByDeviceValue = sensorByDevice.sensorData[0].value;
 
             if (sensorByDeviceValue > maxSensorValue)
@@ -87,7 +85,7 @@ export async function postSensor(req, res) {
 
       res.send({
         status: "ok",
-        token: jwtBuilder({ id: mac })
+        token: jwtBuilder({ id: deviceId })
       });
     } else {
       return res.status(401).send(MAC_ISINVALID);
@@ -98,9 +96,11 @@ export async function postSensor(req, res) {
 }
 
 export async function getSensor(req, res, next) {
-  const id = req.params.id;
-  try {
-    const sensor = await Sensor.findById(id)
+  const mac = req.params.mac;
+
+  res.send(
+    await Sensor.find()
+      .select("-_id")
       .populate({
         path: "deviceId",
         model: "device",
@@ -109,11 +109,8 @@ export async function getSensor(req, res, next) {
       .populate({
         path: "location",
         select: "name description -_id"
-      });
-    res.send({ sensor });
-  } catch (e) {
-    res.status(304).send({ error: e });
-  }
+      })
+  );
 }
 
 export async function test(req, res, next) {
@@ -145,7 +142,7 @@ export async function getAllSensors(req, res) {
 const verify_event = async sensor => {
   const s = sensor;
 
-  if (s.value >= 1000) {
+  if (s.value >= 4000) {
     const e = await Event.find({}).countDocuments();
 
     if (e == 0) {

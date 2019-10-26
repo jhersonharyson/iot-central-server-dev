@@ -50,7 +50,7 @@ export default function Details(props) {
           </Button>
         </Toolbar>
       </AppBar>
-      <div style={{ overflow: 'auto', padding: '30px' }}>{children}</div>
+      {children}
     </Dialog>
   );
 }

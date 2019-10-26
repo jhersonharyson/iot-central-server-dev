@@ -4,9 +4,7 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-  Fab,
-  Typography,
-  Snackbar
+  Fab
 } from '@material-ui/core';
 import AddBox from '@material-ui/icons/AddBox';
 import ArrowUpward from '@material-ui/icons/ArrowUpward';
@@ -58,9 +56,6 @@ export default class ListTable extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      dialogCharging: undefined,
-      snackbar: false,
-
       locations: [],
       selectedValue: {},
       dialog: false,
@@ -121,14 +116,10 @@ export default class ListTable extends React.Component {
       }
 
       console.log(lookup);
-      const columnsWithoutRepetion = this.state.table.columns.filter(
-        column => column.title != 'Ambiente'
-      );
-
       this.setState({
         table: {
           columns: [
-            ...columnsWithoutRepetion,
+            ...this.state.table.columns,
             { title: 'Ambiente', field: 'location', lookup: { ...lookup } }
           ],
           data: []
@@ -166,13 +157,6 @@ export default class ListTable extends React.Component {
     this.setState({ dialog: false });
   };
 
-  handleUpdateAfterClose = () => {
-    this.setState({ isLoading: true });
-    this.componentWillMount();
-    setTimeout(() => this.setState({ isLoading: false }), 1000);
-    this.handleClose();
-  };
-
   render() {
     return (
       <>
@@ -180,7 +164,6 @@ export default class ListTable extends React.Component {
           selectedValue={this.state.selectedValue}
           open={this.state.dialog}
           onClose={this.handleClose}
-          handleUpdateAfterClose={this.handleUpdateAfterClose}
         />
         <MaterialTable
           isLoading={this.state.isLoading}
@@ -210,48 +193,29 @@ export default class ListTable extends React.Component {
               )}
             </div>
           }
-          actions={
-            this.props.profile && [
-              {
-                icon: 'my_location',
-                tooltip: 'posicionar',
-                onClick: (event, rowData) => {
-                  document.body.scrollTop = 0; // For Safari
-                  document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+          actions={[
+            {
+              icon: 'my_location',
+              tooltip: 'posicionar',
+              onClick: (event, rowData) => {
+                document.body.scrollTop = 0; // For Safari
+                document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
 
-                  const { img_url } = this.state.locations.find(
-                    x => x._id == rowData.location
-                  );
-                  console.log(img_url);
-                  this.setState({
-                    dialog: true,
+                const { img_url } = this.state.locations.find(
+                  x => x._id == rowData.location
+                );
+                console.log(img_url);
+                this.setState({
+                  dialog: true,
 
-                    selectedValue: {
-                      ...rowData,
-                      img_url
-                    }
-                  });
-                }
-              },
-              {
-                icon: 'battery_charging_full',
-                tooltip: 'indicar troca de bateria',
-                onClick: (event, rowData) => {
-                  this.setState({ snackbar: true });
-                  setTimeout(() => {
-                    this.setState({
-                      dialogCharging: {
-                        name: rowData.name,
-                        location: this.state.locations.find(
-                          x => x._id == rowData.location
-                        )
-                      }
-                    });
-                  }, 20000);
-                }
+                  selectedValue: {
+                    ...rowData,
+                    img_url
+                  }
+                });
               }
-            ]
-          }
+            }
+          ]}
           options={{
             exportButton: true,
             actionsColumnIndex: -1,
@@ -295,281 +259,160 @@ export default class ListTable extends React.Component {
           icons={tableIcons}
           columns={this.state.table.columns}
           data={this.state.table.data}
-          editable={
-            this.props.profile && {
-              onRowUpdate: (newData, oldData) =>
-                new Promise(resolve => {
-                  setTimeout(async () => {
-                    try {
-                      const headers = {
-                        authentication: localStorage.getItem('authentication')
-                      };
-                      const response = await axios.put(
-                        `devices/${oldData.mac}`,
-                        {
-                          name: newData.name,
-                          description: newData.description,
-                          location: newData.location
-                        },
-                        {
-                          headers
-                        }
-                      );
+          editable={{
+            onRowUpdate: (newData, oldData) =>
+              new Promise(resolve => {
+                setTimeout(async () => {
+                  try {
+                    const headers = {
+                      authentication: localStorage.getItem('authentication')
+                    };
+                    const response = await axios.put(
+                      `devices/${oldData.mac}`,
+                      {
+                        name: newData.name,
+                        description: newData.description,
+                        location: newData.location
+                      },
+                      {
+                        headers
+                      }
+                    );
 
-                      console.log(response.data);
+                    console.log(response.data);
 
-                      resolve();
-                      const data = [...this.state.table.data];
-                      data[data.indexOf(oldData)] = newData;
-                      this.setState({ table: { ...this.state.table, data } });
-                      setTimeout(this.populate, 2000);
-                    } catch (e) {}
-                  }, 600);
-                }),
-              onRowDelete: oldData =>
-                new Promise(resolve => {
-                  setTimeout(async () => {
-                    // console.log(oldData);
-                    try {
-                      const headers = {
-                        authentication: localStorage.getItem('authentication')
-                      };
-                      const response = await axios.delete(
-                        `devices/${oldData.mac}`,
-                        { headers }
-                      );
-                      console.log(response.data.status);
-                      resolve();
-                      const data = [...this.state.table.data];
-                      data.splice(data.indexOf(oldData), 1);
-                      this.setState({ table: { ...this.state.table, data } });
-                      setTimeout(this.populate, 2000);
-                    } catch (e) {
-                      /////
-                    }
-                  }, 600);
-                })
-            }
-          }
-        />
-        <Dialog
-          onClose={() => {
-            this.setState({ dialogCharging: undefined });
+                    resolve();
+                    const data = [...this.state.table.data];
+                    data[data.indexOf(oldData)] = newData;
+                    this.setState({ table: { ...this.state.table, data } });
+                    setTimeout(this.populate, 2000);
+                  } catch (e) {}
+                }, 600);
+              }),
+            onRowDelete: oldData =>
+              new Promise(resolve => {
+                setTimeout(async () => {
+                  // console.log(oldData);
+                  try {
+                    const headers = {
+                      authentication: localStorage.getItem('authentication')
+                    };
+                    const response = await axios.delete(
+                      `devices/${oldData.mac}`,
+                      { headers }
+                    );
+                    console.log(response.data.status);
+                    resolve();
+                    const data = [...this.state.table.data];
+                    data.splice(data.indexOf(oldData), 1);
+                    this.setState({ table: { ...this.state.table, data } });
+                    setTimeout(this.populate, 2000);
+                  } catch (e) {
+                    /////
+                  }
+                }, 600);
+              })
           }}
-          aria-labelledby="simple-dialog-title"
-          open={this.state.dialogCharging != undefined}>
-          <DialogTitle id="simple-dialog-title">
-            Alerta nível de bateria
-          </DialogTitle>
-          <DialogContent>
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                margin: '15px'
-              }}>
-              <Typography
-                variant="h5"
-                style={{ marginBottom: '15px' }}>{`O dispositivo ${
-                this.state.dialogCharging ? this.state.dialogCharging.name : ''
-              } alocado em ${
-                this.state.dialogCharging
-                  ? this.state.dialogCharging.location.name
-                  : ''
-              }, nescessita de troca de bateria.`}</Typography>
-
-              {this.state.dialogCharging && (
-                <img
-                  style={{ margin: 'auto', width: '300px' }}
-                  src={this.state.dialogCharging.location.img_url}></img>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
-        <Snackbar
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'left'
-          }}
-          open={this.state.snackbar}
-          autoHideDuration={6000}
-          onClose={() => this.setState({ snackbar: false })}
-          ContentProps={{
-            'aria-describedby': 'message-id'
-          }}
-          message={
-            <span id="message-id">Troca de bateria informada com sucesso</span>
-          }
         />
       </>
     );
   }
 }
 
-class SimpleDialog extends React.Component {
-  constructor(props) {
-    super(props);
-    this.imageRef = React.createRef();
-    this.state = {
-      position: {
-        x: 0,
-        y: 0
-      }
-    };
-  }
-  componentDidMount() {}
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.selectedValue && nextProps.selectedValue.position) {
-      setTimeout(() => {
-        if (this.imageRef.current) {
-          console.info(
-            JSON.stringify(this.imageRef.current.getBoundingClientRect())
-          );
-          this.setState({
-            position: {
-              x:
-                nextProps.selectedValue.position.x +
-                this.imageRef.current.getBoundingClientRect().x,
-              y:
-                nextProps.selectedValue.position.y +
-                this.imageRef.current.getBoundingClientRect().y
-            }
-          });
-        }
-      }, 100);
-    }
-    if (nextProps.position) {
-      this.setState({
-        position: {
-          x: nextProps.position ? nextProps.position.x : 0,
-          y: nextProps.position ? nextProps.position.y : 0
-        }
-      });
-    }
-    console.log({
-      x: nextProps.position ? nextProps.position.x : 0,
-      y: nextProps.position ? nextProps.position.y : 0
-    });
+function SimpleDialog(props) {
+  let imageRef = React.createRef();
+  const [position, setPosition] = React.useState({
+    x: 0,
+    y: 0
+  });
 
-    console.log({
-      x: this.state.position ? this.state.position.x : 0,
-      y: this.state.position ? this.state.position.y : 0
-    });
-  }
+  const { onClose, selectedValue, open } = props;
 
-  handleClose = () => {
-    // setPosition({
-    //   x: 0,
-    //   y: 0
-    // });
-    this.props.onClose();
+  const handleClose = () => {
+    setPosition({
+      x: 0,
+      y: 0
+    });
+    onClose();
   };
 
-  handleListItemClick = value => {
-    this.props.onClose(value);
+  const handleListItemClick = value => {
+    onClose(value);
   };
-  render() {
-    const { handleUpdateAfterClose, onClose, selectedValue, open } = this.props;
-    return (
-      <Dialog
-        onClose={this.handleClose}
-        aria-labelledby="simple-dialog-title"
-        open={open}>
-        <DialogTitle id="simple-dialog-title">
-          Posicionamento do dispositivo
-        </DialogTitle>
-        <DialogContent>
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <img
-              style={{ margin: 'auto', width: '300px' }}
-              draggable={false}
-              onClick={event => {
-                const x =
-                  event.pageX -
-                  event.target.getBoundingClientRect().left +
-                  window.scrollX;
-                const y =
-                  event.pageY -
-                  event.target.getBoundingClientRect().top +
-                  window.scrollY;
-                console.log(x, y);
-                console.log(this.imageRef.current.getBoundingClientRect());
 
-                this.setState({
-                  position: {
-                    y: event.pageY,
-                    x: event.pageX,
-                    xr: x,
-                    yr: y
-                  }
-                });
-              }}
-              ref={this.imageRef}
-              src={selectedValue.img_url}
-            />
-          </div>
-          <div
-            style={{
-              position: 'fixed',
-              top:
-                selectedValue.position && this.state.position.y == 0
-                  ? selectedValue.position.y +
-                    (!!this.imageRef.current
-                      ? this.imageRef.current.getBoundingClientRect().top
-                      : 0) +
-                    'px'
-                  : this.state.position.y,
-              left:
-                selectedValue.position && this.state.position.x == 0
-                  ? selectedValue.position.x +
-                    (!!this.imageRef.current
-                      ? this.imageRef.current.getBoundingClientRect().left
-                      : 0) +
-                    'px'
-                  : this.state.position.x
-            }}>
-            <MyLocationIcon style={{ color: '#000' }} />
-          </div>
+  return (
+    <Dialog
+      onClose={handleClose}
+      aria-labelledby="simple-dialog-title"
+      open={open}>
+      <DialogTitle id="simple-dialog-title">
+        Posicionamento do dispositivo
+      </DialogTitle>
+      <DialogContent>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <img
+            style={{ margin: 'auto', width: '300px' }}
+            draggable={false}
+            onClick={event => {
+              event.persist();
+              console.log(event);
 
-          {/* onClick={() => handleListItemClick(email)} */}
-        </DialogContent>
-        <div
-          style={{ margin: '15px', display: 'flex', flexDirection: 'column' }}>
-          <Button style={{ marginBottom: '5px' }} onClick={() => onClose()}>
-            FECHAR
-          </Button>
-          <Button
-            variant="outlined"
-            disabled={this.state.position.x == 0 && this.state.position.y == 0}
-            onClick={async () => {
-              try {
-                const headers = {
-                  authentication: localStorage.getItem('authentication')
-                };
-                const response = await axios.put(
-                  `devices/${selectedValue.mac}`,
-                  {
-                    ...selectedValue,
-                    position: {
-                      x: this.state.position.xr,
-                      y: this.state.position.yr
-                    }
-                  },
-                  { headers }
-                );
-                console.log(response.data);
-              } catch (e) {
-                //
-              }
-              setTimeout(handleUpdateAfterClose, 600);
-            }}>
-            POSICIONAR
-          </Button>
+              console.log({
+                y: event.pageY,
+                x: event.pageX
+              });
+              setPosition({
+                y: event.pageY,
+                x: event.pageX
+              });
+            }}
+            ref={imageRef}
+            src={selectedValue.img_url}
+          />
         </div>
-      </Dialog>
-    );
-  }
+        <div
+          style={{
+            position: 'fixed',
+            top: position.y + 'px',
+            left: position.x + 'px'
+          }}>
+          <MyLocationIcon style={{ color: '#000' }} />
+        </div>
+
+        {/* onClick={() => handleListItemClick(email)} */}
+      </DialogContent>
+      <div style={{ margin: '15px', display: 'flex', flexDirection: 'column' }}>
+        <Button style={{ marginBottom: '5px' }} onClick={() => onClose()}>
+          FECHAR
+        </Button>
+        <Button
+          variant="outlined"
+          disabled={position.x == 0 && position.y == 0}
+          onClick={async () => {
+            try {
+              const headers = {
+                authentication: localStorage.getItem('authentication')
+              };
+              const response = await axios.put(
+                `devices/${selectedValue.mac}`,
+                { ...selectedValue, x: position.x, y: position.y },
+                { headers }
+              );
+              console.log(response.data);
+              setPosition({
+                x: 0,
+                y: 0
+              });
+            } catch (e) {
+              //
+            }
+            setTimeout(onClose, 600);
+          }}>
+          POSICIONAR
+        </Button>
+      </div>
+    </Dialog>
+  );
 }
 
 SimpleDialog.propTypes = {

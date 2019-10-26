@@ -81,28 +81,6 @@ class Auth {
   isAuthenticated() {
     return this.authenticated;
   }
-
-  hasAuthorization(path = window.location.pathname) {
-    switch (this.profile) {
-      case 'JOUNIN': {
-        return !!(
-          ['/users', '/environments', '/devices', '/dashboard'].indexOf(path) +
-          1
-        );
-      }
-      case 'CHUNIN': {
-        return !!(
-          ['/environments', '/devices', '/dashboard'].indexOf(path) + 1
-        );
-      }
-
-      case 'GENIN': {
-        return !!(['/dashboard'].indexOf(path) + 1);
-      }
-      default: {
-      }
-    }
-  }
 }
 
 const putTokenInSession = async token => {
