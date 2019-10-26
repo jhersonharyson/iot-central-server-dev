@@ -266,8 +266,8 @@ const UserRegistration = props => {
                 <em>Selecione um perfil</em>
               </MenuItem>
               <MenuItem value={'GENIN'}>JUNIOR</MenuItem>
-              <MenuItem value={'CHUNIN'}>PLENO</MenuItem>
-              <MenuItem value={'JOUNIN'}>SENIOR</MenuItem>
+              <MenuItem value={'CHUNIN'}>SENIOR</MenuItem>
+              <MenuItem value={'JOUNIN'}>MASTER</MenuItem>
             </Select>
             <br />
           </div>
