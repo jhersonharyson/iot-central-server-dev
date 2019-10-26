@@ -63,6 +63,10 @@ class EnviromentRegistration extends Component {
       this.message = 'O campo de descrição é obrigatório.';
       this.setState({ feedback: true });
       return;
+    } else if (name == desc) {
+      this.message = 'O campo nome é igual ao campo descrição.';
+      this.setState({ feedback: true });
+      return;
     } else if (src && !confirmCrop) {
       this.message = 'A confirmação do recorte é obrigatório.';
       this.setState({ feedback: true });

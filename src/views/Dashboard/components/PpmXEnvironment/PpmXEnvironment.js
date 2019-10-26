@@ -44,24 +44,23 @@ const PpmXEnvironment = props => {
         headers: { authentication }
       });
 
-      const result = await Promise
-        .all(
-          response.data
-            .map(async location => {
-              let authentication = localStorage.getItem('authentication');
-              let res = await axios.get(`location/${location._id}/devices`, {
-                headers: { authentication }
-              });
-              return { ...res.data, ...location };
-            })
-        )
-
-      setLocations(result);
+      setLocations(response.data);
     }
 
     getLocation();
-  }, []);
+    Socket.on('redrawLocationGraphic', locationsForUpdate => {
+      console.log('locationsForUpdate: ', locationsForUpdate);
+      locationsForUpdate.map(locationForUpdate => {
+        let newLocations = locations;
+        let locationIndex = newLocations.find(
+          location => location._id === locationForUpdate._id
+        );
 
+        newLocations.splice(locationIndex, 1, locationForUpdate);
+        setLocations(newLocations);
+      });
+    });
+  }, []);
 
   const getOption = () => {
     let markLine = {
@@ -70,7 +69,7 @@ const PpmXEnvironment = props => {
         {
           yAxis: 400,
           lineStyle: {
-            color: '#63F900'
+            color: '#4dbd6c'
           }
         },
         {
@@ -136,7 +135,6 @@ const PpmXEnvironment = props => {
     };
   };
 
-
   return (
     <>
       <Card {...rest} className={clsx(classes.root, className)}>
@@ -144,18 +142,15 @@ const PpmXEnvironment = props => {
         <Divider />
         <CardContent>
           <div className={classes.chartContainer}>
-
-
             <ReactEcharts
               lazyUpdate={true}
-
               showLoading={!locations.length}
               option={getOption()}
               onEvents={{
                 click: e => {
                   setDetail({
                     active: true,
-                    data: e,
+                    data: e
                   });
                 }
               }}
@@ -168,8 +163,12 @@ const PpmXEnvironment = props => {
         handleToggle={handleToggle}
         title={detail.active && detail.data.name}>
         <>
-          <PpmXDevice data_loc={[...locations]} data={detail.data} style={{ margin: '20px' }} />
-          <ListTable data_loc={[...locations]} data={detail.data} />
+          <PpmXDevice
+            data_loc={[...locations]}
+            data={detail.data}
+            style={{ margin: '20px' }}
+          />
+          <ListTable media data_loc={[...locations]} data={detail.data} />
         </>
       </Detail>
     </>
