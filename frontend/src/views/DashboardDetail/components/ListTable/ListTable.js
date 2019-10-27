@@ -28,8 +28,9 @@ import Search from '@material-ui/icons/Search';
 import ViewColumn from '@material-ui/icons/ViewColumn';
 import MaterialTable from 'material-table';
 import PropTypes from 'prop-types';
-import React, { forwardRef } from 'react';
-import axios from '../../../../../http';
+import React, { forwardRef, useEffect } from 'react';
+import axios from '../../../../http';
+import Socket from '../../../../socket';
 
 const tableIcons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -77,17 +78,44 @@ export default class ListTable extends React.Component {
   componentWillMount = async () => {
     try {
       this.populate();
+      Socket.on('postSensor', sensor => {
+        let sensores = this.state.table.data;
+
+        sensores.pop();
+        sensores.unshift({
+          deviceName: sensor.name,
+          createAt: new Date(Date.parse(sensor.createAt)).toLocaleString('pt-BR'),
+          value: sensor.value
+        })
+
+        this.setState({
+          table: {
+            ...this.state.table,
+            data: sensores
+          }
+        });
+      });
     } catch (e) {
       this.message = 'Erro ao tentar conectar com o servidor.';
     }
   };
 
+  componentWillUnmount = () => {
+    Socket.removeListener('postSensor');
+  }
+
   populate = async () => {
-    const { devices } = this.props.data_loc.find(loc => loc.name === this.props.data.name);
+    const { location_id } = this.props;
+
+    let authentication = localStorage.getItem('authentication');
+    let { data } = await axios.get(`location/${location_id}/devices`, {
+      headers: { authentication }
+    });
+
     this.setState({
       table: {
         ...this.state.table,
-        data: devices.reduce((all, device) => {
+        data: data.devices.reduce((all, device) => {
           return [
             ...all,
             ...device.sensorData.map(sensor => ({
