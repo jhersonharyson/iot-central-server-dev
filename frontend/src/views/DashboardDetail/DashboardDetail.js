@@ -7,6 +7,19 @@ import axios from '../../http';
 const DashboardDetail = props => {
   //Style const
   const { className, history, match: { params }, ...rest } = props;
+  const [location, setLocation] = useState(null);
+
+  useEffect(() => {
+    async function getLocation() {
+      let authentication = localStorage.getItem('authentication');
+      let { data } = await axios.get(`location/${params.id}`, {
+        headers: { authentication }
+      });
+
+      setLocation(data.location);
+    }
+    getLocation();
+  }, []);
 
   const handleToggle = () => {
     history.push('/dashboard');
@@ -16,14 +29,16 @@ const DashboardDetail = props => {
     <Detail
       open={true}
       handleToggle={handleToggle}
-      title="Ambiente">
+      title={location ? location.name : "Ambiente"}>
       <>
         <PpmXDevice
           location_id={params.id}
+          location={location}
           style={{ margin: '20px' }}
         />
         <ListTable
           media
+          location={location}
           location_id={params.id} />
       </>
     </Detail>
