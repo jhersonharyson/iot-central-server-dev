@@ -140,10 +140,14 @@ export async function deleteLocation(req, res) {
 
 export async function detailDevice(req, res) {
   const { id: location_id } = req.params;
+
+  var d = new Date();
+  d.setDate(d.getDate() - 2);
+
   const devices = await Device.find(
     {
       location: { $eq: location_id },
-      status: { $gte: 0 },
+      status: { $eq: 1 },
       position: { $ne: null }
     },
     "_id name sensorData"
@@ -151,36 +155,17 @@ export async function detailDevice(req, res) {
     .populate({
       path: "sensorData",
       match: {
-        location: { $eq: location_id }
+        location: { $eq: location_id },
+        createAt: { $gte: d }
       },
       select: "-_id value createAt",
       options: {
         sort: { createAt: -1 },
-        limit: 1
       }
     })
     .sort([["name", "-1"]])
     .exec();
-
-  if (devices.some(device => device.sensorData.length)) {
-    let sensorData = devices
-      .filter(device => device.sensorData.length)
-      .map(device => device.sensorData[0].value);
-
-    let count = sensorData.length;
-    let sum = sensorData.reduce((a, s) => s + a, 0);
-    let avg = count && Math.round(sum / count);
-    let max = Math.max(...sensorData, 0) - avg;
-
-    return res.json({
-      _id: location_id,
-      max,
-      avg,
-      devices
-    });
-  }
-
-  return res.json({});
+  return res.json({ devices });
 }
 
 export async function dashboardLocation(req, res) {
@@ -209,21 +194,27 @@ export async function dashboardLocation(req, res) {
         location.device.length &&
         location.device.some(device => device.sensorData.length)
     )
-    .map(location => ({
-      _id: location._id,
-      name: location.name,
-      max: location.device.reduce(
-        (max, device) => max + device.sensorData[0].value,
-        0
-      ),
-      avg: location.device.reduce((avg, device, deviceIndex, devices) => {
+    .map(location => {
+      let avg = location.device.reduce((avg, device, deviceIndex, devices) => {
         if (devices.length === deviceIndex + 1) {
           return (avg + device.sensorData[0].value) / devices.length;
         }
 
         return avg + device.sensorData[0].value;
-      }, 0)
-    }));
+      }, 0);
+
+      let max = location.device.reduce(
+        (max, device) => device.sensorData[0].value > max ? device.sensorData[0].value : max,
+        0
+      );
+
+      return {
+        _id: location._id,
+        name: location.name,
+        max: avg - max,
+        avg
+      };
+    });
 
   return res.json(locations);
 }

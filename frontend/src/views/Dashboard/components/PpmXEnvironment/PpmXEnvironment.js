@@ -1,14 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { withRouter } from 'react-router-dom';
 import { Card, CardContent, CardHeader, Divider } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import clsx from 'clsx';
 import ReactEcharts from 'echarts-for-react';
 import PropTypes from 'prop-types';
-import Detail from '../Detail';
 import axios from '../../../../http';
 import Socket from '../../../../socket';
-import { PpmXDevice } from '..';
-import ListTable from './ListTable/ListTable';
 
 const useStyles = makeStyles(() => ({
   root: {},
@@ -24,18 +22,16 @@ const PpmXEnvironment = props => {
   //Style const
   const { className, ...rest } = props;
   const classes = useStyles();
-  const [locations, setLocations] = useState([]);
-  const [detail, setDetail] = React.useState({
-    active: false,
-    data: null
-  });
 
-  const handleToggle = () => {
-    setDetail({
-      active: !detail.active,
-      data: null
-    });
-  };
+  let locations = [];
+  let graphRef = useRef(null);
+
+  function handleClickBar(e) {
+    let { _id } = locations.find(item => item.name = e.name);
+    if (_id) {
+      props.history.push(`/dashboard/${_id}`);
+    }
+  }
 
   useEffect(() => {
     async function getLocation() {
@@ -44,12 +40,31 @@ const PpmXEnvironment = props => {
         headers: { authentication }
       });
 
-      setLocations(response.data);
+      locations = response.data;
+      if (graphRef) {
+        graphRef
+          .getEchartsInstance()
+          .setOption({
+            xAxis: {
+              data: response.data.map(item => item.name)
+            },
+            series: [
+              {
+                data: response.data.map(item => item.avg)
+              },
+              {
+                data: response.data.map(item => item.max)
+              }
+            ]
+          }, false);
+      }
     }
 
     getLocation();
+  }, []);
+
+  useEffect(() => {
     Socket.on('redrawLocationGraphic', locationsForUpdate => {
-      console.log('locationsForUpdate: ', locationsForUpdate);
       locationsForUpdate.map(locationForUpdate => {
         let newLocations = locations;
         let locationIndex = newLocations.find(
@@ -57,83 +72,32 @@ const PpmXEnvironment = props => {
         );
 
         newLocations.splice(locationIndex, 1, locationForUpdate);
-        setLocations(newLocations);
+
+        locations = newLocations;
+        if (graphRef) {
+          graphRef
+            .getEchartsInstance()
+            .setOption({
+              xAxis: {
+                data: newLocations.map(item => item.name)
+              },
+              series: [
+                {
+                  data: newLocations.map(item => item.avg)
+                },
+                {
+                  data: newLocations.map(item => item.max)
+                }
+              ]
+            }, false);
+        }
       });
-    });
+    }, []);
+
+    return () => {
+      Socket.removeListener('redrawLocationGraphic');
+    };
   }, []);
-
-  const getOption = () => {
-    let markLine = {
-      silent: true,
-      data: [
-        {
-          yAxis: 400,
-          lineStyle: {
-            color: '#4dbd6c'
-          }
-        },
-        {
-          yAxis: 1000,
-          lineStyle: {
-            color: '#E5DA00'
-          }
-        },
-        {
-          yAxis: 2000,
-          lineStyle: {
-            color: '#fb7607'
-          }
-        },
-        {
-          yAxis: 5000,
-          lineStyle: {
-            color: '#fb0505'
-          }
-        }
-      ]
-    };
-
-    return {
-      tooltip: {
-        trigger: 'axis',
-        axisPointer: {
-          type: 'shadow'
-        }
-      },
-      legend: {
-        data: ['Média', 'Máxima']
-      },
-      xAxis: {
-        type: 'category',
-        data: locations.map(location => location.name)
-      },
-      yAxis: {
-        type: 'value'
-      },
-      series: [
-        {
-          name: 'Média',
-          type: 'bar',
-          stack: '0',
-          itemStyle: {
-            color: '#053F66'
-          },
-          markLine,
-          data: locations.map(location => location.avg)
-        },
-        {
-          name: 'Máxima',
-          type: 'bar',
-          stack: '0',
-          itemStyle: {
-            color: ''
-          },
-          markLine,
-          data: locations.map(location => location.max)
-        }
-      ]
-    };
-  };
 
   return (
     <>
@@ -143,34 +107,108 @@ const PpmXEnvironment = props => {
         <CardContent>
           <div className={classes.chartContainer}>
             <ReactEcharts
+              ref={ref => graphRef = ref}
               lazyUpdate={true}
-              showLoading={!locations.length}
-              option={getOption()}
+              option={{
+                tooltip: {
+                  trigger: 'axis',
+                  axisPointer: {
+                    type: 'shadow'
+                  }
+                },
+                legend: {
+                  data: ['Média', 'Máxima']
+                },
+                xAxis: {
+                  type: 'category',
+                },
+                yAxis: {
+                  type: 'value'
+                },
+                series: [
+                  {
+                    name: 'Média',
+                    type: 'bar',
+                    stack: '0',
+                    itemStyle: {
+                      color: '#053F66'
+                    },
+                    markLine: {
+                      silent: true,
+                      data: [
+                        {
+                          yAxis: 400,
+                          lineStyle: {
+                            color: '#4dbd6c'
+                          }
+                        },
+                        {
+                          yAxis: 1000,
+                          lineStyle: {
+                            color: '#E5DA00'
+                          }
+                        },
+                        {
+                          yAxis: 2000,
+                          lineStyle: {
+                            color: '#fb7607'
+                          }
+                        },
+                        {
+                          yAxis: 5000,
+                          lineStyle: {
+                            color: '#fb0505'
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    name: 'Máxima',
+                    type: 'bar',
+                    stack: '0',
+                    itemStyle: {
+                      color: ''
+                    },
+                    markLine: {
+                      silent: true,
+                      data: [
+                        {
+                          yAxis: 400,
+                          lineStyle: {
+                            color: '#4dbd6c'
+                          }
+                        },
+                        {
+                          yAxis: 1000,
+                          lineStyle: {
+                            color: '#E5DA00'
+                          }
+                        },
+                        {
+                          yAxis: 2000,
+                          lineStyle: {
+                            color: '#fb7607'
+                          }
+                        },
+                        {
+                          yAxis: 5000,
+                          lineStyle: {
+                            color: '#fb0505'
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }}
               onEvents={{
-                click: e => {
-                  setDetail({
-                    active: true,
-                    data: e
-                  });
-                }
+                click: handleClickBar
               }}
             />
           </div>
         </CardContent>
       </Card>
-      <Detail
-        open={detail.active}
-        handleToggle={handleToggle}
-        title={detail.active && detail.data.name}>
-        <>
-          <PpmXDevice
-            data_loc={[...locations]}
-            data={detail.data}
-            style={{ margin: '20px' }}
-          />
-          <ListTable media data_loc={[...locations]} data={detail.data} />
-        </>
-      </Detail>
     </>
   );
 };
@@ -179,4 +217,4 @@ PpmXEnvironment.propTypes = {
   className: PropTypes.string
 };
 
-export default PpmXEnvironment;
+export default withRouter(PpmXEnvironment);

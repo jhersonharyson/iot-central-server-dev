@@ -11,7 +11,8 @@ import {
   SignIn as SignInView,
   Event as EventView,
   NotFound as NotFoundView,
-  User as UserView
+  User as UserView,
+  DashboardDetail as DashboardDetailView
 } from './views';
 
 const Routes = () => {
@@ -23,6 +24,12 @@ const Routes = () => {
         exact
         layout={MainLayout}
         path="/dashboard"
+      />
+      <PrivateRoute
+        component={DashboardDetailView}
+        exact
+        layout={MainLayout}
+        path="/dashboard/:id"
       />
       <PrivateRoute
         component={DeviceView}

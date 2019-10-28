@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import React, { useEffect, useState, useMemo } from 'react';
 
 import data from './data.json';
-import axios from '../../../../http';
 
 const useStyles = makeStyles(() => ({
   root: {},
@@ -20,27 +19,16 @@ const useStyles = makeStyles(() => ({
 
 const PpmXDevice = props => {
   //Style const
-  const { className, data: ambiente, ...rest } = props;
+  const { className, ...rest } = props;
   const classes = useStyles();
-
-  console.log(props.data_loc, props.data);
 
   const [devices, setDevice] = useState([]);
 
   useEffect(() => {
-    async function getDevices() {
-      const loc_filtered = props.data_loc.find(loc => loc.name === props.data.name);
-      setDevice(loc_filtered.devices);
-    }
+    async function getDevices() { }
 
     getDevices();
   }, []);
-
-  const sensoresData = useMemo(() => {
-    return devices.reduce((all, device) => {
-      return [...all, ...device.sensorData.map(sensor => ({ ...sensor, deviceName: device.name }))];
-    }, []);
-  }, [devices]);
 
   const getOption = () => {
     let markLine = {

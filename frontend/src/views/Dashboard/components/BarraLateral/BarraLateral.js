@@ -175,14 +175,14 @@ export default function BarraLateral() {
             onClick={() => setDrawThree(true)}>
             <Tooltip
               TransitionComponent={Zoom}
-              title="geradores"
+              title="Geradores"
               placement="left">
               <Fab size="small" color="secondary">
                 {geradores.filter(i => i.value).length ? (
                   <OfflineBoltOnIcon />
                 ) : (
-                  <OfflineBoltOffIcon />
-                )}
+                    <OfflineBoltOffIcon />
+                  )}
               </Fab>
             </Tooltip>
           </Badge>
@@ -199,8 +199,8 @@ export default function BarraLateral() {
                 {ocupacao.filter(i => i.value).length ? (
                   <MeetingOnIcon />
                 ) : (
-                  <MeetingOffIcon />
-                )}
+                    <MeetingOffIcon />
+                  )}
               </Fab>
             </Tooltip>
           </Badge>
@@ -231,9 +231,9 @@ export default function BarraLateral() {
                   secondary={
                     inf.updateAt
                       ? 'Atualizado em ' +
-                        new Date(
-                          Math.max(...inf.updateAt.map(x => Date.parse(x.time)))
-                        ).toLocaleString()
+                      new Date(
+                        Math.max(...inf.updateAt.map(x => Date.parse(x.time)))
+                      ).toLocaleString()
                       : ''
                   }
                 />
@@ -270,11 +270,11 @@ export default function BarraLateral() {
                       ? ''
                       : occup.occupation
                       ? 'Atualizado em ' +
-                        new Date(
-                          Math.max(
-                            ...occup.occupation.map(x => Date.parse(x.time))
-                          )
-                        ).toLocaleString()
+                      new Date(
+                        Math.max(
+                          ...occup.occupation.map(x => Date.parse(x.time))
+                        )
+                      ).toLocaleString()
                       : ''
                   }
                 />
@@ -305,8 +305,8 @@ export default function BarraLateral() {
                     {geradores.filter(i => i.value).length ? (
                       <OfflineBoltOnIcon />
                     ) : (
-                      <OfflineBoltOffIcon />
-                    )}
+                        <OfflineBoltOffIcon />
+                      )}
                   </Avatar>
                 </ListItemIcon>
                 <ListItemText
@@ -314,9 +314,9 @@ export default function BarraLateral() {
                   secondary={
                     ger.updateAt
                       ? 'Atualizado em ' +
-                        new Date(
-                          Math.max(...ger.updateAt.map(x => Date.parse(x.time)))
-                        ).toLocaleString()
+                      new Date(
+                        Math.max(...ger.updateAt.map(x => Date.parse(x.time)))
+                      ).toLocaleString()
                       : ''
                   }
                 />
