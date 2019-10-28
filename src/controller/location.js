@@ -31,14 +31,16 @@ export async function postLocationWithFile(req, res) {
 
 export async function postLocation(req, res) {
   const { name, description, img_url } = req.body;
+
   if (!name || name == "" || name.length < 3 || name.length > 80)
-    return res.status(400).send(NAMED_ISINVALID);
+    return res.status(400).send({ NAMED_ISINVALID });
+
   if (!description || description == "")
-    return res.status(400).send(DESCRIPTION_ISEMPTY);
+    return res.status(400).send({ DESCRIPTION_ISEMPTY });
 
   const alreadyExists = await Location.find({ name, description });
-  console.log(alreadyExists);
-  if (alreadyExists) return res.status(200).json(ACCOUNT_ALREADY_EXISTS);
+  console.log(alreadyExists.length);
+  if (alreadyExists.length) return res.status(200).send({ error: "error" });
 
   try {
     const location = await Location.create({
@@ -49,6 +51,7 @@ export async function postLocation(req, res) {
     console.log(location);
     res.send(location);
   } catch (e) {
+    console.log(e);
     return res.status(400).send(UNEXPECTED_ERROR);
   }
 }

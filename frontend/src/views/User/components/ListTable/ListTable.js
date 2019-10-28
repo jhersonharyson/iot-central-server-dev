@@ -81,8 +81,8 @@ export default class ListTable extends React.Component {
       let lookup = {};
 
       lookup['GENIN'] = 'JUNIOR';
-      lookup['CHUNIN'] = 'PLENO';
-      lookup['JOUNIN'] = 'SENIOR';
+      lookup['CHUNIN'] = 'SENIOR';
+      lookup['JOUNIN'] = 'MASTER';
 
       console.log(lookup);
       const columnsWithoutRepetion = this.state.table.columns.filter(

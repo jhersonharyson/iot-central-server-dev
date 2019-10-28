@@ -195,8 +195,12 @@ const SignIn = props => {
     auth.user = formState.values.email;
     auth.login(
       () => history.push('/dashboard'),
-      () => {
-        setSnackbar(true);
+      err => {
+        setSnackbar(
+          err == 401
+            ? 'E-mail e/ou senha incorretos'
+            : 'Erro ao tentar entrar no sitema.'
+        );
         setProgressbar(false);
       }
     );
@@ -298,7 +302,7 @@ const SignIn = props => {
         ContentProps={{
           'aria-describedby': 'message-id'
         }}
-        message={<span id="message-id">Erro ao entrar no sistema</span>}
+        message={<span id="message-id">{snackbar}</span>}
       />
     </div>
   );

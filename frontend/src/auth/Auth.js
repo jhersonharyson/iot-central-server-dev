@@ -62,8 +62,8 @@ class Auth {
       }
     } catch (e) {
       // eslint-disable-next-line no-console
-      console.log(e);
-      if (err) return err();
+      console.log(e.response && e.response.status);
+      if (err) return err(e.response && e.response.status);
     }
     if (err) return err();
   }

@@ -94,7 +94,8 @@ export async function signup(req, res) {
 
   const alreadyExists = await User.find({ email });
 
-  if (alreadyExists) return res.status(200).send(ACCOUNT_ALREADY_EXISTS);
+  if (alreadyExists.length)
+    return res.status(200).send({ error: "already exists" });
 
   try {
     const user = await new User({
