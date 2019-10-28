@@ -79,21 +79,24 @@ export default class ListTable extends React.Component {
     try {
       this.populate();
       Socket.on('postSensor', sensor => {
+        const { location_id } = this.props;
         let sensores = this.state.table.data;
 
-        sensores.pop();
-        sensores.unshift({
-          deviceName: sensor.name,
-          createAt: new Date(Date.parse(sensor.createAt)).toLocaleString('pt-BR'),
-          value: sensor.value
-        })
+        if (sensor.location === location_id) {
+          sensores.pop();
+          sensores.unshift({
+            deviceName: sensor.name,
+            createAt: new Date(Date.parse(sensor.createAt)).toLocaleString('pt-BR'),
+            value: sensor.value
+          })
 
-        this.setState({
-          table: {
-            ...this.state.table,
-            data: sensores
-          }
-        });
+          this.setState({
+            table: {
+              ...this.state.table,
+              data: sensores
+            }
+          });
+        }
       });
     } catch (e) {
       this.message = 'Erro ao tentar conectar com o servidor.';

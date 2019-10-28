@@ -97,6 +97,11 @@ export async function getOccupation(req, res) {
   res.send(locations);
 }
 
+export async function showLocation(req, res) {
+  const location = await Location.findById(req.params.id);
+  res.send({ location });
+}
+
 export async function updateOccupation(req, res) {
   try {
     const loc = await Location.findOneAndUpdate(

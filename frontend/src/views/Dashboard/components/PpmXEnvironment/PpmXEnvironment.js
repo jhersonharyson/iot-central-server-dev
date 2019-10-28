@@ -27,7 +27,7 @@ const PpmXEnvironment = props => {
   let graphRef = useRef(null);
 
   function handleClickBar(e) {
-    let { _id } = locations.find(item => item.name = e.name);
+    let { _id } = locations.find(item => item.name === e.name);
     if (_id) {
       props.history.push(`/dashboard/${_id}`);
     }
