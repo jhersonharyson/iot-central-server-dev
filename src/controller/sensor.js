@@ -38,6 +38,8 @@ export async function postSensor(req, res) {
             req.io.emit("postSensor", {
               value,
               createAt: sensor.createAt,
+              location,
+              position,
               name
             });
 

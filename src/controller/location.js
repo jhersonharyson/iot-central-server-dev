@@ -95,14 +95,14 @@ export async function updateLocation(req, res) {
 export async function getOccupation(req, res) {
   const locations = await Location.find(
     { status: { $eq: 1 } },
-    "_id name value occupation"
+    "_id name value"
   );
-  res.send(locations);
+  return res.send(locations);
 }
 
 export async function showLocation(req, res) {
   const location = await Location.findById(req.params.id);
-  res.send({ location });
+  return res.send({ location });
 }
 
 export async function updateOccupation(req, res) {
@@ -119,9 +119,9 @@ export async function updateOccupation(req, res) {
     const { _id, name, occupation } = loc;
 
     req.io.emit("updateLocation", { _id, name, occupation, value });
-    res.send({ _id, name, occupation, value });
+    return res.send({ _id, name, occupation, value });
   } catch (err) {
-    res.send({ error: err.message });
+    return res.send({ error: err.message });
     console.log(err);
   }
 }
@@ -140,7 +140,7 @@ export async function deleteLocation(req, res) {
   );
 
   req.io.emit("deleteLocation", location);
-  res.send({ status: "deletado", location: location });
+  return res.send({ status: "deletado", location: location });
 }
 
 export async function detailDevice(req, res) {
