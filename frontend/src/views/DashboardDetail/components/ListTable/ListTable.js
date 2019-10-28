@@ -82,7 +82,7 @@ export default class ListTable extends React.Component {
         const { location_id } = this.props;
         let sensores = this.state.table.data;
 
-        if (sensor.location === location_id) {
+        if (sensor.location == location_id) {
           sensores.pop();
           sensores.unshift({
             deviceName: sensor.name,
@@ -150,8 +150,7 @@ export default class ListTable extends React.Component {
             <div
               onClick={() => {
                 this.setState({ isLoading: true });
-                this.componentWillMount();
-                setTimeout(() => this.setState({ isLoading: false }), 2500);
+                this.populate();
               }}
               style={{
                 display: 'flex',
