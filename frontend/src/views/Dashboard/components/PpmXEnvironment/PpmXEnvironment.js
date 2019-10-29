@@ -71,7 +71,13 @@ const PpmXEnvironment = props => {
           location => location._id === locationForUpdate._id
         );
 
-        newLocations.splice(locationIndex, 1, locationForUpdate);
+        if (locationIndex > -1) {
+          newLocations[locationIndex].max = locationForUpdate.max;
+          newLocations[locationIndex].avg = locationForUpdate.avg;
+        }
+        else {
+          newLocations.push(locationForUpdate);
+        }
 
         locations = newLocations;
         if (graphRef) {
