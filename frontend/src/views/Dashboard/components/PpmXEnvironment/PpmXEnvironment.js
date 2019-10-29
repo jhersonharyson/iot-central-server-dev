@@ -41,19 +41,23 @@ const PpmXEnvironment = props => {
       });
 
       locations = response.data;
+      locations.sort(function (a, b) {
+        return a.name.localeCompare(b.name);
+      });
+
       if (graphRef) {
         graphRef
           .getEchartsInstance()
           .setOption({
             xAxis: {
-              data: response.data.map(item => item.name)
+              data: locations.map(item => item.name)
             },
             series: [
               {
-                data: response.data.map(item => item.avg)
+                data: locations.map(item => item.avg)
               },
               {
-                data: response.data.map(item => item.max)
+                data: locations.map(item => item.max)
               }
             ]
           }, false);
@@ -67,7 +71,7 @@ const PpmXEnvironment = props => {
     Socket.on('redrawLocationGraphic', locationsForUpdate => {
       locationsForUpdate.map(locationForUpdate => {
         let newLocations = locations;
-        let locationIndex = newLocations.find(
+        let locationIndex = newLocations.findIndex(
           location => location._id === locationForUpdate._id
         );
 
@@ -80,19 +84,23 @@ const PpmXEnvironment = props => {
         }
 
         locations = newLocations;
+        locations.sort(function (a, b) {
+          return a.name.localeCompare(b.name);
+        });
+
         if (graphRef) {
           graphRef
             .getEchartsInstance()
             .setOption({
               xAxis: {
-                data: newLocations.map(item => item.name)
+                data: locations.map(item => item.name)
               },
               series: [
                 {
-                  data: newLocations.map(item => item.avg)
+                  data: locations.map(item => item.avg)
                 },
                 {
-                  data: newLocations.map(item => item.max)
+                  data: locations.map(item => item.max)
                 }
               ]
             }, false);
