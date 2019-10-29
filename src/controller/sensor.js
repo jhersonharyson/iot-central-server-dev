@@ -96,7 +96,7 @@ export async function postSensor(req, res) {
             return {
               _id: location._id,
               name: location.name,
-              max: avg - max,
+              max: max - avg,
               avg
             };
           });
