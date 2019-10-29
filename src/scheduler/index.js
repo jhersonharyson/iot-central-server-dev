@@ -1,7 +1,7 @@
-const path = require('path');
-const { readdirSync } = require('fs');
+import path from 'path';
+import { readdirSync } from 'fs';
 
-module.exports = (app) => {
+export default function (app) {
 	 readdirSync(path.join(__dirname))
 		.filter( fileName => (fileName !== 'index.js'))
 		.forEach(fileName => {
