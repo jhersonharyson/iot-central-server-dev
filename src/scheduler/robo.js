@@ -1,4 +1,3 @@
-const schedule = require('node-schedule');
 const {jwtBuilder} = require('../security/jwtBuilder');
 const axios = require('axios');
 
