@@ -95,8 +95,9 @@ export async function updateLocation(req, res) {
 export async function getOccupation(req, res) {
   const locations = await Location.find(
     { status: { $eq: 1 } },
-    "_id name value"
+    "_id name value occupation"
   );
+
   return res.send(locations);
 }
 
