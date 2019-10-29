@@ -30,6 +30,8 @@ export async function postDevice(req, res) {
   if (!position || position == {})
     return res.status(400).send(POSITION_ISINVALID);
 
+console.log(req.body);
+
   try {
     const device = await new Device({
       mac,
@@ -120,14 +122,13 @@ export async function updateDevice(req, res, next) {
     name,
     description,
     location,
-    position: { x, y }
+    position
   } = req.body;
 
   if (!name || name == "" || name.length < 3 || name.length > 80)
     return res.status(400).send(NAMED_ISINVALID);
   if (!(await Location.findById(location)))
     return res.status(400).send(LOCATION_ISINVALID);
-  if ((x && !y) || (!x && y)) return res.status(400).send(POSITION_ISINVALID);
 
   const device = await Device.findOneAndUpdate(
     { mac: req.params.mac },
@@ -144,8 +145,8 @@ export async function updateDevice(req, res, next) {
     device.description = description;
   }
 
-  if (x > -1 && y > -1) {
-    device.position = { x, y };
+  if (position && position.x > -1 && position.y > -1) {
+    device.position = { x: position.x, y: position.y };
   }
   if (location) {
     //before
@@ -204,6 +205,7 @@ export async function test(req, res, next) {
       await Location.deleteMany({});
     }
   }
+  res.send({status: "ok", msg: r + " foi excluido."})
 }
 
 export async function getAllDevices(req, res) {
