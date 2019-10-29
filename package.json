@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start-": "npm run build && node ./build/bin/index.js",
+    "start": "npm run build && node ./build/bin/index.js",
     "build": "npm run build-server",
     "clean": "rm -rf build && mkdir build && rm -rf tmp && mkdir tmp && cd tmp && rm -rf uploads && mkdir uploads && cd..",
     "build-server": "babel ./src -d ./build -s",
@@ -13,7 +13,7 @@
     "debbug": "npm run clean && node --inspect-brk ./src/bin",
     "dev": "npm run clean && nodemon ./src/bin/index.js",
     "run": "nodemon --exec babel-node ./src/bin/index.js",
-    "start": "nodemon --exec babel-node ./src/bin/index.js",
+    "start-": "nodemon --exec babel-node ./src/bin/index.js",
     "start-build": "npm run clean && node ./build/bin/index.js",
     "start-test": "mocha",
     "back-start": "npm run run",
