@@ -49,6 +49,8 @@ export async function postLocation(req, res) {
       img_url
     });
     console.log(location);
+
+    req.io.emit("postLocation", location);
     res.send(location);
   } catch (e) {
     console.log(e);

@@ -65,9 +65,11 @@ const PpmXEnvironment = props => {
     }
 
     getLocation();
-  }, []);
 
-  useEffect(() => {
+    Socket.on('updateLocation', () => getLocation());
+    Socket.on('deleteLocation', () => getLocation());
+    Socket.on('updateDevice', () => getLocation());
+    Socket.on('deleteDevice', () => getLocation());
     Socket.on('redrawLocationGraphic', locationsForUpdate => {
       locationsForUpdate.map(locationForUpdate => {
         let newLocations = locations;
@@ -106,9 +108,13 @@ const PpmXEnvironment = props => {
             }, false);
         }
       });
-    }, []);
+    });
 
     return () => {
+      Socket.removeListener('updateDevice');
+      Socket.removeListener('deleteDevice');
+      Socket.removeListener('updateLocation');
+      Socket.removeListener('deleteLocation');
       Socket.removeListener('redrawLocationGraphic');
     };
   }, []);
