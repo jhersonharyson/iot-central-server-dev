@@ -59,9 +59,13 @@ const TotalUsers = props => {
 
       const response = await axios.get('dashboard/devices', { headers });
       setCounters(
-        response
-          .data
-          .reduce((counters, status) => ({ ...counters, [status._id]: status.count }), {})
+        response.data.reduce(
+          (counters, status) => ({
+            ...counters,
+            [status._id]: parseInt(status.count)
+          }),
+          {}
+        )
       );
     }
 
@@ -83,7 +87,7 @@ const TotalUsers = props => {
               DISPOSITIVOS
             </Typography>
             <Typography variant="h3">
-              {counters[1]} {counters[1] > 1 ? 'Onlines' : 'Online'}
+              {counters[1] || 0} {counters[1] || 0 > 1 ? 'Onlines' : 'Online'}
             </Typography>
           </Grid>
           <Grid item>
@@ -94,15 +98,13 @@ const TotalUsers = props => {
         </Grid>
         <div className={classes.difference}>
           <Typography className={classes.differenceValue} variant="body2">
-            {counters[0]} {counters[0] > 1 ? 'Inativos' : 'Inativo'}
+            {counters[0] || 0} {counters[0] || 0 > 1 ? 'Inativos' : 'Inativo'}
           </Typography>
 
           <Typography className={classes.caption} variant="body2">
-            {counters[0] + counters[1]}{' '}
-            {counters[0] + counters[1] > 1
-              ? 'dispositivos'
-              : 'dispositivo'}{' '}
-            no total
+            {counters[0] || 0 + counters[1] || 0}{' '}
+            {counters[0] || 0 + counters[1] || 0 > 1 ? 'dispositivos' : 'dispositivo'} no
+            total
           </Typography>
         </div>
       </CardContent>
