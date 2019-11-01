@@ -12,14 +12,15 @@ import socket from "./middleware/socket";
 //import cors from "./middleware/cors";
 
 import constants from "./../config/constants";
+import scheduler from "../scheduler";
 
 global.constants = constants;
 const { mongoDB: mongoUrlConnection } = constants;
 
 const app = express();
-const http = require('http').Server(app);
+const http = require("http").Server(app);
 const port = process.env.PORT || 3001;
-const io = require('socket.io')(http);
+const io = require("socket.io")(http);
 
 // mongoDB connection
 connect(
@@ -46,6 +47,7 @@ app.use(auth);
 
 // apply routes
 require("../routes").default(app);
-//require('../scheduler')();
+scheduler();
+
 // server
 http.listen(port, () => console.log(`Server listening on port ${port}`));
