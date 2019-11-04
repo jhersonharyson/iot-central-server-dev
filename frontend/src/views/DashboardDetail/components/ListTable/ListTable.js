@@ -79,7 +79,7 @@ export default class ListTable extends React.Component {
     try {
       this.populate();
       Socket.on('postSensor', sensor => {
-        if (this.state.table.data) {
+        if (this.state.table.data.length) {
           const { location_id } = this.props;
           let sensores = this.state.table.data;
 
@@ -167,15 +167,15 @@ export default class ListTable extends React.Component {
               {this.state.isLoading ? (
                 <CircularProgress color="secondary" size="small" />
               ) : (
-                <Fab
-                  color="secondary"
-                  aria-label="atualizar"
-                  size="small"
-                  variant="extended">
-                  <RefreshIcon />
-                  <span style={{ marginRight: '5px' }}>ATUALIZAR</span>
-                </Fab>
-              )}
+                  <Fab
+                    color="secondary"
+                    aria-label="atualizar"
+                    size="small"
+                    variant="extended">
+                    <RefreshIcon />
+                    <span style={{ marginRight: '5px' }}>ATUALIZAR</span>
+                  </Fab>
+                )}
             </div>
           }
           options={{

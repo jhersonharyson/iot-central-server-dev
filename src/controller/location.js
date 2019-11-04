@@ -149,8 +149,6 @@ export async function deleteLocation(req, res) {
 export async function detailDevice(req, res) {
   const { id: location_id } = req.params;
 
-  var d = new Date();
-  d.setDate(d.getDate() - 2);
 
   const devices = await Device.find(
     {
@@ -163,12 +161,12 @@ export async function detailDevice(req, res) {
     .populate({
       path: "sensorData",
       match: {
-        location: { $eq: location_id },
-        createAt: { $gte: d }
+        location: { $eq: location_id }
       },
       select: "-_id value createAt",
       options: {
         sort: { createAt: -1 },
+        limit: 50
       }
     })
     .sort([["name", "-1"]])

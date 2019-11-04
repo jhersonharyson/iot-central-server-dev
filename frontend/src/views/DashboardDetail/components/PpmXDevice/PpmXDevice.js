@@ -3,7 +3,7 @@ import { makeStyles } from '@material-ui/styles';
 import clsx from 'clsx';
 import ReactEcharts from 'echarts-for-react';
 import PropTypes from 'prop-types';
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import Socket from '../../../../socket';
 import axios from '../../../../http';
 import data from './data.json';
@@ -22,134 +22,167 @@ const PpmXDevice = props => {
   //Style const
   const { className, location_id, ...rest } = props;
   const classes = useStyles();
+  const markLine = {
+    silent: true,
+    data: [
+      {
+        yAxis: 400,
+        lineStyle: {
+          color: '#61f205'
+        }
+      },
+      {
+        yAxis: 1000,
+        lineStyle: {
+          color: '#f4ea07'
+        }
+      },
+      {
+        yAxis: 2000,
+        lineStyle: {
+          color: '#fb7607'
+        }
+      },
+      {
+        yAxis: 5000,
+        lineStyle: {
+          color: '#fb0505'
+        }
+      }
+    ]
+  };
 
-  const [xAxisData, setXAxisData] = useState([]);
+  const markArea = {
+    itemStyle: {
+      opacity: 0.1
+    },
+    data: []
+  };
 
-  // const yAxisData = useMemo(() => , [xAxisData]);
+  let xAxisData = [];
+  let yAxisData = [];
+  let graphRef = null;
 
   useEffect(() => {
-    async function getDevices() {
-      let authentication = localStorage.getItem('authentication');
-      let { data } = await axios.get(`location/${location_id}/devices`, {
-        headers: { authentication }
-      });
+    async function getData() {
+      try {
+        let authentication = localStorage.getItem('authentication');
+        let { data } = await axios.get(`location/${location_id}/devices`, {
+          headers: { authentication }
+        });
 
-      setXAxisData(
-        data.devices.reduce(
+        xAxisData = data.devices.reduce(
           (all, device) => [
             ...all,
             ...device.sensorData.map(sensor => ({
               ...sensor,
-              device,
+              device: {
+                _id: device._id,
+                name: device.name
+              },
               createAt: new Date(Date.parse(sensor.createAt)).toLocaleString(
                 'pt-BR'
               )
             }))
           ],
           []
-        )
-      );
-    }
+        );
 
-    getDevices();
-
-    Socket.on('postSensor', sensor => {
-      if (xAxisData && sensor.location == location_id) {
-        let newDevices = xAxisData;
-        debugger;
-        newDevices.pop();
-        newDevices.unshift({
-          ...sensor,
-          createAt: new Date(Date.parse(sensor.createAt)).toLocaleString(
-            'pt-BR'
-          )
+        xAxisData.sort(function (a, b) {
+          return a.createAt.localeCompare(b.createAt);
         });
 
-        setXAxisData(newDevices);
+        data.devices.forEach(device => {
+          let last = 0;
+          yAxisData.push({
+            _id: device._id,
+            name: device.name,
+            data: xAxisData.map(sensor => {
+              if (sensor.device._id === device._id) {
+                last = sensor.value;
+                return sensor;
+              }
+
+              return {
+                ...sensor,
+                value: last
+              };
+            })
+          });
+        });
+
+        if (graphRef !== null) {
+          graphRef
+            .getEchartsInstance()
+            .setOption({
+              legend: {
+                data: yAxisData.map(item => item.name)
+              },
+              xAxis: {
+                data: xAxisData.map(item => item.createAt)
+              },
+              series: yAxisData.map(item => ({
+                name: item.name,
+                type: 'line',
+                smooth: true,
+                data: item.data.map(_ => _.value),
+                markLine,
+                markArea
+              }))
+            }, false);
+        }
+      } catch (err) {
+        console.log("err getData(): ", err);
+      }
+    }
+    getData();
+
+    Socket.on('postSensor', sensor => {
+      try {
+        if (xAxisData && sensor.location == location_id) {
+          let _xAxisData = xAxisData;
+
+          _xAxisData.pop();
+          _xAxisData.unshift({
+            deviceName: sensor.device.name,
+            createAt: new Date(Date.parse(sensor.createAt)).toLocaleString(
+              'pt-BR'
+            ),
+            value: sensor.value
+          });
+          xAxisData = _xAxisData;
+
+          let _yAxisData = yAxisData.map(de => ({
+            ...de,
+            data: [...de.data.slice(1), de._id === sensor.device._id ? sensor.value : de.data.pop().value]
+          }));
+          yAxisData = _yAxisData;
+
+          if (graphRef !== null) {
+            graphRef
+              .getEchartsInstance()
+              .setOption({
+                legend: {
+                  data: _yAxisData.map(item => item.name)
+                },
+                xAxis: {
+                  data: _xAxisData.map(item => item.createAt)
+                },
+                series: _yAxisData.map(item => ({
+                  data: item.data.map(_ => _.value)
+                }))
+              }, false);
+          }
+        }
+      } catch (err) {
+        console.log("err Socket:postEvent(): ", err);
       }
     });
 
     return () => {
       Socket.removeListener('postSensor');
-    };
+    }
   }, []);
-
-  const getOption = () => {
-    let markLine = {
-      silent: true,
-      data: [
-        {
-          yAxis: 400,
-          lineStyle: {
-            color: '#61f205'
-          }
-        },
-        {
-          yAxis: 1000,
-          lineStyle: {
-            color: '#f4ea07'
-          }
-        },
-        {
-          yAxis: 2000,
-          lineStyle: {
-            color: '#fb7607'
-          }
-        },
-        {
-          yAxis: 5000,
-          lineStyle: {
-            color: '#fb0505'
-          }
-        }
-      ]
-    };
-
-    let markArea = {
-      itemStyle: {
-        opacity: 0.1
-      },
-      data: []
-    };
-
-    return {
-      tooltip: {
-        trigger: 'axis'
-      },
-      xAxis: {
-        type: 'category',
-        boundaryGap: false,
-        data: xAxisData.map(item => item.createAt)
-      },
-      yAxis: {
-        type: 'value',
-        splitLine: {
-          show: false
-        }
-      },
-      toolbox: {
-        left: 'center'
-      },
-      dataZoom: [
-        {
-          type: 'inside'
-        }
-      ],
-      legend: {
-        data: []
-      },
-      series: [
-        {
-          name: 'abc',
-          type: 'line',
-          smooth: true,
-          data: [],
-          markLine,
-          markArea
-        }
-      ]
-    };
-  };
 
   return (
     <Card {...rest} className={clsx(classes.root, className)}>
@@ -157,7 +190,41 @@ const PpmXDevice = props => {
       <Divider />
       <CardContent>
         <div className={classes.chartContainer}>
-          <ReactEcharts option={getOption()} />
+          <ReactEcharts
+            ref={ref => ref !== null ? graphRef = ref : null}
+            lazyUpdate={true}
+            option={{
+              tooltip: {
+                trigger: 'axis'
+              },
+              xAxis: {
+                type: 'category',
+                boundaryGap: false,
+                data: []
+              },
+              yAxis: {
+                type: 'value',
+                splitLine: {
+                  show: false
+                }
+              },
+              toolbox: {
+                left: 'center'
+              },
+              dataZoom: [
+                {
+                  type: 'slider',
+                  orient: 'horizontal'
+                },
+                {
+                  type: 'inside',
+                  orient: 'horizontal'
+                }],
+              legend: {
+                data: []
+              },
+              series: []
+            }} />
         </div>
       </CardContent>
     </Card>
