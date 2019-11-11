@@ -62,6 +62,7 @@ const PpmXDevice = props => {
   let xAxisData = [];
   let yAxisData = [];
   let graphRef = null;
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function getData() {
@@ -112,6 +113,7 @@ const PpmXDevice = props => {
         });
 
         if (graphRef !== null) {
+          setLoading(false);
           graphRef
             .getEchartsInstance()
             .setOption({
@@ -193,6 +195,7 @@ const PpmXDevice = props => {
           <ReactEcharts
             ref={ref => ref !== null ? graphRef = ref : null}
             lazyUpdate={true}
+            showLoading={loading}
             option={{
               tooltip: {
                 trigger: 'axis'

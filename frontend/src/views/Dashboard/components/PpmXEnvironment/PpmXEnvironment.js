@@ -24,11 +24,12 @@ const PpmXEnvironment = props => {
   const classes = useStyles();
 
   const [loading, setLoading] = useState(true);
-  const [locations, setLocations] = useState([]);
+  let locations = [];
   let graphRef = useRef(null);
 
-  function handleClickBar(e) {
-    let { _id } = locations.find(item => item.name === e.name);
+  async function handleClickBar(e) {
+    let all = await JSON.parse(sessionStorage.getItem('bar_dashboard_graphic'));
+    let { _id } = all.find(item => item.name === e.name);
     if (_id) {
       props.history.push(`/dashboard/${_id}`);
     }
@@ -37,7 +38,7 @@ const PpmXEnvironment = props => {
   useEffect(() => {
     async function getLocation() {
       if (sessionStorage.getItem('bar_dashboard_graphic')) {
-        setLocations(await JSON.parse(sessionStorage.getItem('bar_dashboard_graphic')));
+        locations = await JSON.parse(sessionStorage.getItem('bar_dashboard_graphic'));
       }
 
       let authentication = localStorage.getItem('authentication');
@@ -49,8 +50,9 @@ const PpmXEnvironment = props => {
       _location.sort(function (a, b) {
         return a.name.localeCompare(b.name);
       });
-      setLocations(_location);
-      setLoading(false);
+
+      locations = _location;
+      updateGraphic();
     }
 
     getLocation();
@@ -78,7 +80,8 @@ const PpmXEnvironment = props => {
           return a.name.localeCompare(b.name);
         });
 
-        setLocations(newLocations);
+        locations = newLocations;
+        updateGraphic();
       });
     });
 
@@ -91,9 +94,13 @@ const PpmXEnvironment = props => {
     };
   }, []);
 
-  useEffect(() => {
+  function updateGraphic() {
     async function saveData() {
       sessionStorage.setItem('bar_dashboard_graphic', JSON.stringify(locations));
+
+      if (loading && locations.length) {
+        setLoading(false);
+      }
     }
     saveData();
 
@@ -114,7 +121,7 @@ const PpmXEnvironment = props => {
           ]
         }, false);
     }
-  }, [locations]);
+  }
 
   return (
     <>
