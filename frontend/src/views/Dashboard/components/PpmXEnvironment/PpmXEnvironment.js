@@ -23,7 +23,8 @@ const PpmXEnvironment = props => {
   const { className, ...rest } = props;
   const classes = useStyles();
 
-  let locations = [];
+  const [loading, setLoading] = useState(true);
+  const [locations, setLocations] = useState([]);
   let graphRef = useRef(null);
 
   function handleClickBar(e) {
@@ -35,33 +36,21 @@ const PpmXEnvironment = props => {
 
   useEffect(() => {
     async function getLocation() {
+      if (sessionStorage.getItem('bar_dashboard_graphic')) {
+        setLocations(await JSON.parse(sessionStorage.getItem('bar_dashboard_graphic')));
+      }
+
       let authentication = localStorage.getItem('authentication');
-      let response = await axios.get('dashboard/location', {
+      let { data } = await axios.get('dashboard/location', {
         headers: { authentication }
       });
 
-      locations = response.data;
-      locations.sort(function (a, b) {
+      let _location = data;
+      _location.sort(function (a, b) {
         return a.name.localeCompare(b.name);
       });
-
-      if (graphRef) {
-        graphRef
-          .getEchartsInstance()
-          .setOption({
-            xAxis: {
-              data: locations.map(item => item.name)
-            },
-            series: [
-              {
-                data: locations.map(item => item.avg)
-              },
-              {
-                data: locations.map(item => item.max)
-              }
-            ]
-          }, false);
-      }
+      setLocations(_location);
+      setLoading(false);
     }
 
     getLocation();
@@ -85,28 +74,11 @@ const PpmXEnvironment = props => {
           newLocations.push(locationForUpdate);
         }
 
-        locations = newLocations;
-        locations.sort(function (a, b) {
+        newLocations.sort(function (a, b) {
           return a.name.localeCompare(b.name);
         });
 
-        if (graphRef) {
-          graphRef
-            .getEchartsInstance()
-            .setOption({
-              xAxis: {
-                data: locations.map(item => item.name)
-              },
-              series: [
-                {
-                  data: locations.map(item => item.avg)
-                },
-                {
-                  data: locations.map(item => item.max)
-                }
-              ]
-            }, false);
-        }
+        setLocations(newLocations);
       });
     });
 
@@ -119,6 +91,31 @@ const PpmXEnvironment = props => {
     };
   }, []);
 
+  useEffect(() => {
+    async function saveData() {
+      sessionStorage.setItem('bar_dashboard_graphic', JSON.stringify(locations));
+    }
+    saveData();
+
+    if (graphRef) {
+      graphRef
+        .getEchartsInstance()
+        .setOption({
+          xAxis: {
+            data: locations.map(item => item.name)
+          },
+          series: [
+            {
+              data: locations.map(item => item.avg)
+            },
+            {
+              data: locations.map(item => item.max)
+            }
+          ]
+        }, false);
+    }
+  }, [locations]);
+
   return (
     <>
       <Card {...rest} className={clsx(classes.root, className)}>
@@ -127,8 +124,13 @@ const PpmXEnvironment = props => {
         <CardContent>
           <div className={classes.chartContainer}>
             <ReactEcharts
-              ref={ref => graphRef = ref}
+              ref={ref => {
+                if (ref !== null) {
+                  graphRef = ref
+                }
+              }}
               lazyUpdate={true}
+              showLoading={loading}
               option={{
                 tooltip: {
                   trigger: 'axis',
