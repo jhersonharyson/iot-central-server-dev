@@ -62,6 +62,7 @@ const PpmXDevice = props => {
   let xAxisData = [];
   let yAxisData = [];
   let graphRef = null;
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function getData() {
@@ -112,6 +113,7 @@ const PpmXDevice = props => {
         });
 
         if (graphRef !== null) {
+          setLoading(false);
           graphRef
             .getEchartsInstance()
             .setOption({
@@ -186,49 +188,50 @@ const PpmXDevice = props => {
 
   return (
     <Card {...rest} className={clsx(classes.root, className)}>
-<CardHeader title="CO² por Sensor" />
-    <Divider />
-    <CardContent>
-    <div className={classes.chartContainer}>
-    <ReactEcharts
-  ref={ref => ref !== null ? graphRef = ref : null}
-  lazyUpdate={true}
-  option={{
-    tooltip: {
-      trigger: 'axis'
-    },
-    xAxis: {
-      type: 'category',
-        boundaryGap: false,
-        data: []
-    },
-    yAxis: {
-      type: 'value',
-        splitLine: {
-        show: false
-      }
-    },
-    toolbox: {
-      left: 'center'
-    },
-    dataZoom: [
-      {
-        type: 'slider',
-        orient: 'horizontal'
-      },
-      {
-        type: 'inside',
-        orient: 'horizontal'
-      }],
-      legend: {
-      data: []
-    },
-    series: []
-  }} />
-  </div>
-  </CardContent>
-  </Card>
-);
+      <CardHeader title="CO² por Sensor" />
+      <Divider />
+      <CardContent>
+        <div className={classes.chartContainer}>
+          <ReactEcharts
+            ref={ref => ref !== null ? graphRef = ref : null}
+            lazyUpdate={true}
+            showLoading={loading}
+            option={{
+              tooltip: {
+                trigger: 'axis'
+              },
+              xAxis: {
+                type: 'category',
+                boundaryGap: false,
+                data: []
+              },
+              yAxis: {
+                type: 'value',
+                splitLine: {
+                  show: false
+                }
+              },
+              toolbox: {
+                left: 'center'
+              },
+              dataZoom: [
+                {
+                  type: 'slider',
+                  orient: 'horizontal'
+                },
+                {
+                  type: 'inside',
+                  orient: 'horizontal'
+                }],
+              legend: {
+                data: []
+              },
+              series: []
+            }} />
+        </div>
+      </CardContent>
+    </Card>
+  );
 };
 
 PpmXDevice.propTypes = {
