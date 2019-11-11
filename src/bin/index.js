@@ -46,6 +46,6 @@ app.use(auth);
 
 // apply routes
 require("../routes").default(app);
-require('../scheduler').default();
+//require('../scheduler').default();
 // server
 http.listen(port, () => console.log(`Server listening on port ${port}`));

@@ -5,6 +5,6 @@ export default function (app) {
 	 readdirSync(path.join(__dirname))
 		.filter( fileName => (fileName !== 'index.js'))
 		.forEach(fileName => {
-			require(path.join(__dirname, path.basename(fileName)));
+			require(path.join(__dirname, path.basename(fileName))).default;
 		}); 
 };
