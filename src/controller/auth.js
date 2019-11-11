@@ -12,6 +12,7 @@ import { MAC_ISINVALID, MAC_ISNOTFOUND } from "../exceptions/deviceException";
 
 import User from "../models/user";
 import Device from "../models/device";
+import sendRespDevice from "./sendRespDevice";
 
 import { jwtBuilder, jwtVerify } from "../security/jwtBuilder";
 
@@ -134,12 +135,8 @@ export async function loginDevice(req, res) {
           $set: { status: 1 }
         }
       );
-      const token = jwtBuilder({ id: req.params.mac });
-      const resp = {
-        token,
-        status: "ok"
-      };
-      return res.status(200).send(resp);
+
+     return res.send(await sendRespDevice(mac));
     }
     return res.status(301).send(MAC_ISINVALID);
   } catch (e) {
