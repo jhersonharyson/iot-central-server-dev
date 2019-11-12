@@ -62,8 +62,8 @@ export async function updateLocation(req, res) {
   const { name, description, img_url, _id } = req.body;
 
   const location = await Location.findOneAndUpdate(
-    { _id: _id },
-    { useFindAndModify: true }
+      { _id: _id },
+      { useFindAndModify: true }
   );
 
   if (!location) {
@@ -96,8 +96,8 @@ export async function updateLocation(req, res) {
 
 export async function getOccupation(req, res) {
   const locations = await Location.find(
-    { status: { $eq: 1 } },
-    "_id name value occupation"
+      { status: { $eq: 1 } },
+      "_id name value occupation"
   );
 
   return res.send(locations);
@@ -111,8 +111,8 @@ export async function showLocation(req, res) {
 export async function updateOccupation(req, res) {
   try {
     const loc = await Location.findOneAndUpdate(
-      { _id: req.params.id },
-      { useAndModify: true }
+        { _id: req.params.id },
+        { useAndModify: true }
     );
     const { value } = req.body;
     loc.value = value;
@@ -136,10 +136,10 @@ export async function deleteLocation(req, res) {
   }
 
   await Location.updateOne(
-    { _id: location },
-    {
-      $set: { status: -1 }
-    }
+      { _id: location },
+      {
+        $set: { status: -1 }
+      }
   );
 
   req.io.emit("deleteLocation", location);
@@ -149,39 +149,37 @@ export async function deleteLocation(req, res) {
 export async function detailDevice(req, res) {
   const { id: location_id } = req.params;
 
-  var d = new Date();
-  d.setDate(d.getDate() - 2);
 
   const devices = await Device.find(
-    {
-      location: { $eq: location_id },
-      status: { $eq: 1 },
-      position: { $ne: null }
-    },
-    "_id name sensorData"
-  )
-    .populate({
-      path: "sensorData",
-      match: {
+      {
         location: { $eq: location_id },
-        createAt: { $gte: d }
+        status: { $eq: 1 },
+        position: { $ne: null }
       },
-      select: "-_id value createAt",
-      options: {
-        sort: { createAt: -1 },
-      }
-    })
-    .sort([["name", "-1"]])
-    .exec();
+      "_id name sensorData"
+  )
+      .populate({
+        path: "sensorData",
+        match: {
+          location: { $eq: location_id }
+        },
+        select: "-_id value createAt",
+        options: {
+          sort: { createAt: -1 },
+          limit: 50
+        }
+      })
+      .sort([["name", "-1"]])
+      .exec();
   return res.json({ devices });
 }
 
 export async function dashboardLocation(req, res) {
   let locations = (await Location.find(
-    {
-      status: { $eq: 1 }
-    },
-    "_id name"
+      {
+        status: { $eq: 1 }
+      },
+      "_id name"
   ).populate({
     path: "device",
     match: {
@@ -197,32 +195,32 @@ export async function dashboardLocation(req, res) {
       }
     }
   }))
-    .filter(
-      location =>
-        location.device.length &&
-        location.device.some(device => device.sensorData.length)
-    )
-    .map(location => {
-      let avg = location.device.reduce((avg, device, deviceIndex, devices) => {
-        if (devices.length === deviceIndex + 1) {
-          return (avg + device.sensorData[0].value) / devices.length;
-        }
+      .filter(
+          location =>
+              location.device.length &&
+              location.device.some(device => device.sensorData.length)
+      )
+      .map(location => {
+        let avg = location.device.reduce((avg, device, deviceIndex, devices) => {
+          if (devices.length === deviceIndex + 1) {
+            return (avg + device.sensorData[0].value) / devices.length;
+          }
 
-        return avg + device.sensorData[0].value;
-      }, 0);
+          return avg + device.sensorData[0].value;
+        }, 0);
 
-      let max = location.device.reduce(
-        (max, device) => device.sensorData[0].value > max ? device.sensorData[0].value : max,
-        0
-      );
+        let max = location.device.reduce(
+            (max, device) => device.sensorData[0].value > max ? device.sensorData[0].value : max,
+            0
+        );
 
-      return {
-        _id: location._id,
-        name: location.name,
-        max: max - avg,
-        avg
-      };
-    });
+        return {
+          _id: location._id,
+          name: location.name,
+          max: max - avg,
+          avg
+        };
+      });
 
   return res.json(locations);
 }

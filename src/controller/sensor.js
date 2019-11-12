@@ -3,7 +3,7 @@ import Device from "../models/device";
 import Location from "../models/location";
 import Sensor from "../models/sensor";
 import Event from "../models/event";
-import { jwtBuilder } from "../security/jwtBuilder";
+import sendRespDevice from "./sendRespDevice";
 import moment from "moment";
 const constants = global.constants;
 
@@ -112,15 +112,13 @@ export async function postSensor(req, res) {
       } catch (e) {
         return res.status(400).send({ error: e });
       }
+      return res.send( await sendRespDevice(mac));
 
-      res.send({
-        status: "ok",
-        token: jwtBuilder({ id: mac })
-      });
     } else {
       return res.status(401).send(MAC_ISINVALID);
     }
   } catch (e) {
+    console.log(e);
     res.status(500).send({ error: e });
   }
 }

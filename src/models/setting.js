@@ -2,7 +2,7 @@ import { Schema as _Schema, model } from "mongoose";
 const Schema = _Schema;
 
 const settings = new Schema({
-  variable: String,
+  name: String,
   value: String,
   description: String
 });

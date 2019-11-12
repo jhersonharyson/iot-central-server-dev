@@ -23,10 +23,7 @@ const port = process.env.PORT || 3001;
 const io = require("socket.io")(http);
 
 // mongoDB connection
-connect(
-  mongoUrlConnection,
-  { useNewUrlParser: true, useCreateIndex: true }
-);
+connect(mongoUrlConnection, { useNewUrlParser: true, useCreateIndex: true });
 
 //socket.io
 app.use(socket(io));
@@ -47,7 +44,7 @@ app.use(auth);
 
 // apply routes
 require("../routes").default(app);
-scheduler();
+//scheduler();
 
 // server
 http.listen(port, () => console.log(`Server listening on port ${port}`));
