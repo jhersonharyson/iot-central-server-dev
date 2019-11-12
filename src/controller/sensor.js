@@ -50,31 +50,40 @@ export async function postSensor(req, res) {
             }
 
             device.sensorData.push(sensor._id);
+
+            let prevDeviceStatus = device.status;
+            if (device.status !== 1) device.status = 1;
+
             await device.save();
+
+            if (prevDeviceStatus !== device.status)
+              req.io.emit("updateDevice", device);
           })
         );
 
-        let locationsForUpdate = (await Location.find(
-          {
-            status: { $eq: 1 },
-            _id: location
-          },
-          "_id name"
-        ).populate({
-          path: "device",
-          match: {
-            status: { $eq: 1 }
-          },
-          select: "_id",
-          populate: {
-            path: "sensorData",
-            select: "value",
-            options: {
-              sort: { createAt: -1 },
-              limit: 1
+        let locationsForUpdate = (
+          await Location.find(
+            {
+              status: { $eq: 1 },
+              _id: location
+            },
+            "_id name"
+          ).populate({
+            path: "device",
+            match: {
+              status: { $eq: 1 }
+            },
+            select: "_id",
+            populate: {
+              path: "sensorData",
+              select: "value",
+              options: {
+                sort: { createAt: -1 },
+                limit: 1
+              }
             }
-          }
-        }))
+          })
+        )
           .filter(
             location =>
               location.device.length &&
@@ -112,8 +121,7 @@ export async function postSensor(req, res) {
       } catch (e) {
         return res.status(400).send({ error: e });
       }
-      return res.send( await sendRespDevice(mac));
-
+      return res.send(await sendRespDevice(mac));
     } else {
       return res.status(401).send(MAC_ISINVALID);
     }
