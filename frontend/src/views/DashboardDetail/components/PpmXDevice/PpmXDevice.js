@@ -4,7 +4,8 @@ import clsx from 'clsx';
 import ReactEcharts from 'echarts-for-react';
 import PropTypes from 'prop-types';
 import React, { useEffect, useState, useMemo } from 'react';
-
+import Socket from '../../../../socket';
+import axios from '../../../../http';
 import data from './data.json';
 
 const useStyles = makeStyles(() => ({
@@ -19,15 +20,58 @@ const useStyles = makeStyles(() => ({
 
 const PpmXDevice = props => {
   //Style const
-  const { className, ...rest } = props;
+  const { className, location_id, ...rest } = props;
   const classes = useStyles();
 
-  const [devices, setDevice] = useState([]);
+  const [xAxisData, setXAxisData] = useState([]);
+
+  // const yAxisData = useMemo(() => , [xAxisData]);
 
   useEffect(() => {
-    async function getDevices() { }
+    async function getDevices() {
+      let authentication = localStorage.getItem('authentication');
+      let { data } = await axios.get(`location/${location_id}/devices`, {
+        headers: { authentication }
+      });
+
+      setXAxisData(
+        data.devices.reduce(
+          (all, device) => [
+            ...all,
+            ...device.sensorData.map(sensor => ({
+              ...sensor,
+              device,
+              createAt: new Date(Date.parse(sensor.createAt)).toLocaleString(
+                'pt-BR'
+              )
+            }))
+          ],
+          []
+        )
+      );
+    }
 
     getDevices();
+
+    Socket.on('postSensor', sensor => {
+      if (xAxisData && sensor.location == location_id) {
+        let newDevices = xAxisData;
+        debugger;
+        newDevices.pop();
+        newDevices.unshift({
+          ...sensor,
+          createAt: new Date(Date.parse(sensor.createAt)).toLocaleString(
+            'pt-BR'
+          )
+        });
+
+        setXAxisData(newDevices);
+      }
+    });
+
+    return () => {
+      Socket.removeListener('postSensor');
+    };
   }, []);
 
   const getOption = () => {
@@ -75,7 +119,7 @@ const PpmXDevice = props => {
       xAxis: {
         type: 'category',
         boundaryGap: false,
-        data: data.map(item => item[0])
+        data: xAxisData.map(item => item.createAt)
       },
       yAxis: {
         type: 'value',
@@ -88,24 +132,22 @@ const PpmXDevice = props => {
       },
       dataZoom: [
         {
-          startValue: '2015-01-01'
-        },
-        {
           type: 'inside'
         }
       ],
       legend: {
-        data: devices.map(device => device.name)
+        data: []
       },
-      series:
-        devices.map(device => ({
-          name: device.name,
+      series: [
+        {
+          name: 'abc',
           type: 'line',
           smooth: true,
-          data: device.sensorData.map(sensor => sensor.value),
+          data: [],
           markLine,
           markArea
-        }))
+        }
+      ]
     };
   };
 

@@ -79,23 +79,27 @@ export default class ListTable extends React.Component {
     try {
       this.populate();
       Socket.on('postSensor', sensor => {
-        const { location_id } = this.props;
-        let sensores = this.state.table.data;
+        if (this.state.table.data) {
+          const { location_id } = this.props;
+          let sensores = this.state.table.data;
 
-        if (sensor.location == location_id) {
-          sensores.pop();
-          sensores.unshift({
-            deviceName: sensor.name,
-            createAt: new Date(Date.parse(sensor.createAt)).toLocaleString('pt-BR'),
-            value: sensor.value
-          })
+          if (sensor.location == location_id) {
+            sensores.pop();
+            sensores.unshift({
+              deviceName: sensor.device.name,
+              createAt: new Date(Date.parse(sensor.createAt)).toLocaleString(
+                'pt-BR'
+              ),
+              value: sensor.value
+            });
 
-          this.setState({
-            table: {
-              ...this.state.table,
-              data: sensores
-            }
-          });
+            this.setState({
+              table: {
+                ...this.state.table,
+                data: sensores
+              }
+            });
+          }
         }
       });
     } catch (e) {
@@ -105,7 +109,7 @@ export default class ListTable extends React.Component {
 
   componentWillUnmount = () => {
     Socket.removeListener('postSensor');
-  }
+  };
 
   populate = async () => {
     const { location_id } = this.props;
@@ -124,8 +128,11 @@ export default class ListTable extends React.Component {
             ...device.sensorData.map(sensor => ({
               ...sensor,
               deviceName: device.name,
-              createAt: new Date(Date.parse(sensor.createAt)).toLocaleString('pt-BR')
-            }))];
+              createAt: new Date(Date.parse(sensor.createAt)).toLocaleString(
+                'pt-BR'
+              )
+            }))
+          ];
         }, [])
       }
     });
@@ -160,15 +167,15 @@ export default class ListTable extends React.Component {
               {this.state.isLoading ? (
                 <CircularProgress color="secondary" size="small" />
               ) : (
-                  <Fab
-                    color="secondary"
-                    aria-label="atualizar"
-                    size="small"
-                    variant="extended">
-                    <RefreshIcon />
-                    <span style={{ marginRight: '5px' }}>ATUALIZAR</span>
-                  </Fab>
-                )}
+                <Fab
+                  color="secondary"
+                  aria-label="atualizar"
+                  size="small"
+                  variant="extended">
+                  <RefreshIcon />
+                  <span style={{ marginRight: '5px' }}>ATUALIZAR</span>
+                </Fab>
+              )}
             </div>
           }
           options={{

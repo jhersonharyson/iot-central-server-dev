@@ -23,7 +23,7 @@ export async function postSensor(req, res) {
     if (mac) {
       try {
         await Promise.all(
-          sensorData.map(async function (arr) {
+          sensorData.map(async function(arr) {
             let { type, value } = arr;
             const sensor = new Sensor({
               deviceId,
@@ -40,7 +40,8 @@ export async function postSensor(req, res) {
               createAt: sensor.createAt,
               location,
               position,
-              name
+              device,
+              deviceName: device.name
             });
 
             const incident = await verify_event(sensor);
@@ -49,47 +50,62 @@ export async function postSensor(req, res) {
             }
 
             device.sensorData.push(sensor._id);
+
+            let prevDeviceStatus = device.status;
+            if (device.status !== 1) device.status = 1;
+
             await device.save();
+
+            if (prevDeviceStatus !== device.status)
+              req.io.emit("updateDevice", device);
           })
         );
 
-        let locationsForUpdate = (await Location.find(
-          {
-            status: { $eq: 1 },
-            _id: location
-          },
-          "_id name"
-        ).populate({
-          path: "device",
-          match: {
-            status: { $eq: 1 }
-          },
-          select: "_id",
-          populate: {
-            path: "sensorData",
-            select: "value",
-            options: {
-              sort: { createAt: -1 },
-              limit: 1
+        let locationsForUpdate = (
+          await Location.find(
+            {
+              status: { $eq: 1 },
+              _id: location
+            },
+            "_id name"
+          ).populate({
+            path: "device",
+            match: {
+              status: { $eq: 1 }
+            },
+            select: "_id",
+            populate: {
+              path: "sensorData",
+              select: "value",
+              options: {
+                sort: { createAt: -1 },
+                limit: 1
+              }
             }
-          }
-        }))
+          })
+        )
           .filter(
             location =>
               location.device.length &&
               location.device.some(device => device.sensorData.length)
           )
           .map(location => {
-            let avg = location.device.reduce((avg, device, deviceIndex, devices) => {
-              if (devices.length === deviceIndex + 1) {
-                return (avg + device.sensorData[0].value) / devices.length;
-              }
+            let avg = location.device.reduce(
+              (avg, device, deviceIndex, devices) => {
+                if (devices.length === deviceIndex + 1) {
+                  return (avg + device.sensorData[0].value) / devices.length;
+                }
 
-              return avg + device.sensorData[0].value;
-            }, 0);
+                return avg + device.sensorData[0].value;
+              },
+              0
+            );
 
             let max = location.device.reduce(
-              (max, device) => device.sensorData[0].value > max ? device.sensorData[0].value : max,
+              (max, device) =>
+                device.sensorData[0].value > max
+                  ? device.sensorData[0].value
+                  : max,
               0
             );
 
@@ -105,8 +121,7 @@ export async function postSensor(req, res) {
       } catch (e) {
         return res.status(400).send({ error: e });
       }
-      return res.send( await sendRespDevice(mac));
-
+      return res.send(await sendRespDevice(mac));
     } else {
       return res.status(401).send(MAC_ISINVALID);
     }
@@ -173,7 +188,7 @@ const verify_event = async sensor => {
           type: s.type,
           description: `${new Date().toLocaleString()} - Nível de ${
             s.type
-            } em ${s.value} ppm`,
+          } em ${s.value} ppm`,
           sensorData: [s._id]
         });
         console.log("create");
@@ -192,7 +207,7 @@ const verify_event = async sensor => {
         incident.sensorData.push(s._id);
         incident.description = `${new Date().toLocaleString()} - Nível de ${
           s.type
-          } em ${s.value} ppm`;
+        } em ${s.value} ppm`;
         await incident.save();
         return incident;
       } else {
@@ -201,7 +216,7 @@ const verify_event = async sensor => {
             type: s.type,
             description: `${new Date().toLocaleString()} - Nível de ${
               s.type
-              } em ${s.value} ppm`,
+            } em ${s.value} ppm`,
             sensorData: [s._id]
           });
           console.log("create");

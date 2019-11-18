@@ -8,6 +8,8 @@ import { Card, CardContent, Grid, Typography, Avatar } from '@material-ui/core';
 import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
 import DevicesIcon from '@material-ui/icons/Devices';
 import SettingsRemoteIcon from '@material-ui/icons/SettingsRemote';
+import Dots from 'react-activity/lib/Dots';
+import 'react-activity/lib/Dots/Dots.css';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -50,9 +52,10 @@ const TotalUsers = props => {
   const { className, ...rest } = props;
   const classes = useStyles();
 
-  const [counters, setCounters] = React.useState({});
+  const [counters, setCounters] = React.useState(null);
   React.useEffect(() => {
     async function getDevices() {
+      setCounters(null);
       const headers = {
         authentication: await localStorage.getItem('authentication')
       };
@@ -71,24 +74,41 @@ const TotalUsers = props => {
 
     getDevices();
     Socket.on('postDevice', () => getDevices());
+    Socket.on('updateDevice', () => getDevices());
     Socket.on('deleteDevice', () => getDevices());
+
+    return () => {
+      Socket.removeListener('postDevice');
+      Socket.removeListener('deleteDevice');
+    };
   }, []);
 
   return (
-    <Card {...rest} className={clsx(classes.root, className)}>
+    <Card
+      {...rest}
+      className={clsx(classes.root, className)}
+    >
       <CardContent>
-        <Grid container justify="space-between">
+        <Grid
+          container
+          justify="space-between"
+        >
           <Grid item>
             <Typography
               className={classes.title}
               color="textSecondary"
               gutterBottom
-              variant="body2">
+              variant="body2"
+            >
               DISPOSITIVOS
             </Typography>
-            <Typography variant="h3">
-              {counters[1] || 0} {counters[1] || 0 > 1 ? 'Onlines' : 'Online'}
-            </Typography>
+            {counters === null ? (
+              <Dots />
+            ) : (
+              <Typography variant="h3">
+                {counters[1] || 0} {counters[1] > 1 ? 'Onlines' : 'Online'}
+              </Typography>
+            )}
           </Grid>
           <Grid item>
             <Avatar className={classes.avatar}>
@@ -97,15 +117,28 @@ const TotalUsers = props => {
           </Grid>
         </Grid>
         <div className={classes.difference}>
-          <Typography className={classes.differenceValue} variant="body2">
-            {counters[0] || 0} {counters[0] || 0 > 1 ? 'Inativos' : 'Inativo'}
-          </Typography>
-
-          <Typography className={classes.caption} variant="body2">
-            {counters[0] || 0 + counters[1] || 0}{' '}
-            {counters[0] || 0 + counters[1] || 0 > 1 ? 'dispositivos' : 'dispositivo'} no
-            total
-          </Typography>
+          {counters === null ? (
+            <Dots />
+          ) : (
+            <>
+              <Typography
+                className={classes.differenceValue}
+                variant="body2"
+              >
+                {counters[0] || 0} {counters[0] > 1 ? 'Inativos' : 'Inativo'}
+              </Typography>
+              <Typography
+                className={classes.caption}
+                variant="body2"
+              >
+                {Object.values(counters).reduce((a, b) => a + b, 0)}{' '}
+                {Object.values(counters).reduce((a, b) => a + b, 0) > 1
+                  ? 'dispositivos'
+                  : 'dispositivo'}{' '}
+                no total
+              </Typography>
+            </>
+          )}
         </div>
       </CardContent>
     </Card>
