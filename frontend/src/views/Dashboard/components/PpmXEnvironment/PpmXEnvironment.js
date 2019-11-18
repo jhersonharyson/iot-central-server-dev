@@ -14,7 +14,7 @@ const useStyles = makeStyles(() => ({
   root: {},
   chartContainer: {
     position: 'relative',
-    textAlign: "center"
+    textAlign: 'center'
   },
   actions: {
     justifyContent: 'flex-end'
@@ -50,7 +50,7 @@ const PpmXEnvironment = props => {
       });
 
       setGraphState(locations.length);
-      if (graphRef && locations.length) {
+      if (graphRef !== null && graphRef.current !== null && locations.length) {
         graphRef.getEchartsInstance().setOption(
           {
             xAxis: {
@@ -96,7 +96,11 @@ const PpmXEnvironment = props => {
         });
 
         setGraphState(locations.length);
-        if (graphRef && locations.length) {
+        if (
+          graphRef !== null &&
+          graphRef.current !== null &&
+          locations.length
+        ) {
           graphRef.getEchartsInstance().setOption(
             {
               xAxis: {

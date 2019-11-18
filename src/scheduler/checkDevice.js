@@ -31,23 +31,25 @@ export default ({ io }) =>
         );
         let der = a.diff(moment(), "seconds");
         if (der < 0) {
-          disableDevice(io, arr._id);
+          disableDevice(io, arr, arr._id);
         }
       } else {
-        disableDevice(io, arr._id);
+        disableDevice(io, arr, arr._id);
       }
     });
   }, time);
 
-const disableDevice = async (io, id) => {
-  io.emit(
-    "updateDevice",
-    await Device.findByIdAndUpdate(
-      id,
-      {
-        status: 0
-      },
-      { useFindAndModify: false }
-    )
-  );
+const disableDevice = async (io, arr, id) => {
+  if (arr.status !== 0) {
+    io.emit(
+      "updateDevice",
+      await Device.findByIdAndUpdate(
+        id,
+        {
+          status: 0
+        },
+        { useFindAndModify: false }
+      )
+    );
+  }
 };
