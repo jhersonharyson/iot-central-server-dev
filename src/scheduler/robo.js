@@ -2,7 +2,7 @@ import { jwtBuilder } from "../security/jwtBuilder";
 import axios from "axios";
 
 const time = 5000;
-const enabled = true;
+const enabled = !true;
 
 const mac_list = ["3C:71:BF:F1:1D:A0"];
 
