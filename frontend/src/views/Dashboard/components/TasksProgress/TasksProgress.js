@@ -23,13 +23,14 @@ import {
 } from '@material-ui/core';
 import DateFnsUtils from '@date-io/date-fns';
 import moment from 'moment';
-import { MuiPickersUtilsProvider, DateTimePicker } from '@material-ui/pickers';
-import ptBRLocale from 'date-fns/locale/pt-BR';
+import {
+  MuiPickersUtilsProvider,
+  DateTimePicker
+} from '@material-ui/pickers';
+import ptBRLocale from "date-fns/locale/pt-BR";
 import InsertChartIcon from '@material-ui/icons/InsertChartOutlined';
 import axios from '../../../../http';
 import Socket from '../../../../socket';
-import Dots from 'react-activity/lib/Dots';
-import 'react-activity/lib/Dots/Dots.css';
 const useStyles = makeStyles(theme => ({
   root: {
     height: '100%'
@@ -55,29 +56,29 @@ const useStyles = makeStyles(theme => ({
     marginTop: theme.spacing(3)
   },
   gridFormControl: {
-    marginTop: theme.spacing(3)
+    marginTop: theme.spacing(3),
   },
   containerPicker: {
     display: 'flex',
-    flexWrap: 'wrap'
+    flexWrap: 'wrap',
   },
   formControlPicker: {
     margin: theme.spacing(1)
-  }
+  },
 }));
 
 const TasksProgress = props => {
   const { className, ...rest } = props;
   const classes = useStyles();
 
-  const [events, setEvents] = useState(null);
+  const [events, setEvents] = useState(undefined);
   const [minDate, setMinDate] = useState(Date.now() - 60 * 1000 * 60 * 24);
   const [openValue, setOpenValue] = React.useState(24);
   const [open, setOpen] = React.useState(false);
   const [picker, setPicker] = React.useState({
     open: false,
     iniDate: null,
-    fimDate: null
+    fimDate: null,
   });
 
   const handlePickerChange = name => date => {
@@ -122,8 +123,7 @@ const TasksProgress = props => {
   };
 
   useEffect(() => {
-    async function getEvents() {
-      setEvents(null);
+    async function getDevices() {
       const interval = minDate || Date.now() - 60 * 1000 * 60 * 24;
       let authentication = await localStorage.getItem('authentication');
       let response = await axios.get('events/interval/' + interval, {
@@ -134,37 +134,23 @@ const TasksProgress = props => {
       setEvents(events_counter);
     }
 
-    getEvents();
-    Socket.on('postEvent', () => getEvents());
-    return () => {
-      Socket.removeListener('postEvent');
-    };
+    getDevices();
+    Socket.on('postEvent', () => getDevices());
   }, [minDate]);
 
   return (
-    <Card
-      {...rest}
-      className={clsx(classes.root, className)}
-    >
+    <Card {...rest} className={clsx(classes.root, className)}>
       <CardContent>
-        <Grid
-          container
-          justify="space-between"
-        >
+        <Grid container justify="space-between">
           <Grid item>
             <Typography
               className={classes.title}
               color="textSecondary"
               gutterBottom
-              variant="body2"
-            >
+              variant="body2">
               EVENTOS DE ALERTA
             </Typography>
-            {events === null ? (
-              <Dots />
-            ) : (
-              <Typography variant="h3">{events}</Typography>
-            )}
+            <Typography variant="h3">{events}</Typography>
           </Grid>
           <Grid item>
             <Avatar className={classes.avatar}>
@@ -172,18 +158,14 @@ const TasksProgress = props => {
             </Avatar>
           </Grid>
         </Grid>
-        <Grid
-          className={classes.gridFormControl}
-          container
-          justify="space-between"
-        >
+        <Grid className={classes.gridFormControl} container justify="space-between">
           <FormControl>
             <Select
-              onChange={handleChange}
+              open={open}
               onClose={handleClose}
               onOpen={handleOpen}
-              open={open}
               value={openValue}
+              onChange={handleChange}
             >
               <MenuItem value={12}>Últimas 12 horas</MenuItem>
               <MenuItem value={24}>Últimas 24 horas</MenuItem>
@@ -191,61 +173,41 @@ const TasksProgress = props => {
               <MenuItem value={'Personalizado'}>Personalizado</MenuItem>
             </Select>
           </FormControl>
-          <Dialog
-            disableBackdropClick
-            disableEscapeKeyDown
-            onClose={handlePickerClose}
-            open={picker.open}
-          >
+          <Dialog disableBackdropClick disableEscapeKeyDown open={picker.open} onClose={handlePickerClose}>
             <DialogTitle>Digite o intervalo personalizado</DialogTitle>
             <DialogContent>
-              <MuiPickersUtilsProvider
-                locale={ptBRLocale}
-                utils={DateFnsUtils}
-              >
-                <Grid
-                  container
-                  justify="space-around"
-                >
+              <MuiPickersUtilsProvider utils={DateFnsUtils} locale={ptBRLocale}>
+                <Grid container justify="space-around">
                   <DateTimePicker
-                    ampm={false}
-                    autoOk
                     className={classes.formControlPicker}
+                    autoOk
+                    ampm={false}
                     disableFuture
-                    label="Data inicial"
-                    onChange={handlePickerChange('iniDate')}
-                    value={picker.iniDate}
                     variant="inline"
+                    label="Data inicial"
+                    value={picker.iniDate}
+                    onChange={handlePickerChange('iniDate')}
                   />
                 </Grid>
-                <Grid
-                  container
-                  justify="space-around"
-                >
+                <Grid container justify="space-around">
                   <DateTimePicker
-                    ampm={false}
-                    autoOk
                     className={classes.formControlPicker}
+                    autoOk
+                    ampm={false}
                     disableFuture
-                    label="Data Final"
-                    onChange={handlePickerChange('fimDate')}
-                    value={picker.fimDate}
                     variant="inline"
+                    label="Data Final"
+                    value={picker.fimDate}
+                    onChange={handlePickerChange('fimDate')}
                   />
                 </Grid>
               </MuiPickersUtilsProvider>
             </DialogContent>
             <DialogActions>
-              <Button
-                color="primary"
-                onClick={handlePickerClose()}
-              >
+              <Button onClick={handlePickerClose()} color="primary">
                 Cancelar
               </Button>
-              <Button
-                color="primary"
-                onClick={handlePickerClose(true)}
-              >
+              <Button onClick={handlePickerClose(true)} color="primary">
                 Ok
               </Button>
             </DialogActions>
