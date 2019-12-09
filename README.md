@@ -104,7 +104,7 @@ $ yarn build
 REACT_APP_API_URL=http://localhost:3001/api/v1/ws/
 REACT_APP_API_URL_BASE=http://localhost:3001
 ```
-#####or pass directly in your cloud server environment variables
+##### or pass directly in your cloud server environment variables
 
 #### The mongoDB
 ###### You can create a mongoDB sandbox and get the string connection url. So you have open  `src/config/constants.js` and change constant mongoDB to your string url connection. Otherwise you can create a environments variable named MONGO_URL and pass your string directly in you server cloud.
