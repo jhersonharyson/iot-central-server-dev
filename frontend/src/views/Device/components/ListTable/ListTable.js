@@ -29,6 +29,7 @@ import MaterialTable from 'material-table';
 import PropTypes from 'prop-types';
 import React, { forwardRef } from 'react';
 import axios from '../../../../http';
+import DeviceDrawerDetail from './DeviceDetail';
 
 const tableIcons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -58,6 +59,7 @@ export default class ListTable extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      dataDetail: null,
       dialogCharging: undefined,
       snackbar: false,
 
@@ -176,6 +178,11 @@ export default class ListTable extends React.Component {
   render() {
     return (
       <>
+        <DeviceDrawerDetail
+          closeData = { () => this.setState({dataDetail: null}) }
+          closeDetail = { () => this.setState({dataDetail: null}) }
+          data = { this.state.dataDetail || [] }
+        />
         <SimpleDialog
           selectedValue={this.state.selectedValue}
           open={this.state.dialog}
@@ -212,6 +219,30 @@ export default class ListTable extends React.Component {
           }
           actions={
             this.props.profile && [
+              {
+                icon: 'reorder',
+                tooltip: 'dados',
+                onClick: async (event, rowData) => {
+                  try {
+                    const headers = {
+                      authentication: localStorage.getItem('authentication')
+                    };
+                    const resp = await axios.get(`/devices/${rowData.mac}/sensors/data`, {headers});
+                    this.setState({dataDetail: resp.data.sensorData});
+                    console.log('este2',resp.data);
+                    console.log('este3',resp.data.sensorData);
+                  } catch (e) {
+                    console.log('erro')
+                  }/*document.body.scrollTop = 0; // For Safari
+                  document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+                  */
+                  /*const { img_url } = this.state.locations.find(
+                    x => x._id == rowData.location
+                  );*/
+                  this.setState({
+                  });
+                }
+              },
               {
                 icon: 'my_location',
                 tooltip: 'posicionar',
