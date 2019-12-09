@@ -60,6 +60,20 @@ export async function getDevice(req, res, next) {
   );
 }
 
+export async function getDeviceDataSensors(req, res, next) {
+  const mac = req.params.mac;
+  let filter = {};
+  filter.mac = mac;
+
+  res.send(
+      await Device.findOne(filter)
+          .select("sensorData")
+          .limit(10)
+          .populate({select: "value createAt -_id", options: {limit: 10, sort: {createAt: -1}, lean: true}, path: "sensorData"})
+  );
+}
+
+
 export async function getDeviceData(req, res, next) {
   const mac = req.params.mac;
   let filter = {};
