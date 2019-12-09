@@ -7,11 +7,15 @@ import ReactEcharts from 'echarts-for-react';
 import PropTypes from 'prop-types';
 import axios from '../../../../http';
 import Socket from '../../../../socket';
+import Levels from 'react-activity/lib/Levels';
+import 'react-activity/lib/Levels/Levels.css';
+
 
 const useStyles = makeStyles(() => ({
   root: {},
   chartContainer: {
-    position: 'relative'
+    position: 'relative',
+    textAlign: 'center'
   },
   actions: {
     justifyContent: 'flex-end'
@@ -23,13 +27,12 @@ const PpmXEnvironment = props => {
   const { className, ...rest } = props;
   const classes = useStyles();
 
-  const [loading, setLoading] = useState(true);
   let locations = [];
   let graphRef = useRef(null);
+  const [graphState, setGraphState] = useState(null);
 
-  async function handleClickBar(e) {
-    let all = await JSON.parse(sessionStorage.getItem('bar_dashboard_graphic'));
-    let { _id } = all.find(item => item.name === e.name);
+  function handleClickBar(e) {
+    let { _id } = locations.find(item => item.name === e.name);
     if (_id) {
       props.history.push(`/dashboard/${_id}`);
     }
@@ -37,22 +40,35 @@ const PpmXEnvironment = props => {
 
   useEffect(() => {
     async function getLocation() {
-      if (sessionStorage.getItem('bar_dashboard_graphic')) {
-        locations = await JSON.parse(sessionStorage.getItem('bar_dashboard_graphic'));
-      }
-
       let authentication = localStorage.getItem('authentication');
-      let { data } = await axios.get('dashboard/location', {
+      let response = await axios.get('dashboard/location', {
         headers: { authentication }
       });
 
-      let _location = data;
-      _location.sort(function (a, b) {
+      locations = response.data;
+      locations.sort(function(a, b) {
         return a.name.localeCompare(b.name);
       });
 
-      locations = _location;
-      updateGraphic();
+      setGraphState(locations.length);
+      if (graphRef !== null && graphRef.current !== null && locations.length) {
+        graphRef.getEchartsInstance().setOption(
+          {
+            xAxis: {
+              data: locations.map(item => item.name)
+            },
+            series: [
+              {
+                data: locations.map(item => item.avg)
+              },
+              {
+                data: locations.map(item => item.max)
+              }
+            ]
+          },
+          false
+        );
+      }
     }
 
     getLocation();
@@ -71,17 +87,38 @@ const PpmXEnvironment = props => {
         if (locationIndex > -1) {
           newLocations[locationIndex].max = locationForUpdate.max;
           newLocations[locationIndex].avg = locationForUpdate.avg;
-        }
-        else {
+        } else {
           newLocations.push(locationForUpdate);
         }
 
-        newLocations.sort(function (a, b) {
+        locations = newLocations;
+        locations.sort(function(a, b) {
           return a.name.localeCompare(b.name);
         });
 
-        locations = newLocations;
-        updateGraphic();
+        setGraphState(locations.length);
+        if (
+          graphRef !== null &&
+          graphRef.current !== null &&
+          locations.length
+        ) {
+          graphRef.getEchartsInstance().setOption(
+            {
+              xAxis: {
+                data: locations.map(item => item.name)
+              },
+              series: [
+                {
+                  data: locations.map(item => item.avg)
+                },
+                {
+                  data: locations.map(item => item.max)
+                }
+              ]
+            },
+            false
+          );
+        }
       });
     });
 
@@ -94,147 +131,126 @@ const PpmXEnvironment = props => {
     };
   }, []);
 
-  function updateGraphic() {
-    async function saveData() {
-      sessionStorage.setItem('bar_dashboard_graphic', JSON.stringify(locations));
-
-      if (loading && locations.length) {
-        setLoading(false);
-      }
-    }
-    saveData();
-
-    if (graphRef) {
-      graphRef
-        .getEchartsInstance()
-        .setOption({
-          xAxis: {
-            data: locations.map(item => item.name)
-          },
-          series: [
-            {
-              data: locations.map(item => item.avg)
-            },
-            {
-              data: locations.map(item => item.max)
-            }
-          ]
-        }, false);
-    }
-  }
-
   return (
     <>
-      <Card {...rest} className={clsx(classes.root, className)}>
+      <Card
+        {...rest}
+        className={clsx(classes.root, className)}
+      >
         <CardHeader title="CO² por Ambiente" />
         <Divider />
         <CardContent>
           <div className={classes.chartContainer}>
-            <ReactEcharts
-              ref={ref => {
-                if (ref !== null) {
-                  graphRef = ref
-                }
-              }}
-              lazyUpdate={true}
-              showLoading={loading}
-              option={{
-                tooltip: {
-                  trigger: 'axis',
-                  axisPointer: {
-                    type: 'shadow'
-                  }
-                },
-                legend: {
-                  data: ['Média', 'Máxima']
-                },
-                xAxis: {
-                  type: 'category',
-                },
-                yAxis: {
-                  type: 'value'
-                },
-                series: [
-                  {
-                    name: 'Média',
-                    type: 'bar',
-                    stack: '0',
-                    itemStyle: {
-                      color: '#053F66'
-                    },
-                    markLine: {
-                      silent: true,
-                      data: [
-                        {
-                          yAxis: 400,
-                          lineStyle: {
-                            color: '#4dbd6c'
-                          }
-                        },
-                        {
-                          yAxis: 1000,
-                          lineStyle: {
-                            color: '#E5DA00'
-                          }
-                        },
-                        {
-                          yAxis: 2000,
-                          lineStyle: {
-                            color: '#fb7607'
-                          }
-                        },
-                        {
-                          yAxis: 5000,
-                          lineStyle: {
-                            color: '#fb0505'
-                          }
-                        }
-                      ]
+            {graphState === null ? (
+              <Levels />
+            ) : graphState ? (
+              <ReactEcharts
+                lazyUpdate
+                onEvents={{
+                  click: handleClickBar
+                }}
+                option={{
+                  tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                      type: 'shadow'
                     }
                   },
-                  {
-                    name: 'Máxima',
-                    type: 'bar',
-                    stack: '0',
-                    itemStyle: {
-                      color: ''
+                  legend: {
+                    data: ['Média', 'Máxima']
+                  },
+                  xAxis: {
+                    type: 'category'
+                  },
+                  yAxis: {
+                    type: 'value'
+                  },
+                  series: [
+                    {
+                      name: 'Média',
+                      type: 'bar',
+                      stack: '0',
+                      itemStyle: {
+                        color: '#053F66'
+                      },
+                      markLine: {
+                        silent: true,
+                        data: [
+                          {
+                            yAxis: 400,
+                            lineStyle: {
+                              color: '#4dbd6c'
+                            }
+                          },
+                          {
+                            yAxis: 1000,
+                            lineStyle: {
+                              color: '#E5DA00'
+                            }
+                          },
+                          {
+                            yAxis: 2000,
+                            lineStyle: {
+                              color: '#fb7607'
+                            }
+                          },
+                          {
+                            yAxis: 5000,
+                            lineStyle: {
+                              color: '#fb0505'
+                            }
+                          }
+                        ]
+                      }
                     },
-                    markLine: {
-                      silent: true,
-                      data: [
-                        {
-                          yAxis: 400,
-                          lineStyle: {
-                            color: '#4dbd6c'
+                    {
+                      name: 'Máxima',
+                      type: 'bar',
+                      stack: '0',
+                      itemStyle: {
+                        color: ''
+                      },
+                      markLine: {
+                        silent: true,
+                        data: [
+                          {
+                            yAxis: 400,
+                            lineStyle: {
+                              color: '#4dbd6c'
+                            }
+                          },
+                          {
+                            yAxis: 1000,
+                            lineStyle: {
+                              color: '#E5DA00'
+                            }
+                          },
+                          {
+                            yAxis: 2000,
+                            lineStyle: {
+                              color: '#fb7607'
+                            }
+                          },
+                          {
+                            yAxis: 5000,
+                            lineStyle: {
+                              color: '#fb0505'
+                            }
                           }
-                        },
-                        {
-                          yAxis: 1000,
-                          lineStyle: {
-                            color: '#E5DA00'
-                          }
-                        },
-                        {
-                          yAxis: 2000,
-                          lineStyle: {
-                            color: '#fb7607'
-                          }
-                        },
-                        {
-                          yAxis: 5000,
-                          lineStyle: {
-                            color: '#fb0505'
-                          }
-                        }
-                      ]
+                        ]
+                      }
                     }
+                  ]
+                }}
+                ref={ref => {
+                  if (ref !== null) {
+                    graphRef = ref;
                   }
-                ]
-              }}
-              onEvents={{
-                click: handleClickBar
-              }}
-            />
+                }}
+              />
+            ) : (
+              'Nenhum dispositivo ativo no momento'
+            )}
           </div>
         </CardContent>
       </Card>
