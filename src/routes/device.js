@@ -9,6 +9,7 @@ router.get("/dashboard/devices", require(CONTROLLER_PATH).dashboardDevice);
 
 router.get("/devices/all*?", require(CONTROLLER_PATH).getAllDevices);
 
+router.get("/devices/:mac/sensors/data", require(CONTROLLER_PATH).getDeviceDataSensors);
 router.get("/devices/:mac/sensors", require(CONTROLLER_PATH).getDeviceData);
 router.get("/devices/:mac*?", require(CONTROLLER_PATH).getDevice);
 router.put("/devices/:mac", require(CONTROLLER_PATH).updateDevice);
