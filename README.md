@@ -37,17 +37,6 @@ $ npm start
 $ yarn start 
 ```
 
-
-### Testing
-
-The test was developed with mochaJS.
-
-Open your favorite Terminal and run these commands.
-First Tab:
-```sh
-$ npm run start-test
-```
-
 #### Building for source
 Generating pre-built:
 ```sh
@@ -71,5 +60,54 @@ export default (req, res, next) => {
   }
 ```
 it can be change the code above inside `src/bin/middleware/index.js`   
+
+
+To start the frontend in development mode
+```sh
+// to start the frontend (development mode):
+$ cd frontend 
+    // and
+$ yarn install 
+    // and
+$ yarn start 
+```
+## To run a backend production mode 
+```sh
+// to build the backend (production mode):
+$ yarn install 
+    // and
+$ yarn start
+```
+
+## To run a frontend production mode 
+```sh
+// to build the frontend (production mode):
+$ cd frontend
+     //and
+$ yarn install 
+    // and
+$ yarn build
+```
+##### copy the generated files in `build/static`
+##### Obs: this are static files, so you need put then inside a NGINX server, or another server
+
+
+## To run a production mode in  Cloud Based Server
+#### The backend 
+##### The backend is so easy to run, just you have a nodeJS container and put code files in there. Then you have to install dependencies with `yarn install` or `npm install`, after you have run `yarn start` or `npm start`
+
+#### The frontend 
+##### The easiest way to upload the frontend on cloud is using a boilerplate to deploy. 
+##### The react boilerplate can be find in https://buildpack-registry.s3.amazonaws.com/buildpacks/mars/create-react-app.tgz
+##### You must pass to your frontend  the environments variables with the server location, you can create a .ENV file like: 
+```sh
+REACT_APP_API_URL=http://localhost:3001/api/v1/ws/
+REACT_APP_API_URL_BASE=http://localhost:3001
+```
+#####or pass directly in your cloud server environment variables
+
+#### The mongoDB
+###### You can create a mongoDB sandbox and get the string connection url. So you have open  `src/config/constants.js` and change constant mongoDB to your string url connection. Otherwise you can create a environments variable named MONGO_URL and pass your string directly in you server cloud.
+
 
 
