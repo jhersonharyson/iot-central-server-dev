@@ -43,7 +43,7 @@ export default function DeviceDrawerDetail(props) {
         {props.data.map((obj, index) => (
           <ListItem button key={`${obj.date}${index}`}>
             <ListItemText placeholder={'Valor'} primary={obj.value} />
-            <ListItemText aria-label={'label'} primary={obj.createAt} />
+            <ListItemText aria-label={'label'} primary={new Date (obj.createAt).toLocaleString('pt-BR')} />
           </ListItem>
         ))}
       </List>
